@@ -1,6 +1,6 @@
 # Provider samples
 
-The JSON files are real responses captured using `claude-opus-5` and
+The JSON files are real responses captured using `claude-opus-5-5` and
 `gemini-embedding-2` (1536 dimensions). Tests run offline without API keys.
 
 The mock ID photo is a generated specimen containing fictional data. Its caption

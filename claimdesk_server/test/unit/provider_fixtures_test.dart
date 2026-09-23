@@ -17,6 +17,7 @@ void main() {
     }.entries) {
       test('${entry.key} preserves the expected structured response', () {
         final response = readFixture('claude_caption_${entry.key}');
+        expect(response['model'], 'claude-opus-5-5');
         expect(response['stop_reason'], 'end_turn');
         final text =
             (response['content'] as List)
