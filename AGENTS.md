@@ -42,8 +42,8 @@ Checklist after doing changes, in this order:
 If the user asks you to test the app:
 
 1. Use `get_flutter_app_dtd` (`serverpod` MCP) to get the Flutter app's DTD
-2. Pass the DTD to `connect_dart_tooling_daemon` (`dart` MCP) to connect to the app
-3. Use `flutter_driver` (`dart` MCP) to navigate through the app
+2. Pass the DTD to `dtd` (`dart` MCP) with `command: connect` and `uri` to connect to the app
+3. Inspect the widget tree with `widget_inspector`, then use `flutter_driver_command` (`dart` MCP) to navigate through the app
 
 The app is launched from `claimdesk_flutter/lib/driver.dart`, which starts the Flutter driver extension with text entry emulation turned off so the app stays usable by hand. To let the driver type, set `enableTextEntryEmulation: true` there and `hot_restart` the app.
 
