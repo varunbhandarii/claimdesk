@@ -1,0 +1,30 @@
+services:
+  # Development services
+  postgres:
+    image: ghcr.io/serverpod/postgres:16
+    ports:
+      - "8090:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: claimdesk
+      POSTGRES_PASSWORD: ${CLAIMDESK_DATABASE_PASSWORD:?Set CLAIMDESK_DATABASE_PASSWORD for optional Docker development}
+    volumes:
+      - claimdesk_data:/var/lib/postgresql/data
+
+
+  # Test services
+  postgres_test:
+    image: ghcr.io/serverpod/postgres:16
+    ports:
+      - "9090:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: claimdesk_test
+      POSTGRES_PASSWORD: ${CLAIMDESK_TEST_DATABASE_PASSWORD:?Set CLAIMDESK_TEST_DATABASE_PASSWORD for optional Docker tests}
+    volumes:
+      - claimdesk_test_data:/var/lib/postgresql/data
+
+
+volumes:
+  claimdesk_data:
+  claimdesk_test_data:
