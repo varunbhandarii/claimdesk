@@ -1,0 +1,14 @@
+class: CustodyEvent
+table: custody_event
+fields:
+  id: UuidValue?, defaultPersist=random_v7
+  venueId: UuidValue, relation(parent=venue, onDelete=Cascade)
+  itemId: UuidValue, relation(parent=found_item, onDelete=Cascade)
+  fromLocation: String
+  toLocation: String
+  reference: String?
+  byAuthUserId: UuidValue
+  at: DateTime, default=now
+indexes:
+  custody_event_item_idx:
+    fields: itemId

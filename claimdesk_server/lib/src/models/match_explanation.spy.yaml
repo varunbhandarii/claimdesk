@@ -1,0 +1,12 @@
+class: MatchExplanation
+fields:
+  cosSim: double?
+  keywordCoverage: double?
+  matchedKeywords: List<String>
+  category: double?
+  colour: double?
+  brand: double?
+  zone: double?
+  time: double?
+  weightsHash: String
+  guardrailApplied: bool, default=false

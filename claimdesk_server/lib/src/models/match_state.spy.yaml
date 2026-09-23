@@ -1,0 +1,4 @@
+enum: MatchState
+serialized: byName
+default: pending
+values: [pending, confirmed, rejected, superseded]

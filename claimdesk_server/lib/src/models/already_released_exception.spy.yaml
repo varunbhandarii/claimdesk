@@ -1,0 +1,4 @@
+exception: AlreadyReleasedException
+fields:
+  message: String
+  itemId: UuidValue

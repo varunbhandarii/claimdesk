@@ -1,0 +1,13 @@
+class: ReportAnswer
+table: report_answer
+fields:
+  id: UuidValue?, defaultPersist=random_v7
+  venueId: UuidValue, relation(parent=venue, onDelete=Cascade)
+  reportId: UuidValue, relation(parent=lost_report, onDelete=Cascade)
+  matchId: UuidValue, relation(parent=item_match, onDelete=Cascade)
+  question: String
+  answer: String
+  createdAt: DateTime, default=now
+indexes:
+  report_answer_report_idx:
+    fields: reportId

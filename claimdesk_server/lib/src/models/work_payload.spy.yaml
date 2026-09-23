@@ -1,0 +1,4 @@
+class: WorkPayload
+fields:
+  entityId: UuidValue?
+  data: Map<String, String>

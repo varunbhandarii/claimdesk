@@ -1,0 +1,14 @@
+class: AuditEvent
+table: audit_event
+fields:
+  id: UuidValue?, defaultPersist=random_v7
+  venueId: UuidValue
+  entityType: String
+  entityId: UuidValue
+  action: String
+  actorAuthUserId: UuidValue?
+  payload: AuditPayload?, serializationDataType=jsonb
+  at: DateTime, default=now
+indexes:
+  audit_event_entity_idx:
+    fields: entityType, entityId, at

@@ -1,0 +1,4 @@
+enum: ItemStatus
+serialized: byName
+default: intake
+values: [intake, captioning, unclaimed, matched, claimed, transferred, disposed, expired]

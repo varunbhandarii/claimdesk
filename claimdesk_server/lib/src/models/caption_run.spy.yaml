@@ -1,0 +1,18 @@
+class: CaptionRun
+table: caption_run
+fields:
+  id: UuidValue?, defaultPersist=random_v7
+  venueId: UuidValue, relation(parent=venue, onDelete=Cascade)
+  itemId: UuidValue, relation(parent=found_item, onDelete=Cascade)
+  provider: String
+  modelId: String
+  promptVersion: String
+  outcome: String
+  latencyMs: int
+  inputTokens: int?
+  outputTokens: int?
+  errorMessage: String?
+  createdAt: DateTime, default=now
+indexes:
+  caption_run_item_idx:
+    fields: itemId

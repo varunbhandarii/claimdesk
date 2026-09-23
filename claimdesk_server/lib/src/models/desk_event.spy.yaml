@@ -1,0 +1,8 @@
+class: DeskEvent
+fields:
+  kind: String
+  venueId: UuidValue
+  itemId: UuidValue?
+  reportId: UuidValue?
+  matchId: UuidValue?
+  at: DateTime

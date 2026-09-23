@@ -1,0 +1,4 @@
+enum: WorkState
+serialized: byName
+default: pending
+values: [pending, running, done, failed, cancelled]

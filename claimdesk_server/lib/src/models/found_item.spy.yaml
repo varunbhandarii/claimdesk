@@ -1,0 +1,32 @@
+class: FoundItem
+table: found_item
+fields:
+  id: UuidValue?, defaultPersist=random_v7
+  venueId: UuidValue, relation(parent=venue, onDelete=Cascade)
+  zoneId: UuidValue?, relation(parent=zone, onDelete=SetNull)
+  status: ItemStatus, default=intake
+  refCode: String, unique(per=venueId)
+  photoPath: String?
+  thumbPath: String?
+  restricted: bool, default=false
+  attributes: ItemAttributes?, serializationDataType=jsonb
+  captionText: String?
+  embedding: Vector(1536)?
+  embeddingModel: String?
+  valueBand: ValueBand, default=under20
+  storageBin: String?
+  privateNotes: String?
+  finderName: String?
+  foundAt: DateTime, default=now
+  loggedByAuthUserId: UuidValue
+  holdUntil: DateTime?
+  handoffDueAt: DateTime?
+  createdAt: DateTime, default=now
+  updatedAt: DateTime, default=now
+indexes:
+  found_item_venue_status_found_idx:
+    fields: venueId, status, foundAt
+  found_item_attributes_gin_idx:
+    fields: attributes
+    type: gin
+    operatorClass: jsonbPathOps

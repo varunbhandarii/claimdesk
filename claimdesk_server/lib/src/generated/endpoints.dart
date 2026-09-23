@@ -10,6 +10,7 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
+import 'package:claimdesk_server/src/generated/protocol.dart' as _ii1g677k;
 import 'package:serverpod/serverpod.dart' as _is;
 import 'package:serverpod_auth_core_server/serverpod_auth_core_server.dart'
     as _iacs;
@@ -17,6 +18,8 @@ import 'package:serverpod_auth_idp_server/serverpod_auth_idp_server.dart'
     as _iais;
 import '../auth/email_idp_endpoint.dart' as _iuc1hd5t;
 import '../auth/jwt_refresh_endpoint.dart' as _inwq3ztq;
+import '../endpoints/admin_endpoint.dart' as _i5t1w2d2;
+import '../endpoints/venue_endpoint.dart' as _im3sz6ep;
 import '../greetings/greeting_endpoint.dart' as _il624ik7;
 
 class Endpoints extends _is.EndpointDispatch {
@@ -33,6 +36,18 @@ class Endpoints extends _is.EndpointDispatch {
         ..initialize(
           server,
           'jwtRefresh',
+          null,
+        ),
+      'admin': _i5t1w2d2.AdminEndpoint()
+        ..initialize(
+          server,
+          'admin',
+          null,
+        ),
+      'venue': _im3sz6ep.VenueEndpoint()
+        ..initialize(
+          server,
+          'venue',
           null,
         ),
       'greeting': _il624ik7.GreetingEndpoint()
@@ -245,6 +260,87 @@ class Endpoints extends _is.EndpointDispatch {
                         session,
                         refreshToken: params['refreshToken'],
                       ),
+        ),
+      },
+    );
+    connectors['admin'] = _is.EndpointConnector(
+      name: 'admin',
+      endpoint: endpoints['admin']!,
+      methodConnectors: {
+        'seedDemo': _is.MethodConnector(
+          name: 'seedDemo',
+          params: {
+            'secret': _is.ParameterDescription(
+              name: 'secret',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['admin'] as _i5t1w2d2.AdminEndpoint)
+                  .seedDemo(
+                    session,
+                    params['secret'],
+                  )
+                  .then(
+                    (record) => _ii1g677k.Protocol().mapRecordToJson(record),
+                  ),
+        ),
+      },
+    );
+    connectors['venue'] = _is.EndpointConnector(
+      name: 'venue',
+      endpoint: endpoints['venue']!,
+      methodConnectors: {
+        'myMemberships': _is.MethodConnector(
+          name: 'myMemberships',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['venue'] as _im3sz6ep.VenueEndpoint)
+                  .myMemberships(session),
+        ),
+        'getVenue': _is.MethodConnector(
+          name: 'getVenue',
+          params: {
+            'venueId': _is.ParameterDescription(
+              name: 'venueId',
+              type: _is.getType<_is.UuidValue>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['venue'] as _im3sz6ep.VenueEndpoint).getVenue(
+                    session,
+                    params['venueId'],
+                  ),
+        ),
+        'zones': _is.MethodConnector(
+          name: 'zones',
+          params: {
+            'venueId': _is.ParameterDescription(
+              name: 'venueId',
+              type: _is.getType<_is.UuidValue>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['venue'] as _im3sz6ep.VenueEndpoint).zones(
+                session,
+                params['venueId'],
+              ),
         ),
       },
     );

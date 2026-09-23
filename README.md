@@ -1,7 +1,9 @@
 # ClaimDesk
 
 A lost-and-found desk app for venue staff. This workspace currently contains the
-Serverpod server, generated typed client, and Flutter starter app.
+Serverpod server, generated typed client, and Flutter starter app. The backend
+includes venue membership checks, item/report storage, audit and custody records,
+and a durable work table.
 
 ## Local setup
 
@@ -37,6 +39,32 @@ flutter run -d <device-id> --dart-define=SERVER_URL=http://<computer-lan-ip>:808
 
 Alternatively, use `adb reverse tcp:8080 tcp:8080` and
 `--dart-define=SERVER_URL=http://127.0.0.1:8080/` over USB.
+
+## Demo desk
+
+Stop the development server before running the seed command, since it uses the
+same API port. From `claimdesk_server`:
+
+```powershell
+serverpod run seed
+serverpod start
+```
+
+Seeding creates Hawrys Rec Center (demo), six zones, and two accounts:
+`supervisor@demo.claimdesk.local` and `staff@demo.claimdesk.local`. Set
+`demoStaffPassword` in the ignored passwords file or as
+`SERVERPOD_PASSWORD_demoStaffPassword`. Development and test modes have a local
+fallback; production requires an explicitly configured password. Rerunning the
+seed restores demo settings while preserving ids and existing account passwords.
+
+Cloud seeding uses the `admin.seedDemo` endpoint and requires a separately
+configured `seedSecret`. Its request body is `{"secret":"<configured value>"}`
+at `POST /admin/seedDemo`. An unset or incorrect secret denies access. Keep both
+credentials out of source control and shell history.
+
+Signed-in clients can call `venue.myMemberships()`, `venue.getVenue(id)`, and
+`venue.zones(id)`. Every venue lookup checks the caller's membership. The Flutter
+app still displays the starter screen; desk screens are not included yet.
 
 ## Workspace
 

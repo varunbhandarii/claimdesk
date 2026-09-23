@@ -1,0 +1,4 @@
+enum: ReportStatus
+serialized: byName
+default: received
+values: [received, searching, possibleMatch, readyForPickup, returned, closed]

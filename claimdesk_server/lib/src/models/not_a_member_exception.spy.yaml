@@ -1,0 +1,4 @@
+exception: NotAMemberException
+fields:
+  message: String
+  venueId: UuidValue

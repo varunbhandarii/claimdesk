@@ -1,0 +1,19 @@
+class: ReleaseRecord
+table: release_record
+fields:
+  id: UuidValue?, defaultPersist=random_v7
+  venueId: UuidValue, relation(parent=venue, onDelete=Cascade)
+  itemId: UuidValue, relation(parent=found_item)
+  reportId: UuidValue?, relation(parent=lost_report, onDelete=SetNull)
+  claimantName: String
+  idTypeSeen: String
+  detailsMatched: int
+  describedBeforeViewing: bool
+  thirdPartyAuthorisationNote: String?
+  signaturePath: String?
+  releasedByAuthUserId: UuidValue
+  releasedAt: DateTime, default=now
+indexes:
+  release_record_item_idx:
+    fields: itemId
+    unique: true

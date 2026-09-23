@@ -1,0 +1,23 @@
+class: ItemMatch
+table: item_match
+fields:
+  id: UuidValue?, defaultPersist=random_v7
+  venueId: UuidValue, relation(parent=venue, onDelete=Cascade)
+  reportId: UuidValue, relation(parent=lost_report, onDelete=Cascade)
+  itemId: UuidValue, relation(parent=found_item, onDelete=Cascade)
+  state: MatchState, default=pending
+  score: double
+  label: String
+  rank: int
+  explanation: MatchExplanation, serializationDataType=jsonb
+  algorithmVersion: String
+  decidedByAuthUserId: UuidValue?
+  decidedAt: DateTime?
+  createdAt: DateTime, default=now
+  updatedAt: DateTime, default=now
+indexes:
+  item_match_report_item_idx:
+    fields: reportId, itemId
+    unique: true
+  item_match_venue_state_idx:
+    fields: venueId, state, createdAt

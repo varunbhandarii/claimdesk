@@ -1,0 +1,12 @@
+class: Zone
+table: zone
+fields:
+  id: UuidValue?, defaultPersist=random_v7
+  venueId: UuidValue, relation(parent=venue, onDelete=Cascade)
+  name: String
+  sortOrder: int, default=0
+  adjacentZoneIds: List<UuidValue>
+indexes:
+  zone_venue_name_idx:
+    fields: venueId, name
+    unique: true

@@ -1,0 +1,6 @@
+class: RetentionPolicy
+fields:
+  holdDaysByCategory: Map<String, int>
+  disposalByCategory: Map<String, String>
+  reportAutoCloseDays: int, default=60
+  contactPurgeDays: int, default=30

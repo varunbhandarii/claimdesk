@@ -1,0 +1,6 @@
+class: AuditPayload
+fields:
+  summary: String
+  fromState: String?
+  toState: String?
+  data: Map<String, String>

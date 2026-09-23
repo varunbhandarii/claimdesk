@@ -1,0 +1,17 @@
+class: ItemAttributes
+fields:
+  category: String
+  categoryConfidence: double?
+  colours: List<String>
+  brand: String?
+  material: String?
+  marks: List<String>
+  description: String
+  containsPersonalData: bool, default=false
+  personalDataKinds: List<String>
+  imageQuality: String?
+  keywords: List<String>
+  language: String?
+  source: String
+  modelId: String?
+  promptVersion: String?

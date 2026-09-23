@@ -1,0 +1,31 @@
+class: LostReport
+table: lost_report
+fields:
+  id: UuidValue?, defaultPersist=random_v7
+  venueId: UuidValue, relation(parent=venue, onDelete=Cascade)
+  status: ReportStatus, default=received
+  refCode: String, unique(per=venueId)
+  publicToken: String, unique
+  rawText: String
+  categoryHint: String?
+  colourHints: List<String>
+  brandHint: String?
+  zoneId: UuidValue?, relation(parent=zone, onDelete=SetNull)
+  whereText: String?
+  lostAt: DateTime?
+  lostAtFuzzyDays: int, default=0
+  ownerOnlyDetails: String?
+  contactEmail: String?
+  ownerName: String?
+  attributes: ItemAttributes?, serializationDataType=jsonb
+  embedding: Vector(1536)?
+  embeddingModel: String?
+  duplicateOfReportId: UuidValue?
+  ipHash: String?
+  closedAt: DateTime?
+  contactPurgedAt: DateTime?
+  createdAt: DateTime, default=now
+  updatedAt: DateTime, default=now
+indexes:
+  lost_report_venue_status_idx:
+    fields: venueId, status, createdAt

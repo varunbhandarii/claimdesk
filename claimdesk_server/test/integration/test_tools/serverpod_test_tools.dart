@@ -15,6 +15,11 @@ import 'dart:async' as _ida;
 import 'dart:io' as _idi;
 import 'package:claimdesk_server/src/generated/greetings/greeting.dart'
     as _izso5nwb;
+import 'package:claimdesk_server/src/generated/protocol.dart' as _ii1g677k;
+import 'package:claimdesk_server/src/generated/staff_membership.dart'
+    as _iugziyav;
+import 'package:claimdesk_server/src/generated/venue.dart' as _izri1swu;
+import 'package:claimdesk_server/src/generated/zone.dart' as _irlgv1kd;
 import 'package:serverpod/serverpod.dart' as _is;
 import 'package:serverpod_auth_core_server/serverpod_auth_core_server.dart'
     as _iacs;
@@ -151,6 +156,10 @@ class TestEndpoints {
 
   late final _JwtRefreshEndpoint jwtRefresh;
 
+  late final _AdminEndpoint admin;
+
+  late final _VenueEndpoint venue;
+
   late final _GreetingEndpoint greeting;
 }
 
@@ -166,6 +175,14 @@ class _InternalTestEndpoints extends TestEndpoints
       serializationManager,
     );
     jwtRefresh = _JwtRefreshEndpoint(
+      endpoints,
+      serializationManager,
+    );
+    admin = _AdminEndpoint(
+      endpoints,
+      serializationManager,
+    );
+    venue = _VenueEndpoint(
       endpoints,
       serializationManager,
     );
@@ -486,6 +503,163 @@ class _JwtRefreshEndpoint {
                   _localCallContext.arguments,
                 )
                 as _ida.Future<_iacs.AuthSuccess>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+}
+
+class _AdminEndpoint {
+  _AdminEndpoint(
+    this._endpointDispatch,
+    this._serializationManager,
+  );
+
+  final _is.EndpointDispatch _endpointDispatch;
+
+  final _is.SerializationManager _serializationManager;
+
+  _ida.Future<
+    ({_is.UuidValue staffId, _is.UuidValue supervisorId, _is.UuidValue venueId})
+  >
+  seedDemo(
+    _ist.TestSessionBuilder sessionBuilder,
+    String secret,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'admin',
+            method: 'seedDemo',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'admin',
+          methodName: 'seedDemo',
+          parameters: _ist.testObjectToJson({'secret': secret}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue = await _localCallContext.method
+            .call(
+              _localUniqueSession,
+              _localCallContext.arguments,
+            )
+            .then(
+              (record) =>
+                  _ii1g677k.Protocol().deserialize<
+                    ({
+                      _is.UuidValue staffId,
+                      _is.UuidValue supervisorId,
+                      _is.UuidValue venueId,
+                    })
+                  >(record),
+            );
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+}
+
+class _VenueEndpoint {
+  _VenueEndpoint(
+    this._endpointDispatch,
+    this._serializationManager,
+  );
+
+  final _is.EndpointDispatch _endpointDispatch;
+
+  final _is.SerializationManager _serializationManager;
+
+  _ida.Future<List<_iugziyav.StaffMembership>> myMemberships(
+    _ist.TestSessionBuilder sessionBuilder,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'venue',
+            method: 'myMemberships',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'venue',
+          methodName: 'myMemberships',
+          parameters: _ist.testObjectToJson({}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<List<_iugziyav.StaffMembership>>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _ida.Future<_izri1swu.Venue> getVenue(
+    _ist.TestSessionBuilder sessionBuilder,
+    _is.UuidValue venueId,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'venue',
+            method: 'getVenue',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'venue',
+          methodName: 'getVenue',
+          parameters: _ist.testObjectToJson({'venueId': venueId}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<_izri1swu.Venue>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _ida.Future<List<_irlgv1kd.Zone>> zones(
+    _ist.TestSessionBuilder sessionBuilder,
+    _is.UuidValue venueId,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'venue',
+            method: 'zones',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'venue',
+          methodName: 'zones',
+          parameters: _ist.testObjectToJson({'venueId': venueId}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<List<_irlgv1kd.Zone>>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();

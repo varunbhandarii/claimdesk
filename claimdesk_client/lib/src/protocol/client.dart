@@ -13,6 +13,10 @@
 import 'dart:async' as _ida;
 import 'package:claimdesk_client/src/protocol/greetings/greeting.dart'
     as _i8l8ycv0;
+import 'package:claimdesk_client/src/protocol/staff_membership.dart'
+    as _ing7mbhm;
+import 'package:claimdesk_client/src/protocol/venue.dart' as _i53htkm0;
+import 'package:claimdesk_client/src/protocol/zone.dart' as _inmoeruh;
 import 'package:http/http.dart' as _i85jenna;
 import 'package:serverpod_auth_core_client/serverpod_auth_core_client.dart'
     as _iacc;
@@ -246,6 +250,63 @@ class EndpointJwtRefresh extends _iacc.EndpointRefreshJwtTokens {
       );
 }
 
+/// {@category Endpoint}
+class EndpointAdmin extends _isc.EndpointRef {
+  EndpointAdmin(_isc.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'admin';
+
+  _ida.Future<
+    ({
+      _isc.UuidValue staffId,
+      _isc.UuidValue supervisorId,
+      _isc.UuidValue venueId,
+    })
+  >
+  seedDemo(String secret) =>
+      caller.callServerEndpoint<
+        ({
+          _isc.UuidValue staffId,
+          _isc.UuidValue supervisorId,
+          _isc.UuidValue venueId,
+        })
+      >(
+        'admin',
+        'seedDemo',
+        {'secret': secret},
+      );
+}
+
+/// {@category Endpoint}
+class EndpointVenue extends _isc.EndpointRef {
+  EndpointVenue(_isc.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'venue';
+
+  _ida.Future<List<_ing7mbhm.StaffMembership>> myMemberships() =>
+      caller.callServerEndpoint<List<_ing7mbhm.StaffMembership>>(
+        'venue',
+        'myMemberships',
+        {},
+      );
+
+  _ida.Future<_i53htkm0.Venue> getVenue(_isc.UuidValue venueId) =>
+      caller.callServerEndpoint<_i53htkm0.Venue>(
+        'venue',
+        'getVenue',
+        {'venueId': venueId},
+      );
+
+  _ida.Future<List<_inmoeruh.Zone>> zones(_isc.UuidValue venueId) =>
+      caller.callServerEndpoint<List<_inmoeruh.Zone>>(
+        'venue',
+        'zones',
+        {'venueId': venueId},
+      );
+}
+
 /// This is an example endpoint that returns a greeting message through
 /// its [hello] method.
 /// {@category Endpoint}
@@ -304,6 +365,8 @@ class Client extends _isc.ServerpodClientShared {
        ) {
     emailIdp = EndpointEmailIdp(this);
     jwtRefresh = EndpointJwtRefresh(this);
+    admin = EndpointAdmin(this);
+    venue = EndpointVenue(this);
     greeting = EndpointGreeting(this);
     modules = Modules(this);
   }
@@ -311,6 +374,10 @@ class Client extends _isc.ServerpodClientShared {
   late final EndpointEmailIdp emailIdp;
 
   late final EndpointJwtRefresh jwtRefresh;
+
+  late final EndpointAdmin admin;
+
+  late final EndpointVenue venue;
 
   late final EndpointGreeting greeting;
 
@@ -320,6 +387,8 @@ class Client extends _isc.ServerpodClientShared {
   Map<String, _isc.EndpointRef> get endpointRefLookup => {
     'emailIdp': emailIdp,
     'jwtRefresh': jwtRefresh,
+    'admin': admin,
+    'venue': venue,
     'greeting': greeting,
   };
 

@@ -1,0 +1,13 @@
+class: Venue
+table: venue
+fields:
+  id: UuidValue?, defaultPersist=random_v7
+  name: String
+  slug: String, unique
+  timezone: String, default='America/New_York'
+  deskHours: String?
+  pickupInstructions: String?
+  retentionPolicy: RetentionPolicy?, serializationDataType=jsonb
+  policeHandoffThresholdCents: int, default=2000
+  policeHandoffDays: int, default=10
+  createdAt: DateTime, default=now

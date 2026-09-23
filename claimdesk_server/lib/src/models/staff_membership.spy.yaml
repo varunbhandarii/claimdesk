@@ -1,0 +1,13 @@
+class: StaffMembership
+table: staff_membership
+fields:
+  id: UuidValue?, defaultPersist=random_v7
+  authUserId: UuidValue
+  venueId: UuidValue, relation(parent=venue, onDelete=Cascade)
+  role: StaffRole, default=staff
+  displayName: String
+  createdAt: DateTime, default=now
+indexes:
+  staff_membership_user_venue_idx:
+    fields: authUserId, venueId
+    unique: true

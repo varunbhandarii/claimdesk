@@ -1,0 +1,4 @@
+enum: ValueBand
+serialized: byName
+default: under20
+values: [under20, from20to99, from100to499, from500to4999, over5000]

@@ -12,6 +12,8 @@ jobs:
     env:
       VERSION: '4.0.2'
       SERVERPOD_PASSWORD_database: 'ci-test-database-only'
+      SERVERPOD_PASSWORD_seedSecret: 'ci-test-seed-only'
+      SERVERPOD_PASSWORD_demoStaffPassword: 'ci-test-staff-only'
 
     steps:
       - uses: actions/checkout@v4

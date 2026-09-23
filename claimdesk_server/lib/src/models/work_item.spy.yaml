@@ -1,0 +1,20 @@
+class: WorkItem
+table: work_item
+fields:
+  id: UuidValue?, defaultPersist=random_v7
+  venueId: UuidValue?, relation(parent=venue, onDelete=Cascade)
+  kind: String
+  payload: WorkPayload, serializationDataType=jsonb
+  identifier: String?, unique
+  runAt: DateTime
+  state: WorkState, default=pending
+  leaseUntil: DateTime?
+  attempts: int, default=0
+  maxAttempts: int, default=5
+  lastError: String?
+  completedAt: DateTime?
+  createdAt: DateTime, default=now
+  updatedAt: DateTime, default=now
+indexes:
+  work_item_state_run_idx:
+    fields: state, runAt
