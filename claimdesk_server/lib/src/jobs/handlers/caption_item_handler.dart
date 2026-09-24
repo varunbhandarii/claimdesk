@@ -41,8 +41,12 @@ class CaptionItemHandler extends JobHandler {
         storageId: 'private',
         path: item.photoPath!,
       );
+      final preparationTimer = Stopwatch()..start();
       final prepared = await _prepare(
         data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes),
+      );
+      session.log(
+        'Caption image prepared in ${preparationTimer.elapsedMilliseconds} ms',
       );
       if (prepared == null) {
         if (await JobClaim.current(session, job)) {
@@ -66,17 +70,23 @@ class CaptionItemHandler extends JobHandler {
       const options = StoreFileOptions(
         metadata: FileMetadata(contentType: 'image/jpeg'),
       );
-      await session.storage.storeFile(
-        storageId: 'private',
-        path: item.photoPath!,
-        byteData: ByteData.sublistView(bytes),
-        options: options,
-      );
-      await session.storage.storeFile(
-        storageId: 'private',
-        path: thumb,
-        byteData: ByteData.sublistView(prepared.thumb),
-        options: options,
+      final storageTimer = Stopwatch()..start();
+      await Future.wait([
+        session.storage.storeFile(
+          storageId: 'private',
+          path: item.photoPath!,
+          byteData: ByteData.sublistView(bytes),
+          options: options,
+        ),
+        session.storage.storeFile(
+          storageId: 'private',
+          path: thumb,
+          byteData: ByteData.sublistView(prepared.thumb),
+          options: options,
+        ),
+      ]);
+      session.log(
+        'Caption images stored in ${storageTimer.elapsedMilliseconds} ms',
       );
       final old = item;
       final changed = await FoundItem.db.updateWhere(

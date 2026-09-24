@@ -27,17 +27,33 @@ PreparedImage? prepareImage(Uint8List bytes) {
     }
     final decoded = decoder.decodeFrame(0);
     if (decoded == null) return null;
-    final oriented = img.bakeOrientation(decoded);
-    img.Image pixelsAt(int limit) {
-      final longEdge = max(oriented.width, oriented.height);
+    final orientation = decoded.exif.imageIfd.orientation;
+    final oriented = orientation == null || orientation == 1
+        ? decoded
+        : img.bakeOrientation(decoded);
+    img.Image pixelsAt(img.Image source, int limit) {
+      final longEdge = max(source.width, source.height);
       final resized = longEdge <= limit
-          ? oriented
+          ? source
           : img.copyResize(
-              oriented,
-              width: max(1, (oriented.width * limit / longEdge).round()),
-              height: max(1, (oriented.height * limit / longEdge).round()),
+              source,
+              width: max(1, (source.width * limit / longEdge).round()),
+              height: max(1, (source.height * limit / longEdge).round()),
               interpolation: img.Interpolation.average,
             );
+      // Copy only pixel bytes, never metadata. Opaque RGB needs no alpha blend.
+      if (resized.format == img.Format.uint8 &&
+          resized.numChannels == 3 &&
+          !resized.hasPalette) {
+        final pixels = resized.getBytes();
+        return img.Image.fromBytes(
+          width: resized.width,
+          height: resized.height,
+          bytes: pixels.buffer,
+          bytesOffset: pixels.offsetInBytes,
+          numChannels: 3,
+        );
+      }
       final clean = img.Image(
         width: resized.width,
         height: resized.height,
@@ -49,11 +65,14 @@ PreparedImage? prepareImage(Uint8List bytes) {
       return clean;
     }
 
-    final normal = pixelsAt(1024);
-    final thumb = pixelsAt(320);
+    final normal = pixelsAt(oriented, 1024);
+    final thumb = pixelsAt(normal, 320);
+    final encoder = img.JpegEncoder(quality: 85);
+    final jpeg = encoder.encode(normal, chroma: img.JpegChroma.yuv420);
+    encoder.setQuality(80);
     return PreparedImage(
-      img.encodeJpg(normal, quality: 85),
-      img.encodeJpg(thumb, quality: 80),
+      jpeg,
+      encoder.encode(thumb, chroma: img.JpegChroma.yuv420),
       normal.width,
       normal.height,
     );

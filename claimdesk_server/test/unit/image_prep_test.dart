@@ -4,6 +4,18 @@ import 'package:image/image.dart' as img;
 import 'package:test/test.dart';
 
 void main() {
+  test(
+    'transparent PNG pixels are composited onto white before JPEG encoding',
+    () {
+      final source = img.Image(width: 20, height: 20, numChannels: 4);
+      img.fill(source, color: img.ColorRgba8(255, 0, 0, 0));
+      final output = prepareImage(Uint8List.fromList(img.encodePng(source)))!;
+      final pixel = img.decodeJpg(output.jpeg)!.getPixel(10, 10);
+      expect(pixel.r, greaterThanOrEqualTo(250));
+      expect(pixel.g, greaterThanOrEqualTo(250));
+      expect(pixel.b, greaterThanOrEqualTo(250));
+    },
+  );
   for (final orientation in [1, 6]) {
     test('orientation $orientation is baked into pixels and EXIF removed', () {
       final source = img.Image(width: 1500, height: 1000);
