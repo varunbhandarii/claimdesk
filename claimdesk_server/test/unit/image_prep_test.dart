@@ -5,6 +5,23 @@ import 'package:test/test.dart';
 
 void main() {
   test(
+    'downscaling averages high-frequency RGB details without colour aliasing',
+    () {
+      final source = img.Image(width: 2048, height: 16, numChannels: 3);
+      for (var y = 0; y < source.height; y++) {
+        for (var x = 0; x < source.width; x++) {
+          source.setPixelRgb(x, y, x.isEven ? 255 : 0, 64, x.isEven ? 0 : 255);
+        }
+      }
+      final result = prepareImage(img.encodePng(source))!;
+      final pixel = img.decodeJpg(result.jpeg)!.getPixel(512, 4);
+      expect(result.width, 1024);
+      expect(pixel.r, closeTo(127, 5));
+      expect(pixel.g, closeTo(64, 5));
+      expect(pixel.b, closeTo(127, 5));
+    },
+  );
+  test(
     'transparent PNG pixels are composited onto white before JPEG encoding',
     () {
       final source = img.Image(width: 20, height: 20, numChannels: 4);

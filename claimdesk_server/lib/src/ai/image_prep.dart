@@ -33,6 +33,13 @@ PreparedImage? prepareImage(Uint8List bytes) {
         : img.bakeOrientation(decoded);
     img.Image pixelsAt(img.Image source, int limit) {
       final longEdge = max(source.width, source.height);
+      final width = max(1, (source.width * min(1, limit / longEdge)).round());
+      final height = max(1, (source.height * min(1, limit / longEdge)).round());
+      if (source.format == img.Format.uint8 &&
+          source.numChannels == 3 &&
+          !source.hasPalette) {
+        return _resizeRgb(source, width, height);
+      }
       final resized = longEdge <= limit
           ? source
           : img.copyResize(
@@ -41,19 +48,6 @@ PreparedImage? prepareImage(Uint8List bytes) {
               height: max(1, (source.height * limit / longEdge).round()),
               interpolation: img.Interpolation.average,
             );
-      // Copy only pixel bytes, never metadata. Opaque RGB needs no alpha blend.
-      if (resized.format == img.Format.uint8 &&
-          resized.numChannels == 3 &&
-          !resized.hasPalette) {
-        final pixels = resized.getBytes();
-        return img.Image.fromBytes(
-          width: resized.width,
-          height: resized.height,
-          bytes: pixels.buffer,
-          bytesOffset: pixels.offsetInBytes,
-          numChannels: 3,
-        );
-      }
       final clean = img.Image(
         width: resized.width,
         height: resized.height,
@@ -79,4 +73,50 @@ PreparedImage? prepareImage(Uint8List bytes) {
   } catch (_) {
     return null;
   }
+}
+
+// The common JPEG path averages byte channels directly, avoiding per-pixel
+// polymorphic getters and floating-point conversions on small server CPUs.
+// A fresh image owns the output pixels and never inherits source metadata.
+img.Image _resizeRgb(img.Image source, int width, int height) {
+  final pixels = source.getBytes();
+  if (width == source.width && height == source.height) {
+    return img.Image.fromBytes(
+      width: width,
+      height: height,
+      bytes: pixels.buffer,
+      bytesOffset: pixels.offsetInBytes,
+      numChannels: 3,
+    );
+  }
+  final clean = img.Image(width: width, height: height, numChannels: 3);
+  final output = clean.data!.toUint8List();
+  final xStarts = List<int>.generate(width, (x) => x * source.width ~/ width);
+  final xEnds = List<int>.generate(
+    width,
+    (x) => (x + 1) * source.width ~/ width,
+  );
+  var target = 0;
+  for (var y = 0; y < height; y++) {
+    final yStart = y * source.height ~/ height,
+        yEnd = (y + 1) * source.height ~/ height;
+    for (var x = 0; x < width; x++) {
+      final xStart = xStarts[x], xEnd = xEnds[x];
+      var red = 0, green = 0, blue = 0;
+      for (var sy = yStart; sy < yEnd; sy++) {
+        var offset = (sy * source.width + xStart) * 3;
+        final end = (sy * source.width + xEnd) * 3;
+        while (offset < end) {
+          red += pixels[offset++];
+          green += pixels[offset++];
+          blue += pixels[offset++];
+        }
+      }
+      final count = (xEnd - xStart) * (yEnd - yStart);
+      output[target++] = red ~/ count;
+      output[target++] = green ~/ count;
+      output[target++] = blue ~/ count;
+    }
+  }
+  return clean;
 }
