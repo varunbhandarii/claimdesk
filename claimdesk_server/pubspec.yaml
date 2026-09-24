@@ -9,6 +9,7 @@ environment:
 resolution: workspace
 
 dependencies:
+  crypto: ^3.0.7
   http: ^1.6.0
   image: ^4.10.1
   serverpod: 4.0.2

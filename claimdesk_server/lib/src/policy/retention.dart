@@ -1,5 +1,47 @@
 import '../generated/protocol.dart';
 
+({DateTime holdUntil, DateTime? handoffDueAt}) retentionDates(
+  FoundItem item,
+  Venue venue,
+  String category,
+) {
+  final policy = venue.retentionPolicy ?? defaultRetentionPolicy();
+  const aliases = {
+    'water_bottle_or_flask': 'bottle',
+    'backpack': 'empty_bag',
+    'handbag': 'empty_bag',
+    'tote_or_shopping_bag': 'empty_bag',
+    'suitcase_or_luggage': 'empty_bag',
+    'book_or_document': 'book',
+    'glasses_or_sunglasses': 'eyewear',
+    'jacket_or_coat': 'clothing',
+    'hat_or_cap': 'clothing',
+    'scarf_or_gloves': 'clothing',
+    'clothing_other': 'clothing',
+    'id_card_or_pass': 'government_id',
+    'medical_device_or_medication': 'medication',
+  };
+  final days =
+      policy.holdDaysByCategory[category] ??
+      policy.holdDaysByCategory[aliases[category]] ??
+      policy.holdDaysByCategory['default'] ??
+      14;
+  const lowerBounds = {
+    ValueBand.under20: 0,
+    ValueBand.from20to99: 2000,
+    ValueBand.from100to499: 10000,
+    ValueBand.from500to4999: 50000,
+    ValueBand.over5000: 500000,
+  };
+  return (
+    holdUntil: item.foundAt.toUtc().add(Duration(days: days)),
+    handoffDueAt:
+        lowerBounds[item.valueBand]! >= venue.policeHandoffThresholdCents
+        ? item.foundAt.toUtc().add(Duration(days: venue.policeHandoffDays))
+        : null,
+  );
+}
+
 /// Configurable demo desk defaults. Calendar and value rules are applied by
 /// the retention service; these values alone do not schedule disposal.
 RetentionPolicy defaultRetentionPolicy() => RetentionPolicy(

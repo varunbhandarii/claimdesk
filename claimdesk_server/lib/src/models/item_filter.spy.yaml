@@ -1,0 +1,5 @@
+class: ItemFilter
+fields:
+  status: ItemStatus?
+  zoneId: UuidValue?
+  category: String?

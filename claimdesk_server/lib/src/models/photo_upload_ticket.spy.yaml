@@ -1,0 +1,7 @@
+class: PhotoUploadTicket
+fields:
+  itemId: UuidValue
+  path: String
+  uploadDescription: String
+  expiresAt: DateTime
+  proof: String

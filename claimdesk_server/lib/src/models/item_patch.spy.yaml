@@ -1,0 +1,10 @@
+class: ItemPatch
+fields:
+  attributes: ItemAttributes?
+  valueBand: ValueBand?
+  storageBin: String?
+  clearStorageBin: bool, default=false
+  privateNotes: String?
+  clearPrivateNotes: bool, default=false
+  zoneId: UuidValue?
+  clearZone: bool, default=false

@@ -49,3 +49,7 @@ jobs:
       - name: Run tests
         working-directory: claimdesk_server
         run: dart test
+
+      - name: Run isolated unit tests
+        working-directory: claimdesk_server
+        run: dart test -x integration

@@ -10,6 +10,10 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
+import 'package:claimdesk_server/src/generated/create_item_input.dart'
+    as _io3ib2zd;
+import 'package:claimdesk_server/src/generated/item_filter.dart' as _id50o94s;
+import 'package:claimdesk_server/src/generated/item_patch.dart' as _isrhr89g;
 import 'package:claimdesk_server/src/generated/protocol.dart' as _ii1g677k;
 import 'package:serverpod/serverpod.dart' as _is;
 import 'package:serverpod_auth_core_server/serverpod_auth_core_server.dart'
@@ -19,6 +23,7 @@ import 'package:serverpod_auth_idp_server/serverpod_auth_idp_server.dart'
 import '../auth/email_idp_endpoint.dart' as _iuc1hd5t;
 import '../auth/jwt_refresh_endpoint.dart' as _inwq3ztq;
 import '../endpoints/admin_endpoint.dart' as _i5t1w2d2;
+import '../endpoints/item_endpoint.dart' as _irwxp2xj;
 import '../endpoints/venue_endpoint.dart' as _im3sz6ep;
 import '../greetings/greeting_endpoint.dart' as _il624ik7;
 
@@ -42,6 +47,12 @@ class Endpoints extends _is.EndpointDispatch {
         ..initialize(
           server,
           'admin',
+          null,
+        ),
+      'item': _irwxp2xj.ItemEndpoint()
+        ..initialize(
+          server,
+          'item',
           null,
         ),
       'venue': _im3sz6ep.VenueEndpoint()
@@ -287,6 +298,192 @@ class Endpoints extends _is.EndpointDispatch {
                   )
                   .then(
                     (record) => _ii1g677k.Protocol().mapRecordToJson(record),
+                  ),
+        ),
+      },
+    );
+    connectors['item'] = _is.EndpointConnector(
+      name: 'item',
+      endpoint: endpoints['item']!,
+      methodConnectors: {
+        'requestPhotoUpload': _is.MethodConnector(
+          name: 'requestPhotoUpload',
+          params: {
+            'venueId': _is.ParameterDescription(
+              name: 'venueId',
+              type: _is.getType<_is.UuidValue>(),
+              nullable: false,
+            ),
+            'contentType': _is.ParameterDescription(
+              name: 'contentType',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['item'] as _irwxp2xj.ItemEndpoint)
+                  .requestPhotoUpload(
+                    session,
+                    params['venueId'],
+                    params['contentType'],
+                  ),
+        ),
+        'createItem': _is.MethodConnector(
+          name: 'createItem',
+          params: {
+            'venueId': _is.ParameterDescription(
+              name: 'venueId',
+              type: _is.getType<_is.UuidValue>(),
+              nullable: false,
+            ),
+            'input': _is.ParameterDescription(
+              name: 'input',
+              type: _is.getType<_io3ib2zd.CreateItemInput>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['item'] as _irwxp2xj.ItemEndpoint).createItem(
+                    session,
+                    params['venueId'],
+                    params['input'],
+                  ),
+        ),
+        'getItem': _is.MethodConnector(
+          name: 'getItem',
+          params: {
+            'itemId': _is.ParameterDescription(
+              name: 'itemId',
+              type: _is.getType<_is.UuidValue>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['item'] as _irwxp2xj.ItemEndpoint).getItem(
+                session,
+                params['itemId'],
+              ),
+        ),
+        'listItems': _is.MethodConnector(
+          name: 'listItems',
+          params: {
+            'venueId': _is.ParameterDescription(
+              name: 'venueId',
+              type: _is.getType<_is.UuidValue>(),
+              nullable: false,
+            ),
+            'filter': _is.ParameterDescription(
+              name: 'filter',
+              type: _is.getType<_id50o94s.ItemFilter>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['item'] as _irwxp2xj.ItemEndpoint).listItems(
+                    session,
+                    params['venueId'],
+                    params['filter'],
+                  ),
+        ),
+        'photoUrl': _is.MethodConnector(
+          name: 'photoUrl',
+          params: {
+            'itemId': _is.ParameterDescription(
+              name: 'itemId',
+              type: _is.getType<_is.UuidValue>(),
+              nullable: false,
+            ),
+            'thumb': _is.ParameterDescription(
+              name: 'thumb',
+              type: _is.getType<bool>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['item'] as _irwxp2xj.ItemEndpoint).photoUrl(
+                session,
+                params['itemId'],
+                thumb: params['thumb'],
+              ),
+        ),
+        'updateItem': _is.MethodConnector(
+          name: 'updateItem',
+          params: {
+            'itemId': _is.ParameterDescription(
+              name: 'itemId',
+              type: _is.getType<_is.UuidValue>(),
+              nullable: false,
+            ),
+            'patch': _is.ParameterDescription(
+              name: 'patch',
+              type: _is.getType<_isrhr89g.ItemPatch>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['item'] as _irwxp2xj.ItemEndpoint).updateItem(
+                    session,
+                    params['itemId'],
+                    params['patch'],
+                  ),
+        ),
+        'recaption': _is.MethodConnector(
+          name: 'recaption',
+          params: {
+            'itemId': _is.ParameterDescription(
+              name: 'itemId',
+              type: _is.getType<_is.UuidValue>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['item'] as _irwxp2xj.ItemEndpoint).recaption(
+                    session,
+                    params['itemId'],
+                  ),
+        ),
+        'captionRuns': _is.MethodConnector(
+          name: 'captionRuns',
+          params: {
+            'itemId': _is.ParameterDescription(
+              name: 'itemId',
+              type: _is.getType<_is.UuidValue>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['item'] as _irwxp2xj.ItemEndpoint).captionRuns(
+                    session,
+                    params['itemId'],
                   ),
         ),
       },

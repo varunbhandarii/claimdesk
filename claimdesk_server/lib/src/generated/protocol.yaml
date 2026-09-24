@@ -11,6 +11,15 @@ jwtRefresh:
   - refreshAccessToken:
 admin:
   - seedDemo:
+item:
+  - requestPhotoUpload:
+  - createItem:
+  - getItem:
+  - listItems:
+  - photoUrl:
+  - updateItem:
+  - recaption:
+  - captionRuns:
 venue:
   - myMemberships:
   - getVenue:

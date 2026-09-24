@@ -11,11 +11,20 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _ida;
+import 'package:claimdesk_client/src/protocol/caption_run.dart' as _i9gd0od7;
+import 'package:claimdesk_client/src/protocol/create_item_input.dart'
+    as _i0l2w05c;
+import 'package:claimdesk_client/src/protocol/found_item.dart' as _i8bj3kzd;
 import 'package:claimdesk_client/src/protocol/greetings/greeting.dart'
     as _i8l8ycv0;
+import 'package:claimdesk_client/src/protocol/item_filter.dart' as _inizcy6n;
+import 'package:claimdesk_client/src/protocol/item_patch.dart' as _i410ys6o;
+import 'package:claimdesk_client/src/protocol/photo_upload_ticket.dart'
+    as _i1f97sgb;
 import 'package:claimdesk_client/src/protocol/staff_membership.dart'
     as _ing7mbhm;
 import 'package:claimdesk_client/src/protocol/venue.dart' as _i53htkm0;
+import 'package:claimdesk_client/src/protocol/work_item.dart' as _i5t1jx4h;
 import 'package:claimdesk_client/src/protocol/zone.dart' as _inmoeruh;
 import 'package:http/http.dart' as _i85jenna;
 import 'package:serverpod_auth_core_client/serverpod_auth_core_client.dart'
@@ -279,6 +288,95 @@ class EndpointAdmin extends _isc.EndpointRef {
 }
 
 /// {@category Endpoint}
+class EndpointItem extends _isc.EndpointRef {
+  EndpointItem(_isc.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'item';
+
+  _ida.Future<_i1f97sgb.PhotoUploadTicket> requestPhotoUpload(
+    _isc.UuidValue venueId,
+    String contentType,
+  ) => caller.callServerEndpoint<_i1f97sgb.PhotoUploadTicket>(
+    'item',
+    'requestPhotoUpload',
+    {
+      'venueId': venueId,
+      'contentType': contentType,
+    },
+  );
+
+  _ida.Future<_i8bj3kzd.FoundItem> createItem(
+    _isc.UuidValue venueId,
+    _i0l2w05c.CreateItemInput input,
+  ) => caller.callServerEndpoint<_i8bj3kzd.FoundItem>(
+    'item',
+    'createItem',
+    {
+      'venueId': venueId,
+      'input': input,
+    },
+  );
+
+  _ida.Future<_i8bj3kzd.FoundItem> getItem(_isc.UuidValue itemId) =>
+      caller.callServerEndpoint<_i8bj3kzd.FoundItem>(
+        'item',
+        'getItem',
+        {'itemId': itemId},
+      );
+
+  _ida.Future<List<_i8bj3kzd.FoundItem>> listItems(
+    _isc.UuidValue venueId,
+    _inizcy6n.ItemFilter filter,
+  ) => caller.callServerEndpoint<List<_i8bj3kzd.FoundItem>>(
+    'item',
+    'listItems',
+    {
+      'venueId': venueId,
+      'filter': filter,
+    },
+  );
+
+  _ida.Future<String?> photoUrl(
+    _isc.UuidValue itemId, {
+    required bool thumb,
+  }) => caller.callServerEndpoint<String?>(
+    'item',
+    'photoUrl',
+    {
+      'itemId': itemId,
+      'thumb': thumb,
+    },
+  );
+
+  _ida.Future<_i8bj3kzd.FoundItem> updateItem(
+    _isc.UuidValue itemId,
+    _i410ys6o.ItemPatch patch,
+  ) => caller.callServerEndpoint<_i8bj3kzd.FoundItem>(
+    'item',
+    'updateItem',
+    {
+      'itemId': itemId,
+      'patch': patch,
+    },
+  );
+
+  _ida.Future<_i5t1jx4h.WorkItem> recaption(_isc.UuidValue itemId) =>
+      caller.callServerEndpoint<_i5t1jx4h.WorkItem>(
+        'item',
+        'recaption',
+        {'itemId': itemId},
+      );
+
+  _ida.Future<List<_i9gd0od7.CaptionRun>> captionRuns(_isc.UuidValue itemId) =>
+      caller.callServerEndpoint<List<_i9gd0od7.CaptionRun>>(
+        'item',
+        'captionRuns',
+        {'itemId': itemId},
+      );
+}
+
+/// {@category Endpoint}
 class EndpointVenue extends _isc.EndpointRef {
   EndpointVenue(_isc.EndpointCaller caller) : super(caller);
 
@@ -366,6 +464,7 @@ class Client extends _isc.ServerpodClientShared {
     emailIdp = EndpointEmailIdp(this);
     jwtRefresh = EndpointJwtRefresh(this);
     admin = EndpointAdmin(this);
+    item = EndpointItem(this);
     venue = EndpointVenue(this);
     greeting = EndpointGreeting(this);
     modules = Modules(this);
@@ -376,6 +475,8 @@ class Client extends _isc.ServerpodClientShared {
   late final EndpointJwtRefresh jwtRefresh;
 
   late final EndpointAdmin admin;
+
+  late final EndpointItem item;
 
   late final EndpointVenue venue;
 
@@ -388,6 +489,7 @@ class Client extends _isc.ServerpodClientShared {
     'emailIdp': emailIdp,
     'jwtRefresh': jwtRefresh,
     'admin': admin,
+    'item': item,
     'venue': venue,
     'greeting': greeting,
   };

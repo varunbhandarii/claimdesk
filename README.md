@@ -3,7 +3,9 @@
 A lost-and-found desk app for venue staff. This workspace currently contains the
 Serverpod server, generated typed client, and Flutter starter app. The backend
 includes venue membership checks, item/report storage, audit and custody records,
-and a durable work table.
+and a durable background worker that prepares photos, captions items, and creates
+search embeddings. Private uploads and item endpoints are available through the
+generated client.
 
 ## Local setup
 
@@ -65,6 +67,61 @@ credentials out of source control and shell history.
 Signed-in clients can call `venue.myMemberships()`, `venue.getVenue(id)`, and
 `venue.zones(id)`. Every venue lookup checks the caller's membership. The Flutter
 app still displays the starter screen; desk screens are not included yet.
+
+## Photo intake
+
+Set `ANTHROPIC_API_KEY` and `GEMINI_API_KEY` in your local process environment
+before starting the server. Existing Windows user environment variables can be
+loaded into a terminal without displaying them:
+
+```powershell
+$env:ANTHROPIC_API_KEY = [Environment]::GetEnvironmentVariable('ANTHROPIC_API_KEY', 'User')
+$env:GEMINI_API_KEY = [Environment]::GetEnvironmentVariable('GEMINI_API_KEY', 'User')
+cd claimdesk_server
+serverpod start --no-flutter
+```
+
+The defaults are `claude-opus-5-5` and `gemini-embedding-2` with 1536 dimensions.
+Startup reports the selected providers. Missing keys select deterministic fakes;
+test mode always selects fakes. Cloud uses managed secrets named `anthropicApiKey`
+and `geminiApiKey`. Provider keys must never be saved to local files or Git.
+
+1. Sign in, select a venue membership, and call
+   `item.requestPhotoUpload(venueId, 'image/jpeg')`.
+2. Pass the ticket's `uploadDescription` to `FileUploader.uploadByteData`.
+3. Call `item.createItem` with a `CreateItemInput` containing the ticket's
+   `itemId`, `photoPath: ticket.path`, `uploadProof: ticket.proof`, and
+   `uploadExpiresAt: ticket.expiresAt`, plus the staff's intake fields.
+4. Poll `item.getItem(itemId)` for `unclaimed`. Call `item.photoUrl` for an
+   original or thumbnail download URL, valid for ten minutes.
+
+Tickets are tied to their staff member, venue, item, and ten-minute expiry.
+JPEG, PNG, and WebP uploads up to 15 MiB are accepted; decoded images are limited
+to 40 million pixels. Photos become JPEGs up to 1024 pixels on the longest edge,
+with EXIF removed and a 320-pixel thumbnail. Restricted items keep category-only
+caption text. Private staff notes and finder names are never sent to providers.
+
+The worker checks PostgreSQL every three seconds, renews its two-minute lease,
+and protects completed work from stale workers. Provider failures fall back to
+staff descriptions. Embedding failures preserve usable items with a null vector.
+The scheduled recovery sweep is not included yet; staff edits queue re-embedding,
+and `item.recaption(itemId)` retries an unclaimed item. `item.captionRuns(itemId)`
+returns provider outcomes, latency, and token usage. Invalid images remain
+`captioning` after one retry and can be corrected through `item.updateItem`.
+
+Ordinary tests never contact providers. To explicitly run the three local photo
+checks with keys already loaded, from `claimdesk_server`:
+
+```powershell
+$env:CLAIMDESK_LIVE_PROVIDERS = '1'
+try { dart test -t providers --concurrency=1 } finally {
+  Remove-Item Env:CLAIMDESK_LIVE_PROVIDERS
+}
+```
+
+Those checks also require local `umbrella.jpg`, `backpack.jpg`, and
+`mock_id_card.jpg` files under `test/fixtures/photos/`. The first two remain
+excluded from Git and deployment because their licenses are unknown.
 
 ## Workspace
 

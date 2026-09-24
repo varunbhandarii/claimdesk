@@ -3,6 +3,10 @@ import 'dart:io';
 import 'package:serverpod_cloud_storage/serverpod_cloud_storage.dart';
 
 import 'src/authentication.dart';
+import 'src/ai/providers.dart';
+import 'src/jobs/job_worker.dart';
+import 'src/jobs/handlers/caption_item_handler.dart';
+import 'src/jobs/handlers/reembed_item_handler.dart';
 import 'src/cache_busting.dart';
 import 'src/generated/serverpod.dart';
 import 'src/web/routes/app_config_route.dart';
@@ -67,11 +71,11 @@ void run(List<String> args) async {
   // This setup works with Serverpod Cloud without extra configuration.
   // If you want to use a custom provider for cloud storage, replace these
   // with your preferred provider.
-  pod.addCloudStorage(
-    await ServerpodCloudProvider.private(
-      fallback: () => DatabaseCloudStorage('private'),
-    ),
+  final privateStorage = await ServerpodCloudProvider.private(
+    fallback: () => DatabaseCloudStorage('private'),
   );
+  pod.addCloudStorage(privateStorage);
+  stdout.writeln('Private storage selected: ${privateStorage.runtimeType}');
   pod.addCloudStorage(
     await ServerpodCloudProvider.public(
       fallback: () => DatabaseCloudStorage('public'),
@@ -80,4 +84,10 @@ void run(List<String> args) async {
 
   // Start the server.
   await pod.start();
+  Providers.configure(pod);
+  JobWorker(
+    pod,
+    handlers: [CaptionItemHandler(), ReembedItemHandler()],
+    interval: Duration(seconds: Providers.config.workerIntervalSeconds),
+  ).start();
 }

@@ -1,10 +1,37 @@
 import 'package:serverpod/serverpod.dart';
 
 import '../generated/protocol.dart';
+import '../jobs/job_queue.dart';
 
 /// Shared persistence paths for child records. Callers authorize access before
 /// calling these methods; tenant ids always come from stored parent rows.
 class ChildRecords {
+  static Future<WorkItem> itemWork(
+    Session session, {
+    required UuidValue itemId,
+    required String kind,
+    required String identifier,
+    Map<String, String> data = const {},
+    int maxAttempts = 5,
+    Transaction? transaction,
+  }) async {
+    final item = await FoundItem.db.findById(
+      session,
+      itemId,
+      transaction: transaction,
+    );
+    if (item == null) throw ArgumentError('Item unavailable');
+    return JobQueue.enqueue(
+      session,
+      kind: kind,
+      venueId: item.venueId,
+      identifier: identifier,
+      payload: WorkPayload(entityId: item.id, data: data),
+      maxAttempts: maxAttempts,
+      transaction: transaction,
+    );
+  }
+
   static Future<FoundItem> _item(Session session, UuidValue id) async {
     final item = await FoundItem.db.findById(session, id);
     if (item == null) throw ArgumentError('Item unavailable');
@@ -22,8 +49,14 @@ class ChildRecords {
     int? inputTokens,
     int? outputTokens,
     String? errorMessage,
+    Transaction? transaction,
   }) async {
-    final item = await _item(session, itemId);
+    final item = await FoundItem.db.findById(
+      session,
+      itemId,
+      transaction: transaction,
+    );
+    if (item == null) throw ArgumentError('Item unavailable');
     return CaptionRun.db.insertRow(
       session,
       CaptionRun(
@@ -38,6 +71,7 @@ class ChildRecords {
         outputTokens: outputTokens,
         errorMessage: errorMessage,
       ),
+      transaction: transaction,
     );
   }
 

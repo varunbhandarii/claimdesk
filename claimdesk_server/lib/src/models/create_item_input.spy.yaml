@@ -1,0 +1,16 @@
+class: CreateItemInput
+fields:
+  itemId: UuidValue?
+  photoPath: String?
+  uploadProof: String?
+  uploadExpiresAt: DateTime?
+  zoneId: UuidValue?
+  category: String, default='other'
+  colours: List<String>?
+  brand: String?
+  description: String?
+  valueBand: ValueBand, default=under20
+  storageBin: String?
+  privateNotes: String?
+  finderName: String?
+  foundAt: DateTime?
