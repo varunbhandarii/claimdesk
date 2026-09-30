@@ -62,3 +62,10 @@ serverpod:
       auto_launch: true
       device: chrome
       target: lib/driver.dart
+    phone:
+      path: ../claimdesk_flutter
+      displayName: "ClaimDesk phone"
+      auto_launch: false
+      device: RZCX625LT5P
+      target: lib/driver.dart
+      dart-define: SERVER_URL=http://127.0.0.1:8080/

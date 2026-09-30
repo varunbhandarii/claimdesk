@@ -132,8 +132,9 @@ void main() {
         expect(run.modelId, 'fake-caption');
         expect(run.promptVersion, 'caption_v1');
         expect(run.inputTokens, 10);
-        expect(events.single.itemId, row.id);
-        expect(events.single.kind, 'itemStatus');
+        expect(events, hasLength(2));
+        expect(events.every((event) => event.itemId == row.id), true);
+        expect(events.every((event) => event.kind == 'itemStatus'), true);
         await sub.cancel();
         await worker.tick(s);
         expect(await CaptionRun.db.count(s), 1);

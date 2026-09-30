@@ -23,6 +23,7 @@ import 'package:serverpod_auth_idp_server/serverpod_auth_idp_server.dart'
 import '../auth/email_idp_endpoint.dart' as _iuc1hd5t;
 import '../auth/jwt_refresh_endpoint.dart' as _inwq3ztq;
 import '../endpoints/admin_endpoint.dart' as _i5t1w2d2;
+import '../endpoints/desk_stream_endpoint.dart' as _io3746h0;
 import '../endpoints/item_endpoint.dart' as _irwxp2xj;
 import '../endpoints/venue_endpoint.dart' as _im3sz6ep;
 import '../greetings/greeting_endpoint.dart' as _il624ik7;
@@ -47,6 +48,12 @@ class Endpoints extends _is.EndpointDispatch {
         ..initialize(
           server,
           'admin',
+          null,
+        ),
+      'deskStream': _io3746h0.DeskStreamEndpoint()
+        ..initialize(
+          server,
+          'deskStream',
           null,
         ),
       'item': _irwxp2xj.ItemEndpoint()
@@ -298,6 +305,34 @@ class Endpoints extends _is.EndpointDispatch {
                   )
                   .then(
                     (record) => _ii1g677k.Protocol().mapRecordToJson(record),
+                  ),
+        ),
+      },
+    );
+    connectors['deskStream'] = _is.EndpointConnector(
+      name: 'deskStream',
+      endpoint: endpoints['deskStream']!,
+      methodConnectors: {
+        'watchVenue': _is.MethodStreamConnector(
+          name: 'watchVenue',
+          params: {
+            'venueId': _is.ParameterDescription(
+              name: 'venueId',
+              type: _is.getType<_is.UuidValue>(),
+              nullable: false,
+            ),
+          },
+          streamParams: {},
+          returnType: _is.MethodStreamReturnType.streamType,
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+                Map<String, Stream> streamParams,
+              ) => (endpoints['deskStream'] as _io3746h0.DeskStreamEndpoint)
+                  .watchVenue(
+                    session,
+                    params['venueId'],
                   ),
         ),
       },

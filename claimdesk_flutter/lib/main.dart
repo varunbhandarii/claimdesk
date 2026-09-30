@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-
+import 'package:google_fonts/google_fonts.dart';
 import 'client.dart';
-import 'screens/greetings_screen.dart';
+import 'screens/sign_in_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -9,53 +9,53 @@ void main() async {
   runApp(const MyApp());
 }
 
-/// Builds a theme for the given [brightness].
-ThemeData _buildTheme(Brightness brightness) {
-  return ThemeData(
-    colorScheme: ColorScheme.fromSeed(
-      seedColor: Colors.blue,
-      brightness: brightness,
+ThemeData buildDeskTheme(Brightness brightness) {
+  final colours = ColorScheme.fromSeed(
+    seedColor: const Color(0xff185c49),
+    brightness: brightness,
+  );
+  final base = ThemeData(
+    colorScheme: colours,
+    useMaterial3: true,
+    brightness: brightness,
+  );
+  final text = GoogleFonts.publicSansTextTheme(base.textTheme);
+  return base.copyWith(
+    textTheme: text.copyWith(
+      headlineLarge: GoogleFonts.manrope(
+        textStyle: text.headlineLarge,
+        fontWeight: FontWeight.w800,
+      ),
+      headlineMedium: GoogleFonts.manrope(
+        textStyle: text.headlineMedium,
+        fontWeight: FontWeight.w800,
+      ),
+      titleLarge: GoogleFonts.manrope(
+        textStyle: text.titleLarge,
+        fontWeight: FontWeight.w700,
+      ),
     ),
+    scaffoldBackgroundColor: brightness == Brightness.light
+        ? const Color(0xfff7f6ef)
+        : const Color(0xff141d19),
+    inputDecorationTheme: const InputDecorationTheme(
+      border: OutlineInputBorder(),
+      filled: true,
+    ),
+    filledButtonTheme: FilledButtonThemeData(
+      style: FilledButton.styleFrom(minimumSize: const Size(48, 52)),
+    ),
+    appBarTheme: const AppBarTheme(centerTitle: false),
   );
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Serverpod Demo',
-      theme: _buildTheme(Brightness.light),
-      darkTheme: _buildTheme(Brightness.dark),
-      themeMode: ThemeMode.system,
-      home: const MyHomePage(title: 'Serverpod Example'),
-    );
-  }
-}
-
-class MyHomePage extends StatelessWidget {
-  const MyHomePage({super.key, required this.title});
-
-  final String title;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(title)),
-      body: const GreetingsScreen(),
-      // To test authentication in this example app, uncomment the line below
-      // and comment out the line above. This wraps the GreetingsScreen with a
-      // SignInScreen, which automatically shows a sign-in UI when the user is
-      // not authenticated and displays the GreetingsScreen once they sign in.
-      //
-      // body: SignInScreen(
-      //   child: GreetingsScreen(
-      //     onSignOut: () async {
-      //       await client.auth.signOutDevice();
-      //     },
-      //   ),
-      // ),
-    );
-  }
+  Widget build(BuildContext context) => MaterialApp(
+    title: 'ClaimDesk',
+    theme: buildDeskTheme(Brightness.light),
+    darkTheme: buildDeskTheme(Brightness.dark),
+    home: const SignInScreen(),
+  );
 }

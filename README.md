@@ -1,7 +1,9 @@
 # ClaimDesk
 
 A lost-and-found desk app for venue staff. This workspace currently contains the
-Serverpod server, generated typed client, and Flutter starter app. The backend
+Serverpod server, generated typed client, and Flutter staff app. Staff can sign
+in, select their venue, log a found item with a photo, watch its caption arrive,
+and review or edit its details. The backend
 includes venue membership checks, item/report storage, audit and custody records,
 and a durable background worker that prepares photos, captions items, and creates
 search embeddings. Private uploads and item endpoints are available through the
@@ -36,11 +38,12 @@ Then run from a second terminal while the server is running:
 ```powershell
 cd claimdesk_flutter
 flutter devices
-flutter run -d <device-id> --dart-define=SERVER_URL=http://<computer-lan-ip>:8080/
+adb reverse tcp:8080 tcp:8080
+flutter run -d <device-id> --dart-define=SERVER_URL=http://127.0.0.1:8080/
 ```
 
-Alternatively, use `adb reverse tcp:8080 tcp:8080` and
-`--dart-define=SERVER_URL=http://127.0.0.1:8080/` over USB.
+Keep the USB connection active while using the local server. Camera and gallery
+intake are available on Android; the web app uses a file picker.
 
 ## Demo desk
 
@@ -66,7 +69,8 @@ credentials out of source control and shell history.
 
 Signed-in clients can call `venue.myMemberships()`, `venue.getVenue(id)`, and
 `venue.zones(id)`. Every venue lookup checks the caller's membership. The Flutter
-app still displays the starter screen; desk screens are not included yet.
+app opens the only assigned desk automatically, or offers a venue picker. It
+remembers the signed-in session and selected venue on this device.
 
 ## Photo intake
 
@@ -92,7 +96,8 @@ and `geminiApiKey`. Provider keys must never be saved to local files or Git.
 3. Call `item.createItem` with a `CreateItemInput` containing the ticket's
    `itemId`, `photoPath: ticket.path`, `uploadProof: ticket.proof`, and
    `uploadExpiresAt: ticket.expiresAt`, plus the staff's intake fields.
-4. Poll `item.getItem(itemId)` for `unclaimed`. Call `item.photoUrl` for an
+4. Subscribe to `deskStream.watchVenue(venueId)` and re-query `item.getItem`
+   when an item event arrives. Call `item.photoUrl` for an
    original or thumbnail download URL, valid for ten minutes.
 
 Tickets are tied to their staff member, venue, item, and ten-minute expiry.
@@ -147,3 +152,14 @@ AppData, then restart your terminal. This installation uses
 From `claimdesk_server`, run `serverpod cloud deploy`. The configured pre-deploy
 steps regenerate the protocol and build Flutter web under `/app/`. On Windows,
 `tool/build_web.ps1` verifies the build before replacing the served files.
+
+To rebuild the locally served app, run `serverpod run flutter_build` from
+`claimdesk_server`, then open `http://localhost:8082/app/`. The API URL comes from
+the server's app configuration route. Web authentication requires HTTPS or
+localhost; opening the app on a plain HTTP LAN address is unsupported.
+
+Run `flutter analyze` and `flutter test` from `claimdesk_flutter` to check the
+staff app. The app uses one event stream per venue, retries interrupted streams
+with backoff, and refreshes item details after reconnecting. Photo download URLs
+are held only in memory and refreshed before expiry. Sign-out clears that desk
+session and its photo cache.

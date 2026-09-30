@@ -11,6 +11,8 @@ jwtRefresh:
   - refreshAccessToken:
 admin:
   - seedDemo:
+deskStream:
+  - watchVenue:
 item:
   - requestPhotoUpload:
   - createItem:

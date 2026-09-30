@@ -97,6 +97,7 @@ class CaptionItemHandler extends JobHandler {
       );
       if (changed.isEmpty) return;
       item = changed.single;
+      await _post(session, item, 'itemStatus');
     }
     final result =
         await (item.photoPath == null

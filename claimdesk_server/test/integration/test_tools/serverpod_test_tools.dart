@@ -16,6 +16,7 @@ import 'dart:io' as _idi;
 import 'package:claimdesk_server/src/generated/caption_run.dart' as _iknvw4pb;
 import 'package:claimdesk_server/src/generated/create_item_input.dart'
     as _io3ib2zd;
+import 'package:claimdesk_server/src/generated/desk_event.dart' as _iofnkj91;
 import 'package:claimdesk_server/src/generated/found_item.dart' as _iskydu8k;
 import 'package:claimdesk_server/src/generated/greetings/greeting.dart'
     as _izso5nwb;
@@ -167,6 +168,8 @@ class TestEndpoints {
 
   late final _AdminEndpoint admin;
 
+  late final _DeskStreamEndpoint deskStream;
+
   late final _ItemEndpoint item;
 
   late final _VenueEndpoint venue;
@@ -190,6 +193,10 @@ class _InternalTestEndpoints extends TestEndpoints
       serializationManager,
     );
     admin = _AdminEndpoint(
+      endpoints,
+      serializationManager,
+    );
+    deskStream = _DeskStreamEndpoint(
       endpoints,
       serializationManager,
     );
@@ -577,6 +584,49 @@ class _AdminEndpoint {
         await _localUniqueSession.close();
       }
     });
+  }
+}
+
+class _DeskStreamEndpoint {
+  _DeskStreamEndpoint(
+    this._endpointDispatch,
+    this._serializationManager,
+  );
+
+  final _is.EndpointDispatch _endpointDispatch;
+
+  final _is.SerializationManager _serializationManager;
+
+  _ida.Stream<_iofnkj91.DeskEvent> watchVenue(
+    _ist.TestSessionBuilder sessionBuilder,
+    _is.UuidValue venueId,
+  ) {
+    var _localTestStreamManager = _ist.TestStreamManager<_iofnkj91.DeskEvent>();
+    _ist.callStreamFunctionAndHandleExceptions(
+      () async {
+        var _localUniqueSession =
+            (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+              endpoint: 'deskStream',
+              method: 'watchVenue',
+            );
+        var _localCallContext = await _endpointDispatch
+            .getMethodStreamCallContext(
+              createSessionCallback: (_) => _localUniqueSession,
+              endpointPath: 'deskStream',
+              methodName: 'watchVenue',
+              arguments: {'venueId': venueId},
+              requestedInputStreams: [],
+              serializationManager: _serializationManager,
+            );
+        await _localTestStreamManager.callStreamMethod(
+          _localCallContext,
+          _localUniqueSession,
+          {},
+        );
+      },
+      _localTestStreamManager.outputStreamController,
+    );
+    return _localTestStreamManager.outputStreamController.stream;
   }
 }
 

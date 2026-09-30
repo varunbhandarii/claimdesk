@@ -1,3 +1,5 @@
+# Embedded PostgreSQL is shared by the endpoint suites on development machines.
+concurrency: 1
 tags:
   integration: {}
   providers: {}

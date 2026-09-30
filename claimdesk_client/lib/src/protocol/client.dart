@@ -14,6 +14,7 @@ import 'dart:async' as _ida;
 import 'package:claimdesk_client/src/protocol/caption_run.dart' as _i9gd0od7;
 import 'package:claimdesk_client/src/protocol/create_item_input.dart'
     as _i0l2w05c;
+import 'package:claimdesk_client/src/protocol/desk_event.dart' as _idjit943;
 import 'package:claimdesk_client/src/protocol/found_item.dart' as _i8bj3kzd;
 import 'package:claimdesk_client/src/protocol/greetings/greeting.dart'
     as _i8l8ycv0;
@@ -287,6 +288,26 @@ class EndpointAdmin extends _isc.EndpointRef {
       );
 }
 
+/// Live desk updates are visible only to staff assigned to the venue.
+/// {@category Endpoint}
+class EndpointDeskStream extends _isc.EndpointRef {
+  EndpointDeskStream(_isc.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'deskStream';
+
+  _ida.Stream<_idjit943.DeskEvent> watchVenue(_isc.UuidValue venueId) =>
+      caller.callStreamingServerEndpoint<
+        _ida.Stream<_idjit943.DeskEvent>,
+        _idjit943.DeskEvent
+      >(
+        'deskStream',
+        'watchVenue',
+        {'venueId': venueId},
+        {},
+      );
+}
+
 /// {@category Endpoint}
 class EndpointItem extends _isc.EndpointRef {
   EndpointItem(_isc.EndpointCaller caller) : super(caller);
@@ -464,6 +485,7 @@ class Client extends _isc.ServerpodClientShared {
     emailIdp = EndpointEmailIdp(this);
     jwtRefresh = EndpointJwtRefresh(this);
     admin = EndpointAdmin(this);
+    deskStream = EndpointDeskStream(this);
     item = EndpointItem(this);
     venue = EndpointVenue(this);
     greeting = EndpointGreeting(this);
@@ -475,6 +497,8 @@ class Client extends _isc.ServerpodClientShared {
   late final EndpointJwtRefresh jwtRefresh;
 
   late final EndpointAdmin admin;
+
+  late final EndpointDeskStream deskStream;
 
   late final EndpointItem item;
 
@@ -489,6 +513,7 @@ class Client extends _isc.ServerpodClientShared {
     'emailIdp': emailIdp,
     'jwtRefresh': jwtRefresh,
     'admin': admin,
+    'deskStream': deskStream,
     'item': item,
     'venue': venue,
     'greeting': greeting,
