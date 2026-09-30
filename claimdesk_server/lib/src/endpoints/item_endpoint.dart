@@ -10,6 +10,7 @@ import '../policy/taxonomy.dart';
 import '../policy/retention.dart';
 import '../services/child_records.dart';
 import '../services/upload_tickets.dart';
+import '../services/photo_upload_relay.dart';
 
 class ItemEndpoint extends Endpoint with VenueGuard {
   Future<PhotoUploadTicket> requestPhotoUpload(
@@ -24,20 +25,30 @@ class ItemEndpoint extends Endpoint with VenueGuard {
     final id = UuidValue.fromString(const Uuid().v7());
     final path = UploadTickets.path(venueId, id);
     final expires = DateTime.now().toUtc().add(const Duration(minutes: 10));
+    final proof = UploadTickets.sign(session, venueId, id, expires);
     return PhotoUploadTicket(
       itemId: id,
       path: path,
       expiresAt: expires,
-      proof: UploadTickets.sign(session, venueId, id, expires),
-      uploadDescription: await session.storage.createUploadDescription(
-        storageId: 'private',
-        path: path,
-        options: UploadOptions(
-          maxFileSize: 15 * 1024 * 1024,
-          preventOverwrite: true,
-          metadata: FileMetadata(contentType: contentType),
-        ),
-      ),
+      proof: proof,
+      uploadDescription:
+          PhotoUploadRelay.description(
+            session,
+            venueId: venueId,
+            itemId: id,
+            expires: expires,
+            proof: proof,
+            contentType: contentType,
+          ) ??
+          await session.storage.createUploadDescription(
+            storageId: 'private',
+            path: path,
+            options: UploadOptions(
+              maxFileSize: 15 * 1024 * 1024,
+              preventOverwrite: true,
+              metadata: FileMetadata(contentType: contentType),
+            ),
+          ),
     );
   }
 

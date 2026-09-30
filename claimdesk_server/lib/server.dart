@@ -11,6 +11,7 @@ import 'src/cache_busting.dart';
 import 'src/generated/serverpod.dart';
 import 'src/web/routes/app_config_route.dart';
 import 'src/web/routes/root.dart';
+import 'src/services/photo_upload_relay.dart';
 
 /// The starting point of the Serverpod server.
 void run(List<String> args) async {
@@ -81,6 +82,7 @@ void run(List<String> args) async {
       fallback: () => DatabaseCloudStorage('public'),
     ),
   );
+  pod.experimental.registerStartHook(PhotoUploadRelay().register);
 
   // Start the server.
   await pod.start();

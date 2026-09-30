@@ -101,6 +101,9 @@ and `geminiApiKey`. Provider keys must never be saved to local files or Git.
    original or thumbnail download URL, valid for ten minutes.
 
 Tickets are tied to their staff member, venue, item, and ten-minute expiry.
+Browser-compatible uploads pass through the API's binary transport with the
+staff token and signed ticket. The server rechecks membership, bounds the body,
+and forwards it to private storage; bucket permissions remain private.
 JPEG, PNG, and WebP uploads up to 15 MiB are accepted; decoded images are limited
 to 40 million pixels. Photos become JPEGs up to 1024 pixels on the longest edge,
 with EXIF removed and a 320-pixel thumbnail. Restricted items keep category-only
