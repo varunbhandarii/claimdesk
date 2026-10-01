@@ -13,6 +13,85 @@ import 'test_tools/serverpod_test_tools.dart';
 void main() {
   withServerpod('Idempotent desk housekeeping', (builder, _) {
     test(
+      'closing an old searching report releases its reservation but preserves active pickup',
+      () async {
+        final s = builder.build(), now = DateTime.now().toUtc();
+        final venue = await makeVenue(s);
+        var oldReport = await makeReport(s, venue.id!, refCode: 'OLDRES');
+        oldReport = await LostReport.db.updateRow(
+          s,
+          oldReport.copyWith(
+            status: ReportStatus.searching,
+            createdAt: now.subtract(const Duration(days: 61)),
+          ),
+        );
+        var item = await makeItem(s, venue.id!, refCode: 'RESERV');
+        item = await FoundItem.db.updateRow(
+          s,
+          item.copyWith(status: ItemStatus.matched),
+        );
+        final match = await makeMatch(s, item, oldReport);
+        await ItemMatch.db.updateRow(
+          s,
+          match.copyWith(state: MatchState.confirmed),
+        );
+        var active = await makeReport(
+          s,
+          venue.id!,
+          refCode: 'PICKUP',
+          publicToken: 'active-pickup',
+        );
+        active = await LostReport.db.updateRow(
+          s,
+          active.copyWith(
+            status: ReportStatus.readyForPickup,
+            createdAt: now.subtract(const Duration(days: 61)),
+          ),
+        );
+        final job = await WorkItem.db.insertRow(
+          s,
+          WorkItem(
+            runAt: now,
+            kind: 'nightly',
+            payload: WorkPayload(data: {}),
+            state: WorkState.running,
+            attempts: 1,
+            updatedAt: now,
+            leaseUntil: now.add(const Duration(minutes: 2)),
+          ),
+        );
+        final handler = NightlyHandler(clock: () => now);
+        await handler.run(s, job);
+        expect(
+          (await LostReport.db.findById(s, oldReport.id!))!.status,
+          ReportStatus.closed,
+        );
+        expect(
+          (await FoundItem.db.findById(s, item.id!))!.status,
+          ItemStatus.unclaimed,
+        );
+        expect(
+          (await ItemMatch.db.findById(s, match.id!))!.state,
+          MatchState.rejected,
+        );
+        expect(
+          (await LostReport.db.findById(s, active.id!))!.status,
+          ReportStatus.readyForPickup,
+        );
+        await handler.run(s, job);
+        expect(handler.lastCounts['closed'], 0);
+        expect(
+          await AuditEvent.db.count(
+            s,
+            where: (t) =>
+                t.entityId.equals(item.id!) &
+                t.action.equals('reservation_closed'),
+          ),
+          1,
+        );
+      },
+    );
+    test(
       'Each retention step runs once, recovery work is preserved and release proof survives',
       () async {
         final s = builder.build(), now = DateTime.now().toUtc();

@@ -238,6 +238,56 @@ class NightlyHandler extends JobHandler {
         lockBehavior: LockBehavior.skipLocked,
       );
       for (final report in reports) {
+        final reservations = await ItemMatch.db.find(
+          session,
+          where: (t) =>
+              t.reportId.equals(report.id!) &
+              t.state.equals(MatchState.confirmed),
+          orderBy: (t) => t.itemId,
+          transaction: tx,
+        );
+        final reservedItems = <FoundItem>[];
+        var canClose = true;
+        for (final reservation in reservations) {
+          final item = await FoundItem.db.findById(
+            session,
+            reservation.itemId,
+            transaction: tx,
+            lockMode: LockMode.forUpdate,
+            lockBehavior: LockBehavior.skipLocked,
+          );
+          // A concurrent release owns this item; defer the whole report.
+          if (item == null ||
+              item.venueId != report.venueId ||
+              item.status != ItemStatus.matched ||
+              await ReleaseRecord.db.findFirstRow(
+                    session,
+                    where: (t) => t.itemId.equals(item.id!),
+                    transaction: tx,
+                  ) !=
+                  null) {
+            canClose = false;
+            break;
+          }
+          reservedItems.add(item);
+        }
+        if (!canClose) continue;
+        for (final item in reservedItems) {
+          await FoundItem.db.updateRow(
+            session,
+            item.copyWith(status: ItemStatus.unclaimed, updatedAt: now),
+            transaction: tx,
+          );
+          await audit(
+            tx,
+            item.venueId,
+            'item',
+            item.id!,
+            'reservation_closed',
+            'Reservation ended when the report closed by retention',
+          );
+          event(item.venueId, 'itemStatus', item: item.id);
+        }
         await LostReport.db.updateRow(
           session,
           report.copyWith(
@@ -256,7 +306,7 @@ class NightlyHandler extends JobHandler {
           ],
           where: (t) =>
               t.reportId.equals(report.id!) &
-              t.state.equals(MatchState.pending),
+              t.state.inSet({MatchState.pending, MatchState.confirmed}),
           transaction: tx,
         );
         await audit(

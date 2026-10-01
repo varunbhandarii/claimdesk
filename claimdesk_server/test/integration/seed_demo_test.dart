@@ -45,7 +45,7 @@ void main() {
         Providers.normaliser = HintNormaliser();
         final s = builder.build();
         expect(await DemoInventoryService.items(s), 30);
-        expect(await DemoInventoryService.reports(s), 6);
+        expect(await DemoInventoryService.reports(s), 7);
         final items = await FoundItem.db.find(s),
             reports = await LostReport.db.find(s),
             work = await WorkItem.db.find(s);
@@ -54,9 +54,11 @@ void main() {
           greaterThanOrEqualTo(5),
         );
         expect(
-          items.every(
-            (i) => i.status == ItemStatus.captioning && i.photoPath == null,
-          ),
+          items
+              .where((i) => i.refCode.startsWith('SEED'))
+              .every(
+                (i) => i.status == ItemStatus.captioning && i.photoPath == null,
+              ),
           isTrue,
         );
         expect(await DemoInventoryService.items(s), 0);
@@ -101,7 +103,9 @@ void main() {
           ),
           0,
         );
-        for (final report in reports) {
+        for (final report in reports.where(
+          (r) => r.refCode.startsWith('SEED'),
+        )) {
           expect(
             await ItemMatch.db.count(
               s,
@@ -116,8 +120,52 @@ void main() {
             ReportStatus.searching,
           );
         }
-        expect(await FoundItem.db.count(s), 30);
-        expect(await LostReport.db.count(s), 6);
+        expect(await FoundItem.db.count(s), 32);
+        expect(await LostReport.db.count(s), 7);
+        final returned = reports.singleWhere((r) => r.refCode == 'DEMORT');
+        final claimed = items.singleWhere((i) => i.refCode == 'DEMORE');
+        final expired = items.singleWhere((i) => i.refCode == 'DEMOEX');
+        expect(returned.status, ReportStatus.returned);
+        expect(returned.closedAt, isNotNull);
+        expect(claimed.status, ItemStatus.claimed);
+        expect(expired.status, ItemStatus.expired);
+        expect(expired.holdUntil!.isBefore(DateTime.now()), isTrue);
+        final release = (await ReleaseRecord.db.find(s)).single;
+        expect(release.itemId, claimed.id);
+        expect(release.reportId, returned.id);
+        expect(release.venueId, claimed.venueId);
+        expect(release.signaturePath, isNull);
+        expect(release.idTypeSeen, 'none');
+        expect(
+          await AuditEvent.db.count(
+            s,
+            where: (t) =>
+                t.entityId.equals(returned.id!) & t.action.equals('returned'),
+          ),
+          1,
+        );
+        expect(
+          await AuditEvent.db.count(
+            s,
+            where: (t) =>
+                t.entityId.equals(expired.id!) & t.action.equals('expired'),
+          ),
+          1,
+        );
+        final terminalMatch = (await ItemMatch.db.find(
+          s,
+          where: (t) => t.reportId.equals(returned.id!),
+        )).single;
+        expect(terminalMatch.itemId, claimed.id);
+        expect(terminalMatch.state, MatchState.confirmed);
+        expect(
+          await ItemMatch.db.count(
+            s,
+            where: (t) => t.itemId.equals(expired.id!),
+          ),
+          0,
+        );
+        expect(await ReleaseRecord.db.count(s), 1);
       },
     );
     test('every demo inventory endpoint refuses the wrong secret', () async {
