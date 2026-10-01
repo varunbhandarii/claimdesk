@@ -45,6 +45,14 @@ class VenueSession extends ChangeNotifier {
   late final VenueEvents live;
   late final StreamSubscription<DeskEvent> _events;
   List<FoundItem> items = [];
+  List<LostReport> reports = [];
+  ReportStatus? reportStatusFilter;
+  UuidValue? reportZoneFilter;
+  String? reportCategoryFilter;
+  Object? reportError;
+  bool reportsLoading = true;
+  bool reportsRefreshing = false;
+  bool _reportsAgain = false;
   List<Zone> zones = [];
   final failedItems = <UuidValue>{};
   DeskEvent? lastEvent;
@@ -61,7 +69,7 @@ class VenueSession extends ChangeNotifier {
   bool _refreshAgain = false;
   Future<void> start() async {
     live.start();
-    await refreshItems();
+    await Future.wait([refreshItems(), refreshReports()]);
   }
 
   void _liveChanged() {
@@ -78,7 +86,10 @@ class VenueSession extends ChangeNotifier {
     if (_disposed || _refreshTimer?.isActive == true) return;
     _refreshTimer = Timer(
       const Duration(seconds: 1),
-      () => unawaited(refreshItems()),
+      () {
+        unawaited(refreshItems());
+        unawaited(refreshReports());
+      },
     );
   }
 
@@ -126,6 +137,43 @@ class VenueSession extends ChangeNotifier {
 
   String zoneName(UuidValue? id) =>
       zones.where((z) => z.id == id).firstOrNull?.name ?? 'No zone';
+  Future<void> refreshReports() async {
+    if (_disposed) return;
+    if (reportsRefreshing) {
+      _reportsAgain = true;
+      return;
+    }
+    reportsRefreshing = true;
+    notifyListeners();
+    try {
+      final result = await client.report.listReports(
+        venue.id!,
+        ReportFilter(
+          status: reportStatusFilter,
+          zoneId: reportZoneFilter,
+          category: reportCategoryFilter,
+        ),
+      );
+      if (_disposed) return;
+      reports = result;
+      reportError = null;
+    } catch (e) {
+      if (_disposed) return;
+      reportError = e;
+      if (e is NotAMemberException) onDenied();
+    } finally {
+      if (!_disposed) {
+        reportsLoading = false;
+        reportsRefreshing = false;
+        notifyListeners();
+        if (_reportsAgain) {
+          _reportsAgain = false;
+          scheduleRefresh();
+        }
+      }
+    }
+  }
+
   @override
   void dispose() {
     _disposed = true;

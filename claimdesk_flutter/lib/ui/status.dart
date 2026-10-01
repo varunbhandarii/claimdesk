@@ -1,6 +1,25 @@
 import 'package:claimdesk_client/claimdesk_client.dart';
 import 'package:flutter/material.dart';
 
+String reportStatusLabel(ReportStatus status) => switch (status) {
+  ReportStatus.received => 'Received',
+  ReportStatus.searching => 'Searching',
+  ReportStatus.possibleMatch => 'Possible match',
+  ReportStatus.readyForPickup => 'Ready for pickup',
+  ReportStatus.returned => 'Returned',
+  ReportStatus.closed => 'Closed',
+};
+
+class ReportStatusChip extends StatelessWidget {
+  const ReportStatusChip(this.status, {super.key});
+  final ReportStatus status;
+  @override
+  Widget build(BuildContext context) => Chip(
+    label: Text(reportStatusLabel(status)),
+    visualDensity: VisualDensity.compact,
+  );
+}
+
 String statusLabel(ItemStatus status) => switch (status) {
   ItemStatus.intake => 'Logged',
   ItemStatus.captioning => 'Captioning',

@@ -11,6 +11,7 @@ import '../ui/offline_banner.dart';
 import '../ui/empty_state.dart';
 import 'log_item_screen.dart';
 import 'item_detail_screen.dart';
+import 'report_list_screen.dart';
 
 class ItemListScreen extends StatefulWidget {
   const ItemListScreen({
@@ -26,6 +27,7 @@ class ItemListScreen extends StatefulWidget {
 
 class _ItemListScreenState extends State<ItemListScreen> {
   Timer? _clock;
+  int _tab = 0;
   VenueSession? _session;
   DeskEvent? _lastEvent;
   Object? _lastError;
@@ -123,187 +125,223 @@ class _ItemListScreenState extends State<ItemListScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _log,
-        icon: const Icon(Icons.add),
-        label: const Text('Log item'),
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _tab,
+        onDestinationSelected: (value) => setState(() => _tab = value),
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.inventory_2_outlined),
+            label: 'Items',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.description_outlined),
+            label: 'Reports',
+          ),
+        ],
       ),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 1040),
-          child: Column(
-            children: [
-              if (session.offline || session.live.reconnecting)
-                OfflineBanner(
-                  onRetry: () {
-                    session.live.connectivityChanged(true);
-                    session.refreshItems();
-                  },
-                ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(24, 20, 24, 12),
-                child: Row(
+      floatingActionButton: _tab == 1
+          ? null
+          : FloatingActionButton.extended(
+              onPressed: _log,
+              icon: const Icon(Icons.add),
+              label: const Text('Log item'),
+            ),
+      body: _tab == 1
+          ? const ReportListScreen()
+          : Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1040),
+                child: Column(
                   children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                    if (session.offline || session.live.reconnecting)
+                      OfflineBanner(
+                        onRetry: () {
+                          session.live.connectivityChanged(true);
+                          session.refreshItems();
+                        },
+                      ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(24, 20, 24, 12),
+                      child: Row(
                         children: [
-                          Text(
-                            session.venue.name,
-                            style: Theme.of(context).textTheme.headlineMedium,
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  session.venue.name,
+                                  style: Theme.of(
+                                    context,
+                                  ).textTheme.headlineMedium,
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  '${session.membership.role == StaffRole.supervisor ? 'Supervisor' : 'Staff'} · ${session.items.length} items in this view',
+                                ),
+                              ],
+                            ),
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            '${session.membership.role == StaffRole.supervisor ? 'Supervisor' : 'Staff'} · ${session.items.length} items in this view',
+                          PopupMenuButton<String>(
+                            tooltip: 'Filter by zone',
+                            onSelected: (id) {
+                              session.zoneFilter = id.isEmpty
+                                  ? null
+                                  : UuidValue.fromString(id);
+                              session.refreshItems();
+                            },
+                            icon: const Icon(Icons.filter_alt_outlined),
+                            itemBuilder: (_) => [
+                              const PopupMenuItem(
+                                value: '',
+                                child: Text('All zones'),
+                              ),
+                              for (final zone in session.zones)
+                                PopupMenuItem(
+                                  value: zone.id.toString(),
+                                  child: Text(zone.name),
+                                ),
+                            ],
                           ),
                         ],
                       ),
                     ),
-                    PopupMenuButton<String>(
-                      tooltip: 'Filter by zone',
-                      onSelected: (id) {
-                        session.zoneFilter = id.isEmpty
-                            ? null
-                            : UuidValue.fromString(id);
-                        session.refreshItems();
-                      },
-                      icon: const Icon(Icons.filter_alt_outlined),
-                      itemBuilder: (_) => [
-                        const PopupMenuItem(
-                          value: '',
-                          child: Text('All zones'),
+                    SizedBox(
+                      height: 60,
+                      child: ListView(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        children: [
+                          for (final status in [
+                            null,
+                            ItemStatus.captioning,
+                            ItemStatus.unclaimed,
+                            ItemStatus.matched,
+                            ItemStatus.claimed,
+                          ])
+                            Padding(
+                              padding: const EdgeInsets.only(right: 8),
+                              child: FilterChip(
+                                label: Text(
+                                  status == null
+                                      ? 'All open'
+                                      : statusLabel(status),
+                                ),
+                                selected: session.statusFilter == status,
+                                onSelected: (_) {
+                                  session.statusFilter = status;
+                                  session.refreshItems();
+                                },
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    if (session.zoneFilter != null)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Text(
+                          'Zone: ${session.zoneName(session.zoneFilter)}',
                         ),
-                        for (final zone in session.zones)
-                          PopupMenuItem(
-                            value: zone.id.toString(),
-                            child: Text(zone.name),
-                          ),
-                      ],
+                      ),
+                    if (session.refreshing && !session.loading)
+                      const LinearProgressIndicator(minHeight: 2),
+                    Expanded(
+                      child: session.loading
+                          ? ListView(
+                              children: List.generate(
+                                4,
+                                (_) => const Card(
+                                  child: SizedBox(
+                                    height: 110,
+                                    child: Center(
+                                      child: LinearProgressIndicator(),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            )
+                          : RefreshIndicator(
+                              onRefresh: session.refreshItems,
+                              child:
+                                  session.error != null && session.items.isEmpty
+                                  ? ListView(
+                                      physics:
+                                          const AlwaysScrollableScrollPhysics(),
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.all(32),
+                                          child: Column(
+                                            children: [
+                                              Text(
+                                                errorMessage(session.error!),
+                                              ),
+                                              const SizedBox(height: 16),
+                                              FilledButton(
+                                                onPressed: session.refreshItems,
+                                                child: const Text('Retry'),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    )
+                                  : session.items.isEmpty
+                                  ? ListView(
+                                      physics:
+                                          const AlwaysScrollableScrollPhysics(),
+                                      children: [EmptyState(onLog: _log)],
+                                    )
+                                  : ListView.builder(
+                                      padding: const EdgeInsets.fromLTRB(
+                                        16,
+                                        0,
+                                        16,
+                                        100,
+                                      ),
+                                      physics:
+                                          const AlwaysScrollableScrollPhysics(),
+                                      itemCount: session.items.length,
+                                      itemBuilder: (context, index) {
+                                        final item = session.items[index];
+                                        return AnimatedSwitcher(
+                                          duration: const Duration(
+                                            milliseconds: 250,
+                                          ),
+                                          child: ItemCard(
+                                            key: ValueKey(
+                                              '${item.id}/${item.updatedAt}',
+                                            ),
+                                            item: item,
+                                            zoneName: session.zoneName(
+                                              item.zoneId,
+                                            ),
+                                            captionFailed:
+                                                session.failedItems.contains(
+                                                  item.id,
+                                                ) ||
+                                                (item.photoPath != null &&
+                                                    item.attributes?.modelId ==
+                                                        'template'),
+                                            photo: item.photoPath == null
+                                                ? null
+                                                : PhotoView(
+                                                    urls: session.photos,
+                                                    itemId: item.id!,
+                                                    thumb: true,
+                                                    revision: item.thumbPath,
+                                                    onDenied: session.onDenied,
+                                                  ),
+                                            onTap: () => _openItem(item.id!),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                            ),
                     ),
                   ],
                 ),
               ),
-              SizedBox(
-                height: 60,
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  children: [
-                    for (final status in [
-                      null,
-                      ItemStatus.captioning,
-                      ItemStatus.unclaimed,
-                      ItemStatus.matched,
-                      ItemStatus.claimed,
-                    ])
-                      Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: FilterChip(
-                          label: Text(
-                            status == null ? 'All open' : statusLabel(status),
-                          ),
-                          selected: session.statusFilter == status,
-                          onSelected: (_) {
-                            session.statusFilter = status;
-                            session.refreshItems();
-                          },
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-              if (session.zoneFilter != null)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: Text('Zone: ${session.zoneName(session.zoneFilter)}'),
-                ),
-              if (session.refreshing && !session.loading)
-                const LinearProgressIndicator(minHeight: 2),
-              Expanded(
-                child: session.loading
-                    ? ListView(
-                        children: List.generate(
-                          4,
-                          (_) => const Card(
-                            child: SizedBox(
-                              height: 110,
-                              child: Center(child: LinearProgressIndicator()),
-                            ),
-                          ),
-                        ),
-                      )
-                    : RefreshIndicator(
-                        onRefresh: session.refreshItems,
-                        child: session.error != null && session.items.isEmpty
-                            ? ListView(
-                                physics: const AlwaysScrollableScrollPhysics(),
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.all(32),
-                                    child: Column(
-                                      children: [
-                                        Text(errorMessage(session.error!)),
-                                        const SizedBox(height: 16),
-                                        FilledButton(
-                                          onPressed: session.refreshItems,
-                                          child: const Text('Retry'),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              )
-                            : session.items.isEmpty
-                            ? ListView(
-                                physics: const AlwaysScrollableScrollPhysics(),
-                                children: [EmptyState(onLog: _log)],
-                              )
-                            : ListView.builder(
-                                padding: const EdgeInsets.fromLTRB(
-                                  16,
-                                  0,
-                                  16,
-                                  100,
-                                ),
-                                physics: const AlwaysScrollableScrollPhysics(),
-                                itemCount: session.items.length,
-                                itemBuilder: (context, index) {
-                                  final item = session.items[index];
-                                  return AnimatedSwitcher(
-                                    duration: const Duration(milliseconds: 250),
-                                    child: ItemCard(
-                                      key: ValueKey(
-                                        '${item.id}/${item.updatedAt}',
-                                      ),
-                                      item: item,
-                                      zoneName: session.zoneName(item.zoneId),
-                                      captionFailed:
-                                          session.failedItems.contains(
-                                            item.id,
-                                          ) ||
-                                          (item.photoPath != null &&
-                                              item.attributes?.modelId ==
-                                                  'template'),
-                                      photo: item.photoPath == null
-                                          ? null
-                                          : PhotoView(
-                                              urls: session.photos,
-                                              itemId: item.id!,
-                                              thumb: true,
-                                              revision: item.thumbPath,
-                                              onDenied: session.onDenied,
-                                            ),
-                                      onTap: () => _openItem(item.id!),
-                                    ),
-                                  );
-                                },
-                              ),
-                      ),
-              ),
-            ],
-          ),
-        ),
-      ),
+            ),
     );
   }
 }
