@@ -23,6 +23,7 @@ import 'package:claimdesk_server/src/generated/greetings/greeting.dart'
 import 'package:claimdesk_server/src/generated/item_filter.dart' as _id50o94s;
 import 'package:claimdesk_server/src/generated/item_patch.dart' as _isrhr89g;
 import 'package:claimdesk_server/src/generated/lost_report.dart' as _i63i6mgk;
+import 'package:claimdesk_server/src/generated/match_card.dart' as _i1d6w25f;
 import 'package:claimdesk_server/src/generated/photo_upload_ticket.dart'
     as _i0p7t3ak;
 import 'package:claimdesk_server/src/generated/protocol.dart' as _ii1g677k;
@@ -174,6 +175,8 @@ class TestEndpoints {
 
   late final _ItemEndpoint item;
 
+  late final _MatchEndpoint match;
+
   late final _ReportEndpoint report;
 
   late final _VenueEndpoint venue;
@@ -205,6 +208,10 @@ class _InternalTestEndpoints extends TestEndpoints
       serializationManager,
     );
     item = _ItemEndpoint(
+      endpoints,
+      serializationManager,
+    );
+    match = _MatchEndpoint(
       endpoints,
       serializationManager,
     );
@@ -909,6 +916,207 @@ class _ItemEndpoint {
                   _localCallContext.arguments,
                 )
                 as _ida.Future<List<_iknvw4pb.CaptionRun>>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+}
+
+class _MatchEndpoint {
+  _MatchEndpoint(
+    this._endpointDispatch,
+    this._serializationManager,
+  );
+
+  final _is.EndpointDispatch _endpointDispatch;
+
+  final _is.SerializationManager _serializationManager;
+
+  _ida.Future<List<_i1d6w25f.MatchCard>> inbox(
+    _ist.TestSessionBuilder sessionBuilder,
+    _is.UuidValue venueId,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'match',
+            method: 'inbox',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'match',
+          methodName: 'inbox',
+          parameters: _ist.testObjectToJson({'venueId': venueId}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<List<_i1d6w25f.MatchCard>>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _ida.Future<List<_i1d6w25f.MatchCard>> forReport(
+    _ist.TestSessionBuilder sessionBuilder,
+    _is.UuidValue reportId,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'match',
+            method: 'forReport',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'match',
+          methodName: 'forReport',
+          parameters: _ist.testObjectToJson({'reportId': reportId}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<List<_i1d6w25f.MatchCard>>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _ida.Future<List<_i1d6w25f.MatchCard>> forItem(
+    _ist.TestSessionBuilder sessionBuilder,
+    _is.UuidValue itemId,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'match',
+            method: 'forItem',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'match',
+          methodName: 'forItem',
+          parameters: _ist.testObjectToJson({'itemId': itemId}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<List<_i1d6w25f.MatchCard>>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _ida.Future<_idm342zh.WorkItem> rematch(
+    _ist.TestSessionBuilder sessionBuilder,
+    _is.UuidValue reportId,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'match',
+            method: 'rematch',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'match',
+          methodName: 'rematch',
+          parameters: _ist.testObjectToJson({'reportId': reportId}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<_idm342zh.WorkItem>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _ida.Future<_i1d6w25f.MatchCard> confirm(
+    _ist.TestSessionBuilder sessionBuilder,
+    _is.UuidValue matchId,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'match',
+            method: 'confirm',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'match',
+          methodName: 'confirm',
+          parameters: _ist.testObjectToJson({'matchId': matchId}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<_i1d6w25f.MatchCard>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _ida.Future<_i1d6w25f.MatchCard> reject(
+    _ist.TestSessionBuilder sessionBuilder,
+    _is.UuidValue matchId,
+    String reason,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'match',
+            method: 'reject',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'match',
+          methodName: 'reject',
+          parameters: _ist.testObjectToJson({
+            'matchId': matchId,
+            'reason': reason,
+          }),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<_i1d6w25f.MatchCard>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();

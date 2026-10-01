@@ -1,0 +1,6 @@
+class: MatchCard
+fields:
+  match: ItemMatch
+  item: FoundItem
+  report: LostReport
+  clearLeader: bool

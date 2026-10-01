@@ -21,6 +21,7 @@ import 'package:claimdesk_client/src/protocol/greetings/greeting.dart'
 import 'package:claimdesk_client/src/protocol/item_filter.dart' as _inizcy6n;
 import 'package:claimdesk_client/src/protocol/item_patch.dart' as _i410ys6o;
 import 'package:claimdesk_client/src/protocol/lost_report.dart' as _izbvtt9c;
+import 'package:claimdesk_client/src/protocol/match_card.dart' as _i7d074dr;
 import 'package:claimdesk_client/src/protocol/photo_upload_ticket.dart'
     as _i1f97sgb;
 import 'package:claimdesk_client/src/protocol/report_filter.dart' as _ii8h5ytv;
@@ -400,6 +401,61 @@ class EndpointItem extends _isc.EndpointRef {
 }
 
 /// {@category Endpoint}
+class EndpointMatch extends _isc.EndpointRef {
+  EndpointMatch(_isc.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'match';
+
+  _ida.Future<List<_i7d074dr.MatchCard>> inbox(_isc.UuidValue venueId) =>
+      caller.callServerEndpoint<List<_i7d074dr.MatchCard>>(
+        'match',
+        'inbox',
+        {'venueId': venueId},
+      );
+
+  _ida.Future<List<_i7d074dr.MatchCard>> forReport(_isc.UuidValue reportId) =>
+      caller.callServerEndpoint<List<_i7d074dr.MatchCard>>(
+        'match',
+        'forReport',
+        {'reportId': reportId},
+      );
+
+  _ida.Future<List<_i7d074dr.MatchCard>> forItem(_isc.UuidValue itemId) =>
+      caller.callServerEndpoint<List<_i7d074dr.MatchCard>>(
+        'match',
+        'forItem',
+        {'itemId': itemId},
+      );
+
+  _ida.Future<_i5t1jx4h.WorkItem> rematch(_isc.UuidValue reportId) =>
+      caller.callServerEndpoint<_i5t1jx4h.WorkItem>(
+        'match',
+        'rematch',
+        {'reportId': reportId},
+      );
+
+  _ida.Future<_i7d074dr.MatchCard> confirm(_isc.UuidValue matchId) =>
+      caller.callServerEndpoint<_i7d074dr.MatchCard>(
+        'match',
+        'confirm',
+        {'matchId': matchId},
+      );
+
+  _ida.Future<_i7d074dr.MatchCard> reject(
+    _isc.UuidValue matchId,
+    String reason,
+  ) => caller.callServerEndpoint<_i7d074dr.MatchCard>(
+    'match',
+    'reject',
+    {
+      'matchId': matchId,
+      'reason': reason,
+    },
+  );
+}
+
+/// {@category Endpoint}
 class EndpointReport extends _isc.EndpointRef {
   EndpointReport(_isc.EndpointCaller caller) : super(caller);
 
@@ -540,6 +596,7 @@ class Client extends _isc.ServerpodClientShared {
     admin = EndpointAdmin(this);
     deskStream = EndpointDeskStream(this);
     item = EndpointItem(this);
+    match = EndpointMatch(this);
     report = EndpointReport(this);
     venue = EndpointVenue(this);
     greeting = EndpointGreeting(this);
@@ -556,6 +613,8 @@ class Client extends _isc.ServerpodClientShared {
 
   late final EndpointItem item;
 
+  late final EndpointMatch match;
+
   late final EndpointReport report;
 
   late final EndpointVenue venue;
@@ -571,6 +630,7 @@ class Client extends _isc.ServerpodClientShared {
     'admin': admin,
     'deskStream': deskStream,
     'item': item,
+    'match': match,
     'report': report,
     'venue': venue,
     'greeting': greeting,

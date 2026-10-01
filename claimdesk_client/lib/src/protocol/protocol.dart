@@ -14,6 +14,7 @@
 import 'package:claimdesk_client/src/protocol/caption_run.dart' as _i9gd0od7;
 import 'package:claimdesk_client/src/protocol/found_item.dart' as _i8bj3kzd;
 import 'package:claimdesk_client/src/protocol/lost_report.dart' as _izbvtt9c;
+import 'package:claimdesk_client/src/protocol/match_card.dart' as _i7d074dr;
 import 'package:claimdesk_client/src/protocol/staff_membership.dart'
     as _ing7mbhm;
 import 'package:claimdesk_client/src/protocol/zone.dart' as _inmoeruh;
@@ -37,8 +38,10 @@ import 'item_match.dart' as _i989z6nt;
 import 'item_patch.dart' as _i3b5hl76;
 import 'item_status.dart' as _ibbyonnn;
 import 'lost_report.dart' as _iyhihx8i;
+import 'match_card.dart' as _ig904ein;
 import 'match_explanation.dart' as _i7ltg7v2;
 import 'match_state.dart' as _idznkk1k;
+import 'match_state_exception.dart' as _inl9arvk;
 import 'not_a_member_exception.dart' as _ilheyvx1;
 import 'photo_upload_ticket.dart' as _ivh14x5g;
 import 'release_record.dart' as _ieeq0b1h;
@@ -69,8 +72,10 @@ export 'item_match.dart';
 export 'item_patch.dart';
 export 'item_status.dart';
 export 'lost_report.dart';
+export 'match_card.dart';
 export 'match_explanation.dart';
 export 'match_state.dart';
+export 'match_state_exception.dart';
 export 'not_a_member_exception.dart';
 export 'photo_upload_ticket.dart';
 export 'release_record.dart';
@@ -167,11 +172,17 @@ class Protocol extends _isc.SerializationManager {
     if (t == _iyhihx8i.LostReport) {
       return _iyhihx8i.LostReport.fromJson(data) as T;
     }
+    if (t == _ig904ein.MatchCard) {
+      return _ig904ein.MatchCard.fromJson(data) as T;
+    }
     if (t == _i7ltg7v2.MatchExplanation) {
       return _i7ltg7v2.MatchExplanation.fromJson(data) as T;
     }
     if (t == _idznkk1k.MatchState) {
       return _idznkk1k.MatchState.fromJson(data) as T;
+    }
+    if (t == _inl9arvk.MatchStateException) {
+      return _inl9arvk.MatchStateException.fromJson(data) as T;
     }
     if (t == _ilheyvx1.NotAMemberException) {
       return _ilheyvx1.NotAMemberException.fromJson(data) as T;
@@ -268,12 +279,21 @@ class Protocol extends _isc.SerializationManager {
     if (t == _isc.getType<_iyhihx8i.LostReport?>()) {
       return (data != null ? _iyhihx8i.LostReport.fromJson(data) : null) as T;
     }
+    if (t == _isc.getType<_ig904ein.MatchCard?>()) {
+      return (data != null ? _ig904ein.MatchCard.fromJson(data) : null) as T;
+    }
     if (t == _isc.getType<_i7ltg7v2.MatchExplanation?>()) {
       return (data != null ? _i7ltg7v2.MatchExplanation.fromJson(data) : null)
           as T;
     }
     if (t == _isc.getType<_idznkk1k.MatchState?>()) {
       return (data != null ? _idznkk1k.MatchState.fromJson(data) : null) as T;
+    }
+    if (t == _isc.getType<_inl9arvk.MatchStateException?>()) {
+      return (data != null
+              ? _inl9arvk.MatchStateException.fromJson(data)
+              : null)
+          as T;
     }
     if (t == _isc.getType<_ilheyvx1.NotAMemberException?>()) {
       return (data != null
@@ -384,6 +404,12 @@ class Protocol extends _isc.SerializationManager {
               .toList()
           as T;
     }
+    if (t == List<_i7d074dr.MatchCard>) {
+      return (data as List)
+              .map((e) => deserialize<_i7d074dr.MatchCard>(e))
+              .toList()
+          as T;
+    }
     if (t == List<_izbvtt9c.LostReport>) {
       return (data as List)
               .map((e) => deserialize<_izbvtt9c.LostReport>(e))
@@ -426,8 +452,10 @@ class Protocol extends _isc.SerializationManager {
       _i3b5hl76.ItemPatch => 'ItemPatch',
       _ibbyonnn.ItemStatus => 'ItemStatus',
       _iyhihx8i.LostReport => 'LostReport',
+      _ig904ein.MatchCard => 'MatchCard',
       _i7ltg7v2.MatchExplanation => 'MatchExplanation',
       _idznkk1k.MatchState => 'MatchState',
+      _inl9arvk.MatchStateException => 'MatchStateException',
       _ilheyvx1.NotAMemberException => 'NotAMemberException',
       _ivh14x5g.PhotoUploadTicket => 'PhotoUploadTicket',
       _ieeq0b1h.ReleaseRecord => 'ReleaseRecord',
@@ -487,10 +515,14 @@ class Protocol extends _isc.SerializationManager {
         return 'ItemStatus';
       case _iyhihx8i.LostReport():
         return 'LostReport';
+      case _ig904ein.MatchCard():
+        return 'MatchCard';
       case _i7ltg7v2.MatchExplanation():
         return 'MatchExplanation';
       case _idznkk1k.MatchState():
         return 'MatchState';
+      case _inl9arvk.MatchStateException():
+        return 'MatchStateException';
       case _ilheyvx1.NotAMemberException():
         return 'NotAMemberException';
       case _ivh14x5g.PhotoUploadTicket():
@@ -588,11 +620,17 @@ class Protocol extends _isc.SerializationManager {
     if (dataClassName == 'LostReport') {
       return deserialize<_iyhihx8i.LostReport>(data['data']);
     }
+    if (dataClassName == 'MatchCard') {
+      return deserialize<_ig904ein.MatchCard>(data['data']);
+    }
     if (dataClassName == 'MatchExplanation') {
       return deserialize<_i7ltg7v2.MatchExplanation>(data['data']);
     }
     if (dataClassName == 'MatchState') {
       return deserialize<_idznkk1k.MatchState>(data['data']);
+    }
+    if (dataClassName == 'MatchStateException') {
+      return deserialize<_inl9arvk.MatchStateException>(data['data']);
     }
     if (dataClassName == 'NotAMemberException') {
       return deserialize<_ilheyvx1.NotAMemberException>(data['data']);

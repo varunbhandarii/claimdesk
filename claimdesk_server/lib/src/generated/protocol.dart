@@ -14,6 +14,7 @@
 import 'package:claimdesk_server/src/generated/caption_run.dart' as _iknvw4pb;
 import 'package:claimdesk_server/src/generated/found_item.dart' as _iskydu8k;
 import 'package:claimdesk_server/src/generated/lost_report.dart' as _i63i6mgk;
+import 'package:claimdesk_server/src/generated/match_card.dart' as _i1d6w25f;
 import 'package:claimdesk_server/src/generated/staff_membership.dart'
     as _iugziyav;
 import 'package:claimdesk_server/src/generated/zone.dart' as _irlgv1kd;
@@ -38,8 +39,10 @@ import 'item_match.dart' as _i989z6nt;
 import 'item_patch.dart' as _i3b5hl76;
 import 'item_status.dart' as _ibbyonnn;
 import 'lost_report.dart' as _iyhihx8i;
+import 'match_card.dart' as _ig904ein;
 import 'match_explanation.dart' as _i7ltg7v2;
 import 'match_state.dart' as _idznkk1k;
+import 'match_state_exception.dart' as _inl9arvk;
 import 'not_a_member_exception.dart' as _ilheyvx1;
 import 'photo_upload_ticket.dart' as _ivh14x5g;
 import 'release_record.dart' as _ieeq0b1h;
@@ -70,8 +73,10 @@ export 'item_match.dart';
 export 'item_patch.dart';
 export 'item_status.dart';
 export 'lost_report.dart';
+export 'match_card.dart';
 export 'match_explanation.dart';
 export 'match_state.dart';
+export 'match_state_exception.dart';
 export 'not_a_member_exception.dart';
 export 'photo_upload_ticket.dart';
 export 'release_record.dart';
@@ -1720,11 +1725,17 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _iyhihx8i.LostReport) {
       return _iyhihx8i.LostReport.fromJson(data) as T;
     }
+    if (t == _ig904ein.MatchCard) {
+      return _ig904ein.MatchCard.fromJson(data) as T;
+    }
     if (t == _i7ltg7v2.MatchExplanation) {
       return _i7ltg7v2.MatchExplanation.fromJson(data) as T;
     }
     if (t == _idznkk1k.MatchState) {
       return _idznkk1k.MatchState.fromJson(data) as T;
+    }
+    if (t == _inl9arvk.MatchStateException) {
+      return _inl9arvk.MatchStateException.fromJson(data) as T;
     }
     if (t == _ilheyvx1.NotAMemberException) {
       return _ilheyvx1.NotAMemberException.fromJson(data) as T;
@@ -1821,12 +1832,21 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _is.getType<_iyhihx8i.LostReport?>()) {
       return (data != null ? _iyhihx8i.LostReport.fromJson(data) : null) as T;
     }
+    if (t == _is.getType<_ig904ein.MatchCard?>()) {
+      return (data != null ? _ig904ein.MatchCard.fromJson(data) : null) as T;
+    }
     if (t == _is.getType<_i7ltg7v2.MatchExplanation?>()) {
       return (data != null ? _i7ltg7v2.MatchExplanation.fromJson(data) : null)
           as T;
     }
     if (t == _is.getType<_idznkk1k.MatchState?>()) {
       return (data != null ? _idznkk1k.MatchState.fromJson(data) : null) as T;
+    }
+    if (t == _is.getType<_inl9arvk.MatchStateException?>()) {
+      return (data != null
+              ? _inl9arvk.MatchStateException.fromJson(data)
+              : null)
+          as T;
     }
     if (t == _is.getType<_ilheyvx1.NotAMemberException?>()) {
       return (data != null
@@ -1935,6 +1955,12 @@ class Protocol extends _is.DatabaseSerializationManager {
               .toList()
           as T;
     }
+    if (t == List<_i1d6w25f.MatchCard>) {
+      return (data as List)
+              .map((e) => deserialize<_i1d6w25f.MatchCard>(e))
+              .toList()
+          as T;
+    }
     if (t == List<_i63i6mgk.LostReport>) {
       return (data as List)
               .map((e) => deserialize<_i63i6mgk.LostReport>(e))
@@ -1980,8 +2006,10 @@ class Protocol extends _is.DatabaseSerializationManager {
       _i3b5hl76.ItemPatch => 'ItemPatch',
       _ibbyonnn.ItemStatus => 'ItemStatus',
       _iyhihx8i.LostReport => 'LostReport',
+      _ig904ein.MatchCard => 'MatchCard',
       _i7ltg7v2.MatchExplanation => 'MatchExplanation',
       _idznkk1k.MatchState => 'MatchState',
+      _inl9arvk.MatchStateException => 'MatchStateException',
       _ilheyvx1.NotAMemberException => 'NotAMemberException',
       _ivh14x5g.PhotoUploadTicket => 'PhotoUploadTicket',
       _ieeq0b1h.ReleaseRecord => 'ReleaseRecord',
@@ -2041,10 +2069,14 @@ class Protocol extends _is.DatabaseSerializationManager {
         return 'ItemStatus';
       case _iyhihx8i.LostReport():
         return 'LostReport';
+      case _ig904ein.MatchCard():
+        return 'MatchCard';
       case _i7ltg7v2.MatchExplanation():
         return 'MatchExplanation';
       case _idznkk1k.MatchState():
         return 'MatchState';
+      case _inl9arvk.MatchStateException():
+        return 'MatchStateException';
       case _ilheyvx1.NotAMemberException():
         return 'NotAMemberException';
       case _ivh14x5g.PhotoUploadTicket():
@@ -2146,11 +2178,17 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (dataClassName == 'LostReport') {
       return deserialize<_iyhihx8i.LostReport>(data['data']);
     }
+    if (dataClassName == 'MatchCard') {
+      return deserialize<_ig904ein.MatchCard>(data['data']);
+    }
     if (dataClassName == 'MatchExplanation') {
       return deserialize<_i7ltg7v2.MatchExplanation>(data['data']);
     }
     if (dataClassName == 'MatchState') {
       return deserialize<_idznkk1k.MatchState>(data['data']);
+    }
+    if (dataClassName == 'MatchStateException') {
+      return deserialize<_inl9arvk.MatchStateException>(data['data']);
     }
     if (dataClassName == 'NotAMemberException') {
       return deserialize<_ilheyvx1.NotAMemberException>(data['data']);

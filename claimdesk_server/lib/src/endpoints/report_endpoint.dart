@@ -2,6 +2,7 @@ import 'package:serverpod/serverpod.dart';
 import 'package:serverpod_auth_idp_server/core.dart';
 import '../access/venue_guard.dart';
 import '../generated/protocol.dart';
+import '../services/staff_views.dart';
 
 class ReportEndpoint extends Endpoint with VenueGuard {
   Future<List<LostReport>> listReports(
@@ -31,11 +32,13 @@ class ReportEndpoint extends Endpoint with VenueGuard {
       orderByList: (t) => [t.createdAt.desc(), t.id.desc()],
       limit: 100,
     );
-    return rows.map(_staffView).toList();
+    return StaffViews.reports(session, rows);
   }
 
   Future<LostReport> getReport(Session session, UuidValue reportId) async =>
-      _staffView(await _authorized(session, reportId));
+      (await StaffViews.reports(session, [
+        await _authorized(session, reportId),
+      ])).single;
 
   Future<LostReport?> findByRefCode(
     Session session,
@@ -49,7 +52,9 @@ class ReportEndpoint extends Endpoint with VenueGuard {
       session,
       where: (t) => t.venueId.equals(venueId) & t.refCode.equals(code),
     );
-    return row == null ? null : _staffView(row);
+    return row == null
+        ? null
+        : (await StaffViews.reports(session, [row])).single;
   }
 
   Future<LostReport> closeReport(
@@ -77,6 +82,37 @@ class ReportEndpoint extends Endpoint with VenueGuard {
         throw ArgumentError('Only received or searching reports can be closed');
       }
       final now = DateTime.now().toUtc();
+      final rejected = await ItemMatch.db.updateWhere(
+        session,
+        columnValues: (t) => [
+          t.state(MatchState.rejected),
+          t.decidedByAuthUserId(session.authenticated!.authUserId),
+          t.decidedAt(now),
+          t.updatedAt(now),
+        ],
+        where: (t) =>
+            t.reportId.equals(reportId) &
+            t.venueId.equals(row.venueId) &
+            t.state.equals(MatchState.pending),
+        transaction: tx,
+      );
+      for (final match in rejected) {
+        await AuditEvent.db.insertRow(
+          session,
+          AuditEvent(
+            venueId: row.venueId,
+            entityType: 'match',
+            entityId: match.id!,
+            action: 'match_rejected',
+            actorAuthUserId: session.authenticated!.authUserId,
+            payload: AuditPayload(
+              summary: 'Report closed',
+              data: {'reportRef': row.refCode},
+            ),
+          ),
+          transaction: tx,
+        );
+      }
       final updated = await LostReport.db.updateRow(
         session,
         row.copyWith(
@@ -114,7 +150,7 @@ class ReportEndpoint extends Endpoint with VenueGuard {
         at: closed.updatedAt,
       ),
     );
-    return _staffView(closed);
+    return (await StaffViews.reports(session, [closed])).single;
   }
 
   Future<LostReport> _authorized(Session session, UuidValue id) async {
@@ -123,8 +159,4 @@ class ReportEndpoint extends Endpoint with VenueGuard {
     await requireMembership(session, row.venueId);
     return row;
   }
-
-  // Owner credentials and abuse metadata never leave through staff APIs.
-  LostReport _staffView(LostReport row) =>
-      row.copyWith(publicToken: '', ipHash: null, embedding: null);
 }

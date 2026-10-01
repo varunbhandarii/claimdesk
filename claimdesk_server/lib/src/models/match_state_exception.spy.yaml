@@ -1,0 +1,4 @@
+exception: MatchStateException
+fields:
+  message: String
+  matchId: UuidValue

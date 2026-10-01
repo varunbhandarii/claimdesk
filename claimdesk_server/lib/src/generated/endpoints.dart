@@ -26,6 +26,7 @@ import '../auth/jwt_refresh_endpoint.dart' as _inwq3ztq;
 import '../endpoints/admin_endpoint.dart' as _i5t1w2d2;
 import '../endpoints/desk_stream_endpoint.dart' as _io3746h0;
 import '../endpoints/item_endpoint.dart' as _irwxp2xj;
+import '../endpoints/match_endpoint.dart' as _iznotijq;
 import '../endpoints/report_endpoint.dart' as _i90z2r7i;
 import '../endpoints/venue_endpoint.dart' as _im3sz6ep;
 import '../greetings/greeting_endpoint.dart' as _il624ik7;
@@ -62,6 +63,12 @@ class Endpoints extends _is.EndpointDispatch {
         ..initialize(
           server,
           'item',
+          null,
+        ),
+      'match': _iznotijq.MatchEndpoint()
+        ..initialize(
+          server,
+          'match',
           null,
         ),
       'report': _i90z2r7i.ReportEndpoint()
@@ -528,6 +535,130 @@ class Endpoints extends _is.EndpointDispatch {
                     session,
                     params['itemId'],
                   ),
+        ),
+      },
+    );
+    connectors['match'] = _is.EndpointConnector(
+      name: 'match',
+      endpoint: endpoints['match']!,
+      methodConnectors: {
+        'inbox': _is.MethodConnector(
+          name: 'inbox',
+          params: {
+            'venueId': _is.ParameterDescription(
+              name: 'venueId',
+              type: _is.getType<_is.UuidValue>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['match'] as _iznotijq.MatchEndpoint).inbox(
+                session,
+                params['venueId'],
+              ),
+        ),
+        'forReport': _is.MethodConnector(
+          name: 'forReport',
+          params: {
+            'reportId': _is.ParameterDescription(
+              name: 'reportId',
+              type: _is.getType<_is.UuidValue>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['match'] as _iznotijq.MatchEndpoint).forReport(
+                    session,
+                    params['reportId'],
+                  ),
+        ),
+        'forItem': _is.MethodConnector(
+          name: 'forItem',
+          params: {
+            'itemId': _is.ParameterDescription(
+              name: 'itemId',
+              type: _is.getType<_is.UuidValue>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['match'] as _iznotijq.MatchEndpoint).forItem(
+                    session,
+                    params['itemId'],
+                  ),
+        ),
+        'rematch': _is.MethodConnector(
+          name: 'rematch',
+          params: {
+            'reportId': _is.ParameterDescription(
+              name: 'reportId',
+              type: _is.getType<_is.UuidValue>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['match'] as _iznotijq.MatchEndpoint).rematch(
+                    session,
+                    params['reportId'],
+                  ),
+        ),
+        'confirm': _is.MethodConnector(
+          name: 'confirm',
+          params: {
+            'matchId': _is.ParameterDescription(
+              name: 'matchId',
+              type: _is.getType<_is.UuidValue>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['match'] as _iznotijq.MatchEndpoint).confirm(
+                    session,
+                    params['matchId'],
+                  ),
+        ),
+        'reject': _is.MethodConnector(
+          name: 'reject',
+          params: {
+            'matchId': _is.ParameterDescription(
+              name: 'matchId',
+              type: _is.getType<_is.UuidValue>(),
+              nullable: false,
+            ),
+            'reason': _is.ParameterDescription(
+              name: 'reason',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['match'] as _iznotijq.MatchEndpoint).reject(
+                session,
+                params['matchId'],
+                params['reason'],
+              ),
         ),
       },
     );

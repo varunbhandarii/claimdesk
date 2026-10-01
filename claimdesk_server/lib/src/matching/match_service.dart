@@ -135,6 +135,22 @@ class MatchService {
           ),
         );
       }
+      if (completeReportSet) {
+        await AuditEvent.db.insertRow(
+          s,
+          AuditEvent(
+            venueId: report.venueId,
+            entityType: 'report',
+            entityId: report.id!,
+            action: 'match_completed',
+            payload: AuditPayload(
+              summary: 'Report compared with found items',
+              data: {'algorithmVersion': Scorer.algorithmVersion},
+            ),
+          ),
+          transaction: tx,
+        );
+      }
       return events;
     });
     for (final event in events) {

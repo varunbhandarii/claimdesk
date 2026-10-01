@@ -26,6 +26,7 @@ fields:
   contactPurgedAt: DateTime?
   createdAt: DateTime, default=now
   updatedAt: DateTime, default=now
+  lastMatchOutcome: String?, !persist
 indexes:
   lost_report_venue_status_idx:
     fields: venueId, status, createdAt

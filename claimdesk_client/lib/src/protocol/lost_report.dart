@@ -43,6 +43,7 @@ abstract class LostReport
     this.contactPurgedAt,
     DateTime? createdAt,
     DateTime? updatedAt,
+    this.lastMatchOutcome,
   }) : status = status ?? _i8pcsu0p.ReportStatus.received,
        lostAtFuzzyDays = lostAtFuzzyDays ?? 0,
        createdAt = createdAt ?? DateTime.now(),
@@ -74,6 +75,7 @@ abstract class LostReport
     DateTime? contactPurgedAt,
     DateTime? createdAt,
     DateTime? updatedAt,
+    String? lastMatchOutcome,
   }) = _LostReportImpl;
 
   factory LostReport.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -137,6 +139,7 @@ abstract class LostReport
       updatedAt: jsonSerialization['updatedAt'] == null
           ? null
           : _isc.DateTimeJsonExtension.fromJson(jsonSerialization['updatedAt']),
+      lastMatchOutcome: jsonSerialization['lastMatchOutcome'] as String?,
     );
   }
 
@@ -193,6 +196,8 @@ abstract class LostReport
 
   DateTime updatedAt;
 
+  String? lastMatchOutcome;
+
   /// Returns a shallow copy of this [LostReport]
   /// with some or all fields replaced by the given arguments.
   @_isc.useResult
@@ -222,6 +227,7 @@ abstract class LostReport
     DateTime? contactPurgedAt,
     DateTime? createdAt,
     DateTime? updatedAt,
+    String? lastMatchOutcome,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -253,6 +259,7 @@ abstract class LostReport
       if (contactPurgedAt != null) 'contactPurgedAt': contactPurgedAt?.toJson(),
       'createdAt': createdAt.toJson(),
       'updatedAt': updatedAt.toJson(),
+      if (lastMatchOutcome != null) 'lastMatchOutcome': lastMatchOutcome,
     };
   }
 
@@ -286,6 +293,7 @@ abstract class LostReport
       if (contactPurgedAt != null) 'contactPurgedAt': contactPurgedAt?.toJson(),
       'createdAt': createdAt.toJson(),
       'updatedAt': updatedAt.toJson(),
+      if (lastMatchOutcome != null) 'lastMatchOutcome': lastMatchOutcome,
     };
   }
 
@@ -324,6 +332,7 @@ class _LostReportImpl extends LostReport {
     DateTime? contactPurgedAt,
     DateTime? createdAt,
     DateTime? updatedAt,
+    String? lastMatchOutcome,
   }) : super._(
          id: id,
          venueId: venueId,
@@ -350,6 +359,7 @@ class _LostReportImpl extends LostReport {
          contactPurgedAt: contactPurgedAt,
          createdAt: createdAt,
          updatedAt: updatedAt,
+         lastMatchOutcome: lastMatchOutcome,
        );
 
   /// Returns a shallow copy of this [LostReport]
@@ -382,6 +392,7 @@ class _LostReportImpl extends LostReport {
     Object? contactPurgedAt = _Undefined,
     DateTime? createdAt,
     DateTime? updatedAt,
+    Object? lastMatchOutcome = _Undefined,
   }) {
     return LostReport(
       id: id is _isc.UuidValue? ? id : this.id,
@@ -421,6 +432,9 @@ class _LostReportImpl extends LostReport {
           : this.contactPurgedAt,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      lastMatchOutcome: lastMatchOutcome is String?
+          ? lastMatchOutcome
+          : this.lastMatchOutcome,
     );
   }
 }
