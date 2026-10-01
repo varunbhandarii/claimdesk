@@ -3,6 +3,7 @@ import '../generated/protocol.dart';
 import '../web/public/report_form_input.dart';
 import 'duplicate_rule.dart';
 import 'public_codes.dart';
+import '../matching/match_jobs.dart';
 
 class PublicIntakeService {
   PublicIntakeService({PublicCodes? codes}) : codes = codes ?? PublicCodes();
@@ -102,6 +103,7 @@ class PublicIntakeService {
             ),
             transaction: tx,
           );
+          await MatchJobs.report(session, report, transaction: tx);
           return (report: report, duplicate: false);
         });
         await session.messages.postMessage(

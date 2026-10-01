@@ -8,6 +8,7 @@ import '../../ai/text_template.dart';
 import '../../generated/protocol.dart';
 import '../../policy/retention.dart';
 import '../../services/child_records.dart';
+import '../../matching/match_jobs.dart';
 import '../job_handler.dart';
 
 Future<PreparedImage?> _prepare(Uint8List bytes) =>
@@ -21,10 +22,12 @@ class CaptionItemHandler extends JobHandler {
     var item = await FoundItem.db.findById(session, job.payload.entityId!);
     if (item == null || item.venueId != job.venueId) return;
     // Resume a crash after the attribute commit by finishing only the embedding.
-    if (item.status == ItemStatus.unclaimed &&
-        item.attributes != null &&
-        item.embedding == null) {
-      await embedItem(session, job, item);
+    if (item.status == ItemStatus.unclaimed && item.attributes != null) {
+      if (item.embedding == null) {
+        await embedItem(session, job, item);
+      } else {
+        await enqueueEmbeddedItem(session, job, item);
+      }
       await _post(session, item, 'itemStatus');
       return;
     }
@@ -252,5 +255,22 @@ Future<void> embedItem(
   } catch (_) {
     session.log('Item embedding unavailable; retained caption for later retry');
     if (retryFailure) rethrow;
+  }
+  await enqueueEmbeddedItem(session, job, item);
+}
+
+Future<void> enqueueEmbeddedItem(
+  Session session,
+  WorkItem job,
+  FoundItem snapshot,
+) async {
+  final item = await FoundItem.db.findById(session, snapshot.id!);
+  if (item != null &&
+      item.venueId == job.venueId &&
+      item.status == ItemStatus.unclaimed &&
+      item.embedding != null &&
+      item.captionText == snapshot.captionText &&
+      await JobClaim.current(session, job)) {
+    await MatchJobs.item(session, item);
   }
 }

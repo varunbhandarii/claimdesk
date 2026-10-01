@@ -76,6 +76,7 @@ void main() {
       expect(data.keys.toSet(), {
         'refCode',
         'status',
+        'sentence',
         'filedAt',
         'updatedAt',
         'venue',

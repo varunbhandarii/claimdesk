@@ -7,6 +7,8 @@ import 'src/ai/providers.dart';
 import 'src/jobs/job_worker.dart';
 import 'src/jobs/handlers/caption_item_handler.dart';
 import 'src/jobs/handlers/reembed_item_handler.dart';
+import 'src/jobs/handlers/match_item_handler.dart';
+import 'src/jobs/handlers/match_report_handler.dart';
 import 'src/cache_busting.dart';
 import 'src/generated/serverpod.dart';
 import 'src/web/routes/app_config_route.dart';
@@ -140,7 +142,12 @@ void run(List<String> args) async {
   Providers.configure(pod);
   JobWorker(
     pod,
-    handlers: [CaptionItemHandler(), ReembedItemHandler()],
+    handlers: [
+      CaptionItemHandler(),
+      ReembedItemHandler(),
+      MatchReportHandler(),
+      MatchItemHandler(),
+    ],
     interval: Duration(seconds: Providers.config.workerIntervalSeconds),
   ).start();
 }

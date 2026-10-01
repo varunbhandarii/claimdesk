@@ -98,9 +98,9 @@ class TicketView {
     ReportStatus.received =>
       'We have your report. The desk checks new items against it; come back here for updates.',
     ReportStatus.searching =>
-      'We are checking every item handed in against your report.',
+      'We are checking every item handed in against your report, and we keep checking as new items arrive.',
     ReportStatus.possibleMatch =>
-      'The desk may have your item. Answer two questions so they can confirm it is yours.',
+      'The desk may have your item. Come to the desk with photo ID, or wait for the two questions that will appear here.',
     ReportStatus.readyForPickup =>
       'Your item is ready. Bring photo ID to the desk.',
     ReportStatus.returned =>
@@ -126,6 +126,7 @@ class TicketView {
   Map<String, dynamic> toJson() => {
     'refCode': report.refCode,
     'status': report.status.name,
+    'sentence': sentence,
     'filedAt': report.createdAt.toUtc().toIso8601String(),
     'updatedAt': report.updatedAt.toUtc().toIso8601String(),
     'venue': {

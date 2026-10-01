@@ -12,8 +12,11 @@ class ReembedItemHandler extends JobHandler {
     if (item == null ||
         item.venueId != job.venueId ||
         item.attributes == null ||
-        item.status == ItemStatus.captioning ||
-        item.embedding != null) {
+        item.status == ItemStatus.captioning) {
+      return;
+    }
+    if (item.embedding != null) {
+      await enqueueEmbeddedItem(session, job, item);
       return;
     }
     await embedItem(session, job, item, retryFailure: true);

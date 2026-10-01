@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:serverpod/serverpod.dart';
+import '../matching/match_jobs.dart';
 import 'package:serverpod_auth_idp_server/core.dart';
 import '../access/venue_guard.dart';
 import '../ai/providers.dart';
@@ -290,6 +291,7 @@ class ItemEndpoint extends Endpoint with VenueGuard {
           identifier: 'reembed_${item.id}',
           transaction: tx,
         );
+        await MatchJobs.item(session, item, transaction: tx);
       }
       await AuditEvent.db.insertRow(
         session,

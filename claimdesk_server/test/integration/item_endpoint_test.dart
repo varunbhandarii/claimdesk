@@ -196,11 +196,20 @@ void main() {
       () async {
         final item = await create();
         await tick();
-        final first = (await WorkItem.db.find(s)).single;
+        final first = (await WorkItem.db.find(
+          s,
+          where: (t) => t.kind.equals('caption_item'),
+        )).single;
         final next = await endpoints.item.recaption(member, item.id!);
         expect(next.id, first.id);
         expect(next.state, WorkState.pending);
-        expect(await WorkItem.db.count(s), 1);
+        expect(
+          await WorkItem.db.count(
+            s,
+            where: (t) => t.kind.equals('caption_item'),
+          ),
+          1,
+        );
         await tick();
         expect(await CaptionRun.db.count(s), 2);
         expect(
