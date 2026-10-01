@@ -1,5 +1,6 @@
 import 'package:serverpod/serverpod.dart';
 import '../generated/protocol.dart';
+import 'job_wakeup.dart';
 
 class JobQueue {
   static Duration backoff(int attempts) =>
@@ -52,9 +53,10 @@ class JobQueue {
           : WorkItem.db.updateRow(session, job, transaction: tx);
     }
 
-    return transaction == null
-        ? session.db.transaction(write)
-        : write(transaction);
+    if (transaction != null) return write(transaction);
+    final job = await session.db.transaction(write);
+    JobWakeup.notify(session);
+    return job;
   }
 
   static Future<bool> cancel(Session session, String identifier) async =>

@@ -1,6 +1,7 @@
 import 'package:serverpod/serverpod.dart';
 import '../generated/protocol.dart';
 import '../jobs/job_queue.dart';
+import '../jobs/job_wakeup.dart';
 
 class MatchJobs {
   static Future<WorkItem> report(
@@ -50,6 +51,9 @@ class MatchJobs {
       );
     }
 
-    return transaction == null ? s.db.transaction(write) : write(transaction);
+    if (transaction != null) return write(transaction);
+    final job = await s.db.transaction(write);
+    JobWakeup.notify(s);
+    return job;
   }
 }

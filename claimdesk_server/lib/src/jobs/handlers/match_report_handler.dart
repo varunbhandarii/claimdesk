@@ -20,6 +20,9 @@ class MatchReportHandler extends JobHandler {
         !await JobClaim.current(s, job)) {
       return;
     }
+    final createdAt = report.createdAt;
+    final reference = report.refCode;
+    final phaseTimer = Stopwatch()..start();
     if (report.attributes == null) {
       final zone = report.zoneId == null
           ? null
@@ -88,6 +91,8 @@ class MatchReportHandler extends JobHandler {
       });
       if (report == null) return;
     }
+    final normalisationMs = phaseTimer.elapsedMilliseconds;
+    phaseTimer.reset();
     if (report.embedding == null) {
       final embeddingTimer = Stopwatch()..start();
       final values = await Providers.embedder.embedQuery(
@@ -125,6 +130,8 @@ class MatchReportHandler extends JobHandler {
       });
       if (report == null) return;
     }
+    final embeddingMs = phaseTimer.elapsedMilliseconds;
+    phaseTimer.reset();
     final rows = await CandidateQuery().forReport(s, report);
     await MatchService().apply(
       s,
@@ -132,6 +139,13 @@ class MatchReportHandler extends JobHandler {
       report,
       rows.map(const Scorer().score).toList(),
       startSearching: true,
+    );
+    s.log(
+      'Matching timing report=$reference '
+      'waitBeforeClaimMs=${job.updatedAt.difference(job.runAt).inMilliseconds} '
+      'normalisationMs=$normalisationMs embeddingMs=$embeddingMs '
+      'candidateApplyMs=${phaseTimer.elapsedMilliseconds} '
+      'totalMs=${DateTime.now().toUtc().difference(createdAt).inMilliseconds}',
     );
   }
 

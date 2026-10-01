@@ -4,6 +4,7 @@ import 'package:serverpod/serverpod.dart';
 import '../generated/protocol.dart';
 import 'job_handler.dart';
 import 'job_queue.dart';
+import 'job_wakeup.dart';
 
 class JobWorker {
   JobWorker(
@@ -23,6 +24,7 @@ class JobWorker {
   Timer? _timer;
   Future<void>? _active;
   bool _stopping = false;
+  bool _wakeRequested = false;
 
   void start() {
     if (_timer != null) return;
@@ -30,22 +32,41 @@ class JobWorker {
     stdout.writeln(
       'Job worker started: ${interval.inSeconds}s interval, ${lease.inSeconds}s renewable lease',
     );
+    JobWakeup.register(pod, wake);
     _timer = Timer.periodic(interval, (_) {
-      if (_active != null || _stopping) return;
-      _active = pod
-          .withSession((s) => tick(s))
-          .catchError((Object _) {
-            stderr.writeln(
-              'Job worker tick failed; pending work will be retried',
-            );
-          })
-          .whenComplete(() => _active = null);
+      if (_active == null) wake();
     });
     pod.experimental.shutdownTasks.addTask('job-worker', stop);
   }
 
+  /// Signals work without delaying the caller or overlapping worker ticks.
+  void wake() {
+    if (_timer == null || _stopping) return;
+    _wakeRequested = true;
+    if (_active != null) return;
+    _active =
+        Future<void>.microtask(() async {
+          do {
+            _wakeRequested = false;
+            try {
+              await pod.withSession((s) => tick(s));
+            } catch (_) {
+              stderr.writeln(
+                'Job worker tick failed; pending work will be retried',
+              );
+            }
+          } while (_wakeRequested && !_stopping);
+        }).whenComplete(() {
+          _active = null;
+          // A notification can arrive between the final loop check and completion.
+          if (_wakeRequested && !_stopping) wake();
+        });
+  }
+
   Future<void> stop() async {
     _stopping = true;
+    _wakeRequested = false;
+    JobWakeup.unregister(pod, wake);
     _timer?.cancel();
     _timer = null;
     await _active;

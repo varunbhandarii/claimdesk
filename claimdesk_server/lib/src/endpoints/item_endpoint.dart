@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:serverpod/serverpod.dart';
 import '../matching/match_jobs.dart';
+import '../jobs/job_wakeup.dart';
 import 'package:serverpod_auth_idp_server/core.dart';
 import '../access/venue_guard.dart';
 import '../ai/providers.dart';
@@ -99,7 +100,7 @@ class ItemEndpoint extends Endpoint with VenueGuard {
     }
     for (var attempt = 0; attempt < 5; attempt++) {
       try {
-        return await session.db.transaction((tx) async {
+        final item = await session.db.transaction((tx) async {
           final item = await FoundItem.db.insertRow(
             session,
             FoundItem(
@@ -147,6 +148,8 @@ class ItemEndpoint extends Endpoint with VenueGuard {
           );
           return item;
         });
+        JobWakeup.notify(session);
+        return item;
       } on DatabaseUniqueViolationException catch (error) {
         if (error.constraintName !=
                 'found_item__venueId__refCode__unique_idx' ||
@@ -307,6 +310,7 @@ class ItemEndpoint extends Endpoint with VenueGuard {
       );
       return item;
     });
+    if (attrs != null) JobWakeup.notify(session);
     await session.messages.postMessage(
       'venue_${updated.venueId}',
       DeskEvent(
@@ -321,7 +325,7 @@ class ItemEndpoint extends Endpoint with VenueGuard {
 
   Future<WorkItem> recaption(Session session, UuidValue itemId) async {
     await _authorizedItem(session, itemId);
-    return session.db.transaction((tx) async {
+    final job = await session.db.transaction((tx) async {
       final item = (await FoundItem.db.findById(
         session,
         itemId,
@@ -351,6 +355,8 @@ class ItemEndpoint extends Endpoint with VenueGuard {
         transaction: tx,
       );
     });
+    JobWakeup.notify(session);
+    return job;
   }
 
   Future<List<CaptionRun>> captionRuns(

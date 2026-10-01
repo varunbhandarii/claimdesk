@@ -4,6 +4,7 @@ import '../web/public/report_form_input.dart';
 import 'duplicate_rule.dart';
 import 'public_codes.dart';
 import '../matching/match_jobs.dart';
+import '../jobs/job_wakeup.dart';
 
 class PublicIntakeService {
   PublicIntakeService({PublicCodes? codes}) : codes = codes ?? PublicCodes();
@@ -106,6 +107,7 @@ class PublicIntakeService {
           await MatchJobs.report(session, report, transaction: tx);
           return (report: report, duplicate: false);
         });
+        if (!result.duplicate) JobWakeup.notify(session);
         await session.messages.postMessage(
           'venue_${venue.id}',
           DeskEvent(
