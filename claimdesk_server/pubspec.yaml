@@ -72,3 +72,10 @@ serverpod:
       device: RZCX625LT5P
       target: lib/driver.dart
       dart-define: SERVER_URL=http://127.0.0.1:8080/
+    cloud_phone:
+      path: ../claimdesk_flutter
+      displayName: "ClaimDesk Cloud phone"
+      auto_launch: false
+      device: RZCX625LT5P
+      target: lib/driver.dart
+      dart-define: SERVER_URL=https://claimdesk-vb.api.serverpod.space/
