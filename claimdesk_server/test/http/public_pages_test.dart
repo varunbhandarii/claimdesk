@@ -80,6 +80,7 @@ void main() {
         'filedAt',
         'updatedAt',
         'venue',
+        'answered',
       });
       expect(data['status'], 'received');
       expect(ticket.body, contains(data['refCode']));
