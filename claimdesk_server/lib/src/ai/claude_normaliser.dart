@@ -19,6 +19,7 @@ class ClaudeNormaliser implements ReportNormaliser {
   final http.Client client;
   final Duration timeout;
   final Future<void> Function(Duration) delay;
+  String? get effort => model == 'claude-opus-5-5' ? 'low' : null;
   @override
   String get id => 'claude_normaliser';
   @override
@@ -58,6 +59,7 @@ class ClaudeNormaliser implements ReportNormaliser {
                   },
                 ],
                 'output_config': {
+                  if (effort != null) 'effort': effort,
                   'format': {
                     'type': 'json_schema',
                     'schema': normaliseSchema(),

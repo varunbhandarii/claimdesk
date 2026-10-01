@@ -128,7 +128,7 @@ class EvalHarness {
         whereText: raw['whereText'] as String?,
       );
       final model = normaliser is ClaudeNormaliser
-          ? (normaliser as ClaudeNormaliser).model
+          ? '${(normaliser as ClaudeNormaliser).model}:${(normaliser as ClaudeNormaliser).effort ?? 'default'}'
           : normaliser.id;
       final identity = '$model:normalise_v1:${jsonEncode(raw)}';
       final result = await _cached(identity, () async {

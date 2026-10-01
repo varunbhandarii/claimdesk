@@ -37,6 +37,9 @@ class MatchReportHandler extends JobHandler {
       if (result.attributes == null) {
         throw StateError('Normalisation returned no attributes');
       }
+      s.log(
+        'Report normalisation ${result.outcome} in ${result.attempts.fold<int>(0, (total, attempt) => total + attempt.latencyMs)} ms',
+      );
       final snapshot = report;
       report = await s.db.transaction<LostReport?>((tx) async {
         final current = await LostReport.db.findById(
@@ -86,8 +89,12 @@ class MatchReportHandler extends JobHandler {
       if (report == null) return;
     }
     if (report.embedding == null) {
+      final embeddingTimer = Stopwatch()..start();
       final values = await Providers.embedder.embedQuery(
         TextTemplate.render(report.attributes!),
+      );
+      s.log(
+        'Report query embedding completed in ${embeddingTimer.elapsedMilliseconds} ms',
       );
       if (values.length != 1536 || values.any((v) => !v.isFinite)) {
         throw const FormatException('Invalid report embedding');

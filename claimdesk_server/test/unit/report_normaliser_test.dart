@@ -28,6 +28,7 @@ void main() {
         client: MockClient((request) async {
           final sent = jsonDecode(request.body);
           expect(sent['max_tokens'], 1024);
+          expect(sent['output_config']['effort'], 'low');
           expect(sent['messages'][0]['content'], hasLength(1));
           expect(request.body, isNot(contains('ownerOnlyDetails')));
           expect(request.body, isNot(contains('image/jpeg')));
