@@ -16,7 +16,7 @@ class MatchEndpoint extends Endpoint with VenueGuard {
           t.venueId.equals(venueId) &
           t.state.equals(MatchState.pending) &
           t.label.inSet({'strong', 'possible'}),
-      orderByList: (t) => [t.createdAt.desc(), t.id.desc()],
+      orderByList: (t) => [t.createdAt.desc(), t.rank, t.id.desc()],
       limit: 100,
     );
     return _cards(session, venueId, rows);

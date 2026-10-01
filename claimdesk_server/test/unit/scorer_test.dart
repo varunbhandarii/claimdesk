@@ -67,9 +67,9 @@ void main() {
   test('semantic signal clamps at calibrated endpoints', () {
     for (final pair in [
       (-1.0, 0.0),
-      (.25, 0.0),
-      (.55, .5),
-      (.85, 1.0),
+      (.85, 0.0),
+      (.92, .5),
+      (.99, 1.0),
       (1.0, 1.0),
     ]) {
       expect(
@@ -84,7 +84,7 @@ void main() {
     () {
       expect(scorer.score(candidate(lex: .6)).score, closeTo(.6, 1e-12));
       expect(
-        scorer.score(candidate(cosSim: .85, lex: 0)).score,
+        scorer.score(candidate(cosSim: .99, lex: 0)).score,
         closeTo(.4 / .55, 1e-12),
       );
       expect(scorer.score(candidate()).score, 0);

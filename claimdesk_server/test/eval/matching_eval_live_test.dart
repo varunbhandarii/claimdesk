@@ -50,6 +50,18 @@ void main() {
         expect(m.recall3, greaterThanOrEqualTo(.90));
         expect(m.mrr, greaterThanOrEqualTo(.80));
         expect(m.strongFpr, lessThanOrEqualTo(.10));
+        final umbrella = result.rankings.singleWhere(
+          (r) => r.reportKey == 'report_01',
+        );
+        expect(umbrella.rows.first.itemKey, 'wood_umbrella');
+        expect(umbrella.rows.first.result.label, 'strong');
+        expect(
+          umbrella.rows
+              .singleWhere((r) => r.itemKey == 'plastic_umbrella')
+              .result
+              .label,
+          'possible',
+        );
       },
       timeout: const Timeout(Duration(minutes: 20)),
       skip:
