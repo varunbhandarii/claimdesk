@@ -17,6 +17,7 @@ import 'src/services/photo_upload_relay.dart';
 import 'src/web/public/venue_page_route.dart';
 import 'src/web/public/lost_form_route.dart';
 import 'src/web/public/ticket_route.dart';
+import 'src/web/public/ticket_answer_route.dart';
 import 'src/web/middleware/rate_limit.dart';
 
 /// The starting point of the Serverpod server.
@@ -68,6 +69,7 @@ void run(List<String> args) async {
     '/v/:slug/lost',
   );
   pod.webServer.addRoute(TicketRoute(), '/t/:token');
+  pod.webServer.addRoute(TicketAnswerRoute(), '/t/:token/answer');
   pod.webServer.addRoute(TicketJsonRoute(), '/t/:token/status.json');
   pod.webServer.addRoute(
     StaticRoute.file(File('web/static/robots.txt')),

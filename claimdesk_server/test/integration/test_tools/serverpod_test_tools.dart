@@ -27,6 +27,7 @@ import 'package:claimdesk_server/src/generated/match_card.dart' as _i1d6w25f;
 import 'package:claimdesk_server/src/generated/photo_upload_ticket.dart'
     as _i0p7t3ak;
 import 'package:claimdesk_server/src/generated/protocol.dart' as _ii1g677k;
+import 'package:claimdesk_server/src/generated/report_answer.dart' as _in630fta;
 import 'package:claimdesk_server/src/generated/report_filter.dart' as _icei7w9h;
 import 'package:claimdesk_server/src/generated/staff_membership.dart'
     as _iugziyav;
@@ -995,6 +996,37 @@ class _MatchEndpoint {
   final _is.EndpointDispatch _endpointDispatch;
 
   final _is.SerializationManager _serializationManager;
+
+  _ida.Future<List<_in630fta.ReportAnswer>> answers(
+    _ist.TestSessionBuilder sessionBuilder,
+    _is.UuidValue matchId,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'match',
+            method: 'answers',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'match',
+          methodName: 'answers',
+          parameters: _ist.testObjectToJson({'matchId': matchId}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<List<_in630fta.ReportAnswer>>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
 
   _ida.Future<List<_i1d6w25f.MatchCard>> inbox(
     _ist.TestSessionBuilder sessionBuilder,

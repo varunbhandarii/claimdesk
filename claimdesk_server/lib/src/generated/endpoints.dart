@@ -580,6 +580,25 @@ class Endpoints extends _is.EndpointDispatch {
       name: 'match',
       endpoint: endpoints['match']!,
       methodConnectors: {
+        'answers': _is.MethodConnector(
+          name: 'answers',
+          params: {
+            'matchId': _is.ParameterDescription(
+              name: 'matchId',
+              type: _is.getType<_is.UuidValue>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['match'] as _iznotijq.MatchEndpoint).answers(
+                    session,
+                    params['matchId'],
+                  ),
+        ),
         'inbox': _is.MethodConnector(
           name: 'inbox',
           params: {

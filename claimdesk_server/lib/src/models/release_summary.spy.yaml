@@ -1,0 +1,5 @@
+class: ReleaseSummary
+fields:
+  record: ReleaseRecord
+  releasedByName: String
+  reportRefCode: String?

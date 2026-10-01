@@ -1,0 +1,4 @@
+exception: ReleaseRefusedException
+fields:
+  message: String
+  itemId: UuidValue

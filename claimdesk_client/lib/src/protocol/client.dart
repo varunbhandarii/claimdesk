@@ -24,6 +24,7 @@ import 'package:claimdesk_client/src/protocol/lost_report.dart' as _izbvtt9c;
 import 'package:claimdesk_client/src/protocol/match_card.dart' as _i7d074dr;
 import 'package:claimdesk_client/src/protocol/photo_upload_ticket.dart'
     as _i1f97sgb;
+import 'package:claimdesk_client/src/protocol/report_answer.dart' as _ib1z5a5v;
 import 'package:claimdesk_client/src/protocol/report_filter.dart' as _ii8h5ytv;
 import 'package:claimdesk_client/src/protocol/staff_membership.dart'
     as _ing7mbhm;
@@ -420,6 +421,13 @@ class EndpointMatch extends _isc.EndpointRef {
 
   @override
   String get name => 'match';
+
+  _ida.Future<List<_ib1z5a5v.ReportAnswer>> answers(_isc.UuidValue matchId) =>
+      caller.callServerEndpoint<List<_ib1z5a5v.ReportAnswer>>(
+        'match',
+        'answers',
+        {'matchId': matchId},
+      );
 
   _ida.Future<List<_i7d074dr.MatchCard>> inbox(_isc.UuidValue venueId) =>
       caller.callServerEndpoint<List<_i7d074dr.MatchCard>>(

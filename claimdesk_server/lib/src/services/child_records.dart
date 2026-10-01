@@ -32,8 +32,16 @@ class ChildRecords {
     );
   }
 
-  static Future<FoundItem> _item(Session session, UuidValue id) async {
-    final item = await FoundItem.db.findById(session, id);
+  static Future<FoundItem> _item(
+    Session session,
+    UuidValue id, {
+    Transaction? transaction,
+  }) async {
+    final item = await FoundItem.db.findById(
+      session,
+      id,
+      transaction: transaction,
+    );
     if (item == null) throw ArgumentError('Item unavailable');
     return item;
   }
@@ -80,11 +88,20 @@ class ChildRecords {
     required UuidValue matchId,
     required String question,
     required String answer,
+    Transaction? transaction,
   }) async {
-    final match = await ItemMatch.db.findById(session, matchId);
+    final match = await ItemMatch.db.findById(
+      session,
+      matchId,
+      transaction: transaction,
+    );
     if (match == null) throw ArgumentError('Match unavailable');
-    final report = await LostReport.db.findById(session, match.reportId);
-    final item = await _item(session, match.itemId);
+    final report = await LostReport.db.findById(
+      session,
+      match.reportId,
+      transaction: transaction,
+    );
+    final item = await _item(session, match.itemId, transaction: transaction);
     if (report == null ||
         report.venueId != match.venueId ||
         report.venueId != item.venueId) {
@@ -99,6 +116,7 @@ class ChildRecords {
         question: question,
         answer: answer,
       ),
+      transaction: transaction,
     );
   }
 
@@ -113,10 +131,15 @@ class ChildRecords {
     required UuidValue releasedByAuthUserId,
     String? thirdPartyAuthorisationNote,
     String? signaturePath,
+    Transaction? transaction,
   }) async {
-    final item = await _item(session, itemId);
+    final item = await _item(session, itemId, transaction: transaction);
     if (reportId != null) {
-      final report = await LostReport.db.findById(session, reportId);
+      final report = await LostReport.db.findById(
+        session,
+        reportId,
+        transaction: transaction,
+      );
       if (report == null || report.venueId != item.venueId) {
         throw ArgumentError('Report and item must belong to the same venue');
       }
@@ -136,6 +159,7 @@ class ChildRecords {
           thirdPartyAuthorisationNote: thirdPartyAuthorisationNote,
           signaturePath: signaturePath,
         ),
+        transaction: transaction,
       );
     } on DatabaseUniqueViolationException catch (error) {
       if (error.constraintName != 'release_record_item_idx') rethrow;

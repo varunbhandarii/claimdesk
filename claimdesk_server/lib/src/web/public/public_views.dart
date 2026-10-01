@@ -100,7 +100,7 @@ class TicketView {
     ReportStatus.searching =>
       'We are checking every item handed in against your report, and we keep checking as new items arrive.',
     ReportStatus.possibleMatch =>
-      'The desk may have your item. Come to the desk with photo ID, or wait for the two questions that will appear here.',
+      'The desk may have your item. Come to the desk with photo ID, and answer the two questions below to help staff verify ownership.',
     ReportStatus.readyForPickup =>
       'Your item is ready. Bring photo ID to the desk.',
     ReportStatus.returned =>

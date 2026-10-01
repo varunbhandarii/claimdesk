@@ -3,6 +3,7 @@ import '../../generated/protocol.dart';
 import '../../services/public_intake_service.dart';
 import 'public_page.dart';
 import 'public_views.dart';
+import 'ticket_context.dart';
 
 class TicketRoute extends PublicRoute {
   @override
@@ -15,7 +16,12 @@ class TicketRoute extends PublicRoute {
     final venue = await Venue.db.findById(session, report.venueId);
     if (venue == null) return PublicPage.notFound();
     return PublicPage.html('ticket', {
-      ...TicketView(report, venue).toMap(),
+      ...await TicketContext.values(
+        session,
+        report,
+        venue,
+        editing: request.queryParameters.raw['edit'] == '1',
+      ),
       'duplicate': request.queryParameters.raw['existing'] == '1',
     }, noStore: true);
   }

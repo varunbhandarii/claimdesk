@@ -5,10 +5,96 @@ import 'duplicate_rule.dart';
 import 'public_codes.dart';
 import '../matching/match_jobs.dart';
 import '../jobs/job_wakeup.dart';
+import '../db/transactions.dart';
+import '../policy/verification_questions.dart';
+import 'child_records.dart';
 
 class PublicIntakeService {
   PublicIntakeService({PublicCodes? codes}) : codes = codes ?? PublicCodes();
   final PublicCodes codes;
+  Future<bool> answer(
+    Session session,
+    LostReport report,
+    List<String> answers,
+  ) async {
+    if (VerificationQuestions.validate(answers).isNotEmpty) {
+      throw ArgumentError('Invalid answers');
+    }
+    final matchId = await serializable<UuidValue?>(session, (tx) async {
+      final current = await LostReport.db.findById(
+        session,
+        report.id!,
+        transaction: tx,
+        lockMode: LockMode.forUpdate,
+      );
+      if (current == null ||
+          !{
+            ReportStatus.possibleMatch,
+            ReportStatus.readyForPickup,
+          }.contains(current.status)) {
+        return null;
+      }
+      final match = await ItemMatch.db.findFirstRow(
+        session,
+        where: (t) =>
+            t.reportId.equals(current.id!) &
+            t.state.equals(MatchState.confirmed),
+        transaction: tx,
+        lockMode: LockMode.forUpdate,
+      );
+      if (match == null || match.venueId != current.venueId) return null;
+      final questions = VerificationQuestions.forCategory(
+        current.attributes?.category ?? current.categoryHint ?? 'other',
+      );
+      await ReportAnswer.db.deleteWhere(
+        session,
+        where: (t) => t.matchId.equals(match.id!),
+        transaction: tx,
+      );
+      for (var i = 0; i < 2; i++) {
+        await ChildRecords.answer(
+          session,
+          matchId: match.id!,
+          question: questions[i],
+          answer: answers[i].trim(),
+          transaction: tx,
+        );
+      }
+      await LostReport.db.updateRow(
+        session,
+        current.copyWith(updatedAt: DateTime.now().toUtc()),
+        transaction: tx,
+      );
+      await AuditEvent.db.insertRow(
+        session,
+        AuditEvent(
+          venueId: current.venueId,
+          entityType: 'report',
+          entityId: current.id!,
+          action: 'answered',
+          payload: AuditPayload(
+            summary: 'Owner answered verification questions',
+            data: {'matchId': match.id.toString(), 'count': '2'},
+          ),
+        ),
+        transaction: tx,
+      );
+      return match.id;
+    });
+    if (matchId == null) return false;
+    await session.messages.postMessage(
+      'venue_${report.venueId}',
+      DeskEvent(
+        kind: 'reportAnswered',
+        venueId: report.venueId,
+        reportId: report.id,
+        matchId: matchId,
+        at: DateTime.now().toUtc(),
+      ),
+    );
+    return true;
+  }
+
   Future<({LostReport report, bool duplicate})> submit(
     Session session,
     Venue venue,

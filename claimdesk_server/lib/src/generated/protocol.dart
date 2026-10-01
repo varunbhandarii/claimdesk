@@ -15,6 +15,7 @@ import 'package:claimdesk_server/src/generated/caption_run.dart' as _iknvw4pb;
 import 'package:claimdesk_server/src/generated/found_item.dart' as _iskydu8k;
 import 'package:claimdesk_server/src/generated/lost_report.dart' as _i63i6mgk;
 import 'package:claimdesk_server/src/generated/match_card.dart' as _i1d6w25f;
+import 'package:claimdesk_server/src/generated/report_answer.dart' as _in630fta;
 import 'package:claimdesk_server/src/generated/staff_membership.dart'
     as _iugziyav;
 import 'package:claimdesk_server/src/generated/zone.dart' as _irlgv1kd;
@@ -45,7 +46,10 @@ import 'match_state.dart' as _idznkk1k;
 import 'match_state_exception.dart' as _inl9arvk;
 import 'not_a_member_exception.dart' as _ilheyvx1;
 import 'photo_upload_ticket.dart' as _ivh14x5g;
+import 'release_input.dart' as _ixt06mmk;
 import 'release_record.dart' as _ieeq0b1h;
+import 'release_refused_exception.dart' as _ir3sugu7;
+import 'release_summary.dart' as _ij181cah;
 import 'report_answer.dart' as _ihkjjm70;
 import 'report_filter.dart' as _i520f1xg;
 import 'report_status.dart' as _i8pcsu0p;
@@ -79,7 +83,10 @@ export 'match_state.dart';
 export 'match_state_exception.dart';
 export 'not_a_member_exception.dart';
 export 'photo_upload_ticket.dart';
+export 'release_input.dart';
 export 'release_record.dart';
+export 'release_refused_exception.dart';
+export 'release_summary.dart';
 export 'report_answer.dart';
 export 'report_filter.dart';
 export 'report_status.dart';
@@ -1743,8 +1750,17 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _ivh14x5g.PhotoUploadTicket) {
       return _ivh14x5g.PhotoUploadTicket.fromJson(data) as T;
     }
+    if (t == _ixt06mmk.ReleaseInput) {
+      return _ixt06mmk.ReleaseInput.fromJson(data) as T;
+    }
     if (t == _ieeq0b1h.ReleaseRecord) {
       return _ieeq0b1h.ReleaseRecord.fromJson(data) as T;
+    }
+    if (t == _ir3sugu7.ReleaseRefusedException) {
+      return _ir3sugu7.ReleaseRefusedException.fromJson(data) as T;
+    }
+    if (t == _ij181cah.ReleaseSummary) {
+      return _ij181cah.ReleaseSummary.fromJson(data) as T;
     }
     if (t == _ihkjjm70.ReportAnswer) {
       return _ihkjjm70.ReportAnswer.fromJson(data) as T;
@@ -1858,8 +1874,21 @@ class Protocol extends _is.DatabaseSerializationManager {
       return (data != null ? _ivh14x5g.PhotoUploadTicket.fromJson(data) : null)
           as T;
     }
+    if (t == _is.getType<_ixt06mmk.ReleaseInput?>()) {
+      return (data != null ? _ixt06mmk.ReleaseInput.fromJson(data) : null) as T;
+    }
     if (t == _is.getType<_ieeq0b1h.ReleaseRecord?>()) {
       return (data != null ? _ieeq0b1h.ReleaseRecord.fromJson(data) : null)
+          as T;
+    }
+    if (t == _is.getType<_ir3sugu7.ReleaseRefusedException?>()) {
+      return (data != null
+              ? _ir3sugu7.ReleaseRefusedException.fromJson(data)
+              : null)
+          as T;
+    }
+    if (t == _is.getType<_ij181cah.ReleaseSummary?>()) {
+      return (data != null ? _ij181cah.ReleaseSummary.fromJson(data) : null)
           as T;
     }
     if (t == _is.getType<_ihkjjm70.ReportAnswer?>()) {
@@ -1955,6 +1984,12 @@ class Protocol extends _is.DatabaseSerializationManager {
               .toList()
           as T;
     }
+    if (t == List<_in630fta.ReportAnswer>) {
+      return (data as List)
+              .map((e) => deserialize<_in630fta.ReportAnswer>(e))
+              .toList()
+          as T;
+    }
     if (t == List<_i1d6w25f.MatchCard>) {
       return (data as List)
               .map((e) => deserialize<_i1d6w25f.MatchCard>(e))
@@ -2012,7 +2047,10 @@ class Protocol extends _is.DatabaseSerializationManager {
       _inl9arvk.MatchStateException => 'MatchStateException',
       _ilheyvx1.NotAMemberException => 'NotAMemberException',
       _ivh14x5g.PhotoUploadTicket => 'PhotoUploadTicket',
+      _ixt06mmk.ReleaseInput => 'ReleaseInput',
       _ieeq0b1h.ReleaseRecord => 'ReleaseRecord',
+      _ir3sugu7.ReleaseRefusedException => 'ReleaseRefusedException',
+      _ij181cah.ReleaseSummary => 'ReleaseSummary',
       _ihkjjm70.ReportAnswer => 'ReportAnswer',
       _i520f1xg.ReportFilter => 'ReportFilter',
       _i8pcsu0p.ReportStatus => 'ReportStatus',
@@ -2081,8 +2119,14 @@ class Protocol extends _is.DatabaseSerializationManager {
         return 'NotAMemberException';
       case _ivh14x5g.PhotoUploadTicket():
         return 'PhotoUploadTicket';
+      case _ixt06mmk.ReleaseInput():
+        return 'ReleaseInput';
       case _ieeq0b1h.ReleaseRecord():
         return 'ReleaseRecord';
+      case _ir3sugu7.ReleaseRefusedException():
+        return 'ReleaseRefusedException';
+      case _ij181cah.ReleaseSummary():
+        return 'ReleaseSummary';
       case _ihkjjm70.ReportAnswer():
         return 'ReportAnswer';
       case _i520f1xg.ReportFilter():
@@ -2196,8 +2240,17 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (dataClassName == 'PhotoUploadTicket') {
       return deserialize<_ivh14x5g.PhotoUploadTicket>(data['data']);
     }
+    if (dataClassName == 'ReleaseInput') {
+      return deserialize<_ixt06mmk.ReleaseInput>(data['data']);
+    }
     if (dataClassName == 'ReleaseRecord') {
       return deserialize<_ieeq0b1h.ReleaseRecord>(data['data']);
+    }
+    if (dataClassName == 'ReleaseRefusedException') {
+      return deserialize<_ir3sugu7.ReleaseRefusedException>(data['data']);
+    }
+    if (dataClassName == 'ReleaseSummary') {
+      return deserialize<_ij181cah.ReleaseSummary>(data['data']);
     }
     if (dataClassName == 'ReportAnswer') {
       return deserialize<_ihkjjm70.ReportAnswer>(data['data']);

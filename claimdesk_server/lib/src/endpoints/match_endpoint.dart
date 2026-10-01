@@ -6,8 +6,19 @@ import '../matching/candidate_query.dart';
 import '../matching/match_jobs.dart';
 import '../matching/scorer.dart';
 import '../services/staff_views.dart';
+import '../db/transactions.dart';
 
 class MatchEndpoint extends Endpoint with VenueGuard {
+  Future<List<ReportAnswer>> answers(Session session, UuidValue matchId) async {
+    final match = await _match(session, matchId);
+    return ReportAnswer.db.find(
+      session,
+      where: (t) =>
+          t.matchId.equals(match.id!) & t.venueId.equals(match.venueId),
+      orderBy: (t) => t.createdAt,
+    );
+  }
+
   Future<List<MatchCard>> inbox(Session session, UuidValue venueId) async {
     await requireMembership(session, venueId);
     final rows = await ItemMatch.db.find(
@@ -55,7 +66,7 @@ class MatchEndpoint extends Endpoint with VenueGuard {
 
   Future<MatchCard> confirm(Session session, UuidValue matchId) async {
     final authorized = await _match(session, matchId);
-    final events = await _serializable(session, (tx) async {
+    final events = await serializable(session, (tx) async {
       final row = await _lockedMatch(session, matchId, authorized.venueId, tx);
       if (row.state != MatchState.pending) {
         _bad(matchId, 'Only a proposed match can be confirmed');
@@ -158,7 +169,7 @@ class MatchEndpoint extends Endpoint with VenueGuard {
     if (clean.isEmpty || clean.length > 300) {
       throw ArgumentError('Give a reason of 1 to 300 characters');
     }
-    final events = await _serializable(session, (tx) async {
+    final events = await serializable(session, (tx) async {
       final row = await _lockedMatch(session, matchId, authorized.venueId, tx);
       if (!{MatchState.pending, MatchState.confirmed}.contains(row.state)) {
         _bad(matchId, 'This match has already been decided');
@@ -289,26 +300,6 @@ class MatchEndpoint extends Endpoint with VenueGuard {
 
   Never _bad(UuidValue id, String message) =>
       throw MatchStateException(message: message, matchId: id);
-  Future<T> _serializable<T>(
-    Session s,
-    Future<T> Function(Transaction) write,
-  ) async {
-    for (var attempt = 0; attempt < 5; attempt++) {
-      try {
-        return await s.db.transaction(
-          write,
-          settings: const TransactionSettings(
-            isolationLevel: IsolationLevel.serializable,
-          ),
-        );
-      } on DatabaseQueryException catch (error) {
-        if (!{'40001', '40P01'}.contains(error.code) || attempt == 4) rethrow;
-        await Future<void>.delayed(Duration(milliseconds: 20 * (attempt + 1)));
-      }
-    }
-    throw StateError('Transaction retry limit reached');
-  }
-
   void _sort(List<ItemMatch> rows) {
     int order(MatchState s) => switch (s) {
       MatchState.confirmed => 0,

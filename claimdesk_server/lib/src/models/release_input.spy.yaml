@@ -1,0 +1,9 @@
+class: ReleaseInput
+fields:
+  matchId: UuidValue?
+  claimantName: String
+  idTypeSeen: String
+  detailsMatched: int
+  describedBeforeViewing: bool
+  thirdParty: bool
+  thirdPartyAuthorisationNote: String?
