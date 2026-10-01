@@ -13,6 +13,7 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:claimdesk_client/src/protocol/caption_run.dart' as _i9gd0od7;
 import 'package:claimdesk_client/src/protocol/found_item.dart' as _i8bj3kzd;
+import 'package:claimdesk_client/src/protocol/lost_report.dart' as _izbvtt9c;
 import 'package:claimdesk_client/src/protocol/staff_membership.dart'
     as _ing7mbhm;
 import 'package:claimdesk_client/src/protocol/zone.dart' as _inmoeruh;
@@ -42,6 +43,7 @@ import 'not_a_member_exception.dart' as _ilheyvx1;
 import 'photo_upload_ticket.dart' as _ivh14x5g;
 import 'release_record.dart' as _ieeq0b1h;
 import 'report_answer.dart' as _ihkjjm70;
+import 'report_filter.dart' as _i520f1xg;
 import 'report_status.dart' as _i8pcsu0p;
 import 'retention_policy.dart' as _ic8ul1lq;
 import 'staff_membership.dart' as _isosyfem;
@@ -73,6 +75,7 @@ export 'not_a_member_exception.dart';
 export 'photo_upload_ticket.dart';
 export 'release_record.dart';
 export 'report_answer.dart';
+export 'report_filter.dart';
 export 'report_status.dart';
 export 'retention_policy.dart';
 export 'staff_membership.dart';
@@ -182,6 +185,9 @@ class Protocol extends _isc.SerializationManager {
     if (t == _ihkjjm70.ReportAnswer) {
       return _ihkjjm70.ReportAnswer.fromJson(data) as T;
     }
+    if (t == _i520f1xg.ReportFilter) {
+      return _i520f1xg.ReportFilter.fromJson(data) as T;
+    }
     if (t == _i8pcsu0p.ReportStatus) {
       return _i8pcsu0p.ReportStatus.fromJson(data) as T;
     }
@@ -286,6 +292,9 @@ class Protocol extends _isc.SerializationManager {
     if (t == _isc.getType<_ihkjjm70.ReportAnswer?>()) {
       return (data != null ? _ihkjjm70.ReportAnswer.fromJson(data) : null) as T;
     }
+    if (t == _isc.getType<_i520f1xg.ReportFilter?>()) {
+      return (data != null ? _i520f1xg.ReportFilter.fromJson(data) : null) as T;
+    }
     if (t == _isc.getType<_i8pcsu0p.ReportStatus?>()) {
       return (data != null ? _i8pcsu0p.ReportStatus.fromJson(data) : null) as T;
     }
@@ -375,6 +384,12 @@ class Protocol extends _isc.SerializationManager {
               .toList()
           as T;
     }
+    if (t == List<_izbvtt9c.LostReport>) {
+      return (data as List)
+              .map((e) => deserialize<_izbvtt9c.LostReport>(e))
+              .toList()
+          as T;
+    }
     if (t == List<_ing7mbhm.StaffMembership>) {
       return (data as List)
               .map((e) => deserialize<_ing7mbhm.StaffMembership>(e))
@@ -417,6 +432,7 @@ class Protocol extends _isc.SerializationManager {
       _ivh14x5g.PhotoUploadTicket => 'PhotoUploadTicket',
       _ieeq0b1h.ReleaseRecord => 'ReleaseRecord',
       _ihkjjm70.ReportAnswer => 'ReportAnswer',
+      _i520f1xg.ReportFilter => 'ReportFilter',
       _i8pcsu0p.ReportStatus => 'ReportStatus',
       _ic8ul1lq.RetentionPolicy => 'RetentionPolicy',
       _isosyfem.StaffMembership => 'StaffMembership',
@@ -483,6 +499,8 @@ class Protocol extends _isc.SerializationManager {
         return 'ReleaseRecord';
       case _ihkjjm70.ReportAnswer():
         return 'ReportAnswer';
+      case _i520f1xg.ReportFilter():
+        return 'ReportFilter';
       case _i8pcsu0p.ReportStatus():
         return 'ReportStatus';
       case _ic8ul1lq.RetentionPolicy():
@@ -587,6 +605,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (dataClassName == 'ReportAnswer') {
       return deserialize<_ihkjjm70.ReportAnswer>(data['data']);
+    }
+    if (dataClassName == 'ReportFilter') {
+      return deserialize<_i520f1xg.ReportFilter>(data['data']);
     }
     if (dataClassName == 'ReportStatus') {
       return deserialize<_i8pcsu0p.ReportStatus>(data['data']);

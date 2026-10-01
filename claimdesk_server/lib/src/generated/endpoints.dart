@@ -15,6 +15,7 @@ import 'package:claimdesk_server/src/generated/create_item_input.dart'
 import 'package:claimdesk_server/src/generated/item_filter.dart' as _id50o94s;
 import 'package:claimdesk_server/src/generated/item_patch.dart' as _isrhr89g;
 import 'package:claimdesk_server/src/generated/protocol.dart' as _ii1g677k;
+import 'package:claimdesk_server/src/generated/report_filter.dart' as _icei7w9h;
 import 'package:serverpod/serverpod.dart' as _is;
 import 'package:serverpod_auth_core_server/serverpod_auth_core_server.dart'
     as _iacs;
@@ -25,6 +26,7 @@ import '../auth/jwt_refresh_endpoint.dart' as _inwq3ztq;
 import '../endpoints/admin_endpoint.dart' as _i5t1w2d2;
 import '../endpoints/desk_stream_endpoint.dart' as _io3746h0;
 import '../endpoints/item_endpoint.dart' as _irwxp2xj;
+import '../endpoints/report_endpoint.dart' as _i90z2r7i;
 import '../endpoints/venue_endpoint.dart' as _im3sz6ep;
 import '../greetings/greeting_endpoint.dart' as _il624ik7;
 
@@ -60,6 +62,12 @@ class Endpoints extends _is.EndpointDispatch {
         ..initialize(
           server,
           'item',
+          null,
+        ),
+      'report': _i90z2r7i.ReportEndpoint()
+        ..initialize(
+          server,
+          'report',
           null,
         ),
       'venue': _im3sz6ep.VenueEndpoint()
@@ -519,6 +527,106 @@ class Endpoints extends _is.EndpointDispatch {
                   (endpoints['item'] as _irwxp2xj.ItemEndpoint).captionRuns(
                     session,
                     params['itemId'],
+                  ),
+        ),
+      },
+    );
+    connectors['report'] = _is.EndpointConnector(
+      name: 'report',
+      endpoint: endpoints['report']!,
+      methodConnectors: {
+        'listReports': _is.MethodConnector(
+          name: 'listReports',
+          params: {
+            'venueId': _is.ParameterDescription(
+              name: 'venueId',
+              type: _is.getType<_is.UuidValue>(),
+              nullable: false,
+            ),
+            'filter': _is.ParameterDescription(
+              name: 'filter',
+              type: _is.getType<_icei7w9h.ReportFilter>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['report'] as _i90z2r7i.ReportEndpoint).listReports(
+                    session,
+                    params['venueId'],
+                    params['filter'],
+                  ),
+        ),
+        'getReport': _is.MethodConnector(
+          name: 'getReport',
+          params: {
+            'reportId': _is.ParameterDescription(
+              name: 'reportId',
+              type: _is.getType<_is.UuidValue>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['report'] as _i90z2r7i.ReportEndpoint).getReport(
+                    session,
+                    params['reportId'],
+                  ),
+        ),
+        'findByRefCode': _is.MethodConnector(
+          name: 'findByRefCode',
+          params: {
+            'venueId': _is.ParameterDescription(
+              name: 'venueId',
+              type: _is.getType<_is.UuidValue>(),
+              nullable: false,
+            ),
+            'refCode': _is.ParameterDescription(
+              name: 'refCode',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['report'] as _i90z2r7i.ReportEndpoint)
+                  .findByRefCode(
+                    session,
+                    params['venueId'],
+                    params['refCode'],
+                  ),
+        ),
+        'closeReport': _is.MethodConnector(
+          name: 'closeReport',
+          params: {
+            'reportId': _is.ParameterDescription(
+              name: 'reportId',
+              type: _is.getType<_is.UuidValue>(),
+              nullable: false,
+            ),
+            'reason': _is.ParameterDescription(
+              name: 'reason',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['report'] as _i90z2r7i.ReportEndpoint).closeReport(
+                    session,
+                    params['reportId'],
+                    params['reason'],
                   ),
         ),
       },

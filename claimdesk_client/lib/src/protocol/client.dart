@@ -20,8 +20,10 @@ import 'package:claimdesk_client/src/protocol/greetings/greeting.dart'
     as _i8l8ycv0;
 import 'package:claimdesk_client/src/protocol/item_filter.dart' as _inizcy6n;
 import 'package:claimdesk_client/src/protocol/item_patch.dart' as _i410ys6o;
+import 'package:claimdesk_client/src/protocol/lost_report.dart' as _izbvtt9c;
 import 'package:claimdesk_client/src/protocol/photo_upload_ticket.dart'
     as _i1f97sgb;
+import 'package:claimdesk_client/src/protocol/report_filter.dart' as _ii8h5ytv;
 import 'package:claimdesk_client/src/protocol/staff_membership.dart'
     as _ing7mbhm;
 import 'package:claimdesk_client/src/protocol/venue.dart' as _i53htkm0;
@@ -398,6 +400,57 @@ class EndpointItem extends _isc.EndpointRef {
 }
 
 /// {@category Endpoint}
+class EndpointReport extends _isc.EndpointRef {
+  EndpointReport(_isc.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'report';
+
+  _ida.Future<List<_izbvtt9c.LostReport>> listReports(
+    _isc.UuidValue venueId,
+    _ii8h5ytv.ReportFilter filter,
+  ) => caller.callServerEndpoint<List<_izbvtt9c.LostReport>>(
+    'report',
+    'listReports',
+    {
+      'venueId': venueId,
+      'filter': filter,
+    },
+  );
+
+  _ida.Future<_izbvtt9c.LostReport> getReport(_isc.UuidValue reportId) =>
+      caller.callServerEndpoint<_izbvtt9c.LostReport>(
+        'report',
+        'getReport',
+        {'reportId': reportId},
+      );
+
+  _ida.Future<_izbvtt9c.LostReport?> findByRefCode(
+    _isc.UuidValue venueId,
+    String refCode,
+  ) => caller.callServerEndpoint<_izbvtt9c.LostReport?>(
+    'report',
+    'findByRefCode',
+    {
+      'venueId': venueId,
+      'refCode': refCode,
+    },
+  );
+
+  _ida.Future<_izbvtt9c.LostReport> closeReport(
+    _isc.UuidValue reportId,
+    String reason,
+  ) => caller.callServerEndpoint<_izbvtt9c.LostReport>(
+    'report',
+    'closeReport',
+    {
+      'reportId': reportId,
+      'reason': reason,
+    },
+  );
+}
+
+/// {@category Endpoint}
 class EndpointVenue extends _isc.EndpointRef {
   EndpointVenue(_isc.EndpointCaller caller) : super(caller);
 
@@ -487,6 +540,7 @@ class Client extends _isc.ServerpodClientShared {
     admin = EndpointAdmin(this);
     deskStream = EndpointDeskStream(this);
     item = EndpointItem(this);
+    report = EndpointReport(this);
     venue = EndpointVenue(this);
     greeting = EndpointGreeting(this);
     modules = Modules(this);
@@ -502,6 +556,8 @@ class Client extends _isc.ServerpodClientShared {
 
   late final EndpointItem item;
 
+  late final EndpointReport report;
+
   late final EndpointVenue venue;
 
   late final EndpointGreeting greeting;
@@ -515,6 +571,7 @@ class Client extends _isc.ServerpodClientShared {
     'admin': admin,
     'deskStream': deskStream,
     'item': item,
+    'report': report,
     'venue': venue,
     'greeting': greeting,
   };

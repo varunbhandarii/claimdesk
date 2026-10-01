@@ -1,0 +1,5 @@
+class: ReportFilter
+fields:
+  status: ReportStatus?
+  zoneId: UuidValue?
+  category: String?

@@ -22,9 +22,11 @@ import 'package:claimdesk_server/src/generated/greetings/greeting.dart'
     as _izso5nwb;
 import 'package:claimdesk_server/src/generated/item_filter.dart' as _id50o94s;
 import 'package:claimdesk_server/src/generated/item_patch.dart' as _isrhr89g;
+import 'package:claimdesk_server/src/generated/lost_report.dart' as _i63i6mgk;
 import 'package:claimdesk_server/src/generated/photo_upload_ticket.dart'
     as _i0p7t3ak;
 import 'package:claimdesk_server/src/generated/protocol.dart' as _ii1g677k;
+import 'package:claimdesk_server/src/generated/report_filter.dart' as _icei7w9h;
 import 'package:claimdesk_server/src/generated/staff_membership.dart'
     as _iugziyav;
 import 'package:claimdesk_server/src/generated/venue.dart' as _izri1swu;
@@ -172,6 +174,8 @@ class TestEndpoints {
 
   late final _ItemEndpoint item;
 
+  late final _ReportEndpoint report;
+
   late final _VenueEndpoint venue;
 
   late final _GreetingEndpoint greeting;
@@ -201,6 +205,10 @@ class _InternalTestEndpoints extends TestEndpoints
       serializationManager,
     );
     item = _ItemEndpoint(
+      endpoints,
+      serializationManager,
+    );
+    report = _ReportEndpoint(
       endpoints,
       serializationManager,
     );
@@ -901,6 +909,153 @@ class _ItemEndpoint {
                   _localCallContext.arguments,
                 )
                 as _ida.Future<List<_iknvw4pb.CaptionRun>>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+}
+
+class _ReportEndpoint {
+  _ReportEndpoint(
+    this._endpointDispatch,
+    this._serializationManager,
+  );
+
+  final _is.EndpointDispatch _endpointDispatch;
+
+  final _is.SerializationManager _serializationManager;
+
+  _ida.Future<List<_i63i6mgk.LostReport>> listReports(
+    _ist.TestSessionBuilder sessionBuilder,
+    _is.UuidValue venueId,
+    _icei7w9h.ReportFilter filter,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'report',
+            method: 'listReports',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'report',
+          methodName: 'listReports',
+          parameters: _ist.testObjectToJson({
+            'venueId': venueId,
+            'filter': filter,
+          }),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<List<_i63i6mgk.LostReport>>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _ida.Future<_i63i6mgk.LostReport> getReport(
+    _ist.TestSessionBuilder sessionBuilder,
+    _is.UuidValue reportId,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'report',
+            method: 'getReport',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'report',
+          methodName: 'getReport',
+          parameters: _ist.testObjectToJson({'reportId': reportId}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<_i63i6mgk.LostReport>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _ida.Future<_i63i6mgk.LostReport?> findByRefCode(
+    _ist.TestSessionBuilder sessionBuilder,
+    _is.UuidValue venueId,
+    String refCode,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'report',
+            method: 'findByRefCode',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'report',
+          methodName: 'findByRefCode',
+          parameters: _ist.testObjectToJson({
+            'venueId': venueId,
+            'refCode': refCode,
+          }),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<_i63i6mgk.LostReport?>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _ida.Future<_i63i6mgk.LostReport> closeReport(
+    _ist.TestSessionBuilder sessionBuilder,
+    _is.UuidValue reportId,
+    String reason,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'report',
+            method: 'closeReport',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'report',
+          methodName: 'closeReport',
+          parameters: _ist.testObjectToJson({
+            'reportId': reportId,
+            'reason': reason,
+          }),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<_i63i6mgk.LostReport>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();
