@@ -45,7 +45,6 @@ COPY --from=build /app/claimdesk_server/build/bundle/ ./
 COPY --from=build /app/claimdesk_server/config/ config/
 COPY --from=build /app/claimdesk_server/web/ web/
 COPY --from=build /app/claimdesk_server/migrations/ migrations/
-COPY --from=build /app/claimdesk_server/lib/src/seed/demo_inventory.json lib/src/seed/demo_inventory.json
 
 # This file is required to enable the endpoint log filter in Insights.
 COPY --from=build /app/claimdesk_server/lib/src/generated/protocol.yaml lib/src/generated/protocol.yaml

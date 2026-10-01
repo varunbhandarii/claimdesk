@@ -1,9 +1,9 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:serverpod/serverpod.dart';
 import '../ai/providers.dart';
 import '../ai/text_template.dart';
 import '../generated/protocol.dart';
+import '../seed/demo_inventory.dart';
 import '../web/public/report_form_input.dart';
 import 'child_records.dart';
 import 'public_codes.dart';
@@ -12,8 +12,7 @@ import 'seed_service.dart';
 
 class DemoInventoryService {
   static Map<String, dynamic> _fixture() =>
-      jsonDecode(File('lib/src/seed/demo_inventory.json').readAsStringSync())
-          as Map<String, dynamic>;
+      jsonDecode(demoInventoryJson) as Map<String, dynamic>;
   static Future<int> items(Session s) async {
     final demo = await SeedService.seedDemo(s);
     final zones = await Zone.db.find(

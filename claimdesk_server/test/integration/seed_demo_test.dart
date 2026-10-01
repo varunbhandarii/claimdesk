@@ -12,6 +12,7 @@ import 'package:claimdesk_server/src/jobs/handlers/caption_item_handler.dart';
 import 'package:claimdesk_server/src/jobs/handlers/match_item_handler.dart';
 import 'package:claimdesk_server/src/jobs/handlers/match_report_handler.dart';
 import 'package:claimdesk_server/src/services/demo_inventory_service.dart';
+import 'package:claimdesk_server/src/seed/demo_inventory.dart';
 import 'package:test/test.dart';
 import 'test_tools/fixtures.dart';
 import 'test_tools/serverpod_test_tools.dart';
@@ -25,9 +26,7 @@ void main() {
               ).readAsStringSync(),
             )
             as Map;
-    final bundle =
-        jsonDecode(File('lib/src/seed/demo_inventory.json').readAsStringSync())
-            as Map;
+    final bundle = jsonDecode(demoInventoryJson) as Map;
     for (final kind in ['items', 'reports']) {
       final byKey = {for (final row in fixture[kind] as List) row['key']: row};
       expect(bundle[kind], [
