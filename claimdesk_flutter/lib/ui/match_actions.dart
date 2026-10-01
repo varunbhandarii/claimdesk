@@ -59,32 +59,36 @@ class _MatchActionsState extends State<MatchActions> {
   bool _busy = false;
   Future<void> _act(bool confirm) async {
     final session = VenueScope.of(context);
+    final actionContext = Navigator.of(context).context;
+    final match = widget.match;
+    final onChanged = widget.onChanged;
     String? reason;
     if (!confirm) {
       reason = await askDismissReason(
         context,
-        undo: widget.match.state == MatchState.confirmed,
+        undo: match.state == MatchState.confirmed,
       );
-      if (reason == null || !mounted) return;
+      if (reason == null || !actionContext.mounted) return;
     }
-    setState(() => _busy = true);
+    if (mounted) setState(() => _busy = true);
     final result = await runGuarded(
-      context,
+      actionContext,
       () => confirm
-          ? session.client.match.confirm(widget.match.id!)
-          : session.client.match.reject(widget.match.id!, reason!),
+          ? session.client.match.confirm(match.id!)
+          : session.client.match.reject(match.id!, reason!),
       onDenied: session.onDenied,
     );
-    if (!mounted) return;
-    setState(() => _busy = false);
+    if (mounted) setState(() => _busy = false);
     if (result != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(confirm ? 'Match confirmed.' : 'Match dismissed.'),
-        ),
-      );
+      if (actionContext.mounted) {
+        ScaffoldMessenger.of(actionContext).showSnackBar(
+          SnackBar(
+            content: Text(confirm ? 'Match confirmed.' : 'Match dismissed.'),
+          ),
+        );
+      }
       session.scheduleRefresh();
-      widget.onChanged?.call();
+      onChanged?.call();
     }
   }
 
