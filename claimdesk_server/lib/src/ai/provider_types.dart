@@ -41,6 +41,36 @@ abstract class TextEmbedder {
   Future<List<double>> embedQuery(String text);
 }
 
+class ReportHints {
+  const ReportHints({
+    this.categoryHint,
+    this.colourHints = const [],
+    this.brandHint,
+    this.zoneName,
+    this.whereText,
+  });
+  final String? categoryHint, brandHint, zoneName, whereText;
+  final List<String> colourHints;
+}
+
+abstract class ReportNormaliser {
+  String get id;
+  Future<NormaliseResult> normalise(String rawText, ReportHints hints);
+}
+
+class NormaliseResult {
+  const NormaliseResult({
+    required this.attributes,
+    required this.outcome,
+    this.itemCount = 1,
+    this.attempts = const [],
+  });
+  final ItemAttributes? attributes;
+  final String outcome;
+  final int itemCount;
+  final List<CaptionAttempt> attempts;
+}
+
 class CaptionAttempt {
   const CaptionAttempt({
     required this.provider,

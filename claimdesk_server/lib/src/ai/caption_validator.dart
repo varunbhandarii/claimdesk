@@ -8,6 +8,7 @@ class CaptionValidator {
     Object? value, {
     required String modelId,
     required String promptVersion,
+    bool report = false,
   }) {
     Never bad() => throw const FormatException('Invalid caption schema');
     if (value is! Map<String, dynamic>) bad();
@@ -17,7 +18,9 @@ class CaptionValidator {
       'primary_item_index',
       'contains_personal_data',
       'personal_data_kinds',
-      'image_quality',
+      if (!report) 'image_quality',
+      if (report) 'keywords',
+      if (report) 'language',
     };
     if (root.keys.toSet().difference(rootKeys).isNotEmpty ||
         rootKeys.difference(root.keys.toSet()).isNotEmpty) {
@@ -36,9 +39,27 @@ class CaptionValidator {
         personal is! bool ||
         kinds is! List ||
         kinds.any((v) => !personalDataKinds.contains(v)) ||
-        !imageQualities.contains(root['image_quality'])) {
+        (!report && !imageQualities.contains(root['image_quality']))) {
       bad();
     }
+    if (report &&
+        (root['keywords'] is! List ||
+            (root['keywords'] as List).length > 10 ||
+            (root['keywords'] as List).any(
+              (v) => v is! String || v.trim().isEmpty || v.length > 80,
+            ) ||
+            root['language'] is! String ||
+            !RegExp(r'^[a-z]{2}$').hasMatch(root['language'] as String))) {
+      bad();
+    }
+    bool controls(Object? value) => value is String
+        ? RegExp(r'[\x00-\x1f\x7f]').hasMatch(value)
+        : value is List
+        ? value.any(controls)
+        : value is Map
+        ? value.values.any(controls)
+        : false;
+    if (report && controls(root)) bad();
     final parsed = <ItemAttributes>[];
     for (final raw in items) {
       if (raw is! Map<String, dynamic>) bad();
@@ -67,7 +88,7 @@ class CaptionValidator {
           !bounded(m['confidence']) ||
           colours is! List ||
           colours.length > 3 ||
-          (colours.isEmpty && personal != true) ||
+          (colours.isEmpty && personal != true && !report) ||
           colours.any((c) => !Taxonomy.colours.contains(c)) ||
           marks is! List ||
           marks.length > 5 ||
@@ -96,8 +117,9 @@ class CaptionValidator {
             containsPersonalData: personal,
             personalDataKinds: (kinds).cast<String>(),
             imageQuality: root['image_quality'],
-            keywords: [],
-            source: 'vision',
+            keywords: report ? (root['keywords'] as List).cast<String>() : [],
+            language: report ? root['language'] as String : null,
+            source: report ? 'report_llm' : 'vision',
             modelId: modelId,
             promptVersion: promptVersion,
           ),
