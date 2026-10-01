@@ -12,6 +12,7 @@ import '../ui/empty_state.dart';
 import 'log_item_screen.dart';
 import 'item_detail_screen.dart';
 import 'report_list_screen.dart';
+import 'inbox_screen.dart';
 
 class ItemListScreen extends StatefulWidget {
   const ItemListScreen({
@@ -128,25 +129,35 @@ class _ItemListScreenState extends State<ItemListScreen> {
       bottomNavigationBar: NavigationBar(
         selectedIndex: _tab,
         onDestinationSelected: (value) => setState(() => _tab = value),
-        destinations: const [
-          NavigationDestination(
+        destinations: [
+          const NavigationDestination(
             icon: Icon(Icons.inventory_2_outlined),
             label: 'Items',
           ),
-          NavigationDestination(
+          const NavigationDestination(
             icon: Icon(Icons.description_outlined),
             label: 'Reports',
           ),
+          NavigationDestination(
+            icon: Badge(
+              isLabelVisible: session.inbox.isNotEmpty,
+              label: Text('${session.inbox.length}'),
+              child: const Icon(Icons.inbox_outlined),
+            ),
+            label: 'Inbox',
+          ),
         ],
       ),
-      floatingActionButton: _tab == 1
+      floatingActionButton: _tab != 0
           ? null
           : FloatingActionButton.extended(
               onPressed: _log,
               icon: const Icon(Icons.add),
               label: const Text('Log item'),
             ),
-      body: _tab == 1
+      body: _tab == 2
+          ? const InboxScreen()
+          : _tab == 1
           ? const ReportListScreen()
           : Center(
               child: ConstrainedBox(

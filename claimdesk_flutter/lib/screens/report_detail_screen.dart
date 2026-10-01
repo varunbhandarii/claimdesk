@@ -6,6 +6,7 @@ import '../app/venue_session.dart';
 import '../data/errors.dart';
 import '../ui/status.dart';
 import '../ui/categories.dart';
+import '../ui/match_list.dart';
 
 class ReportDetailScreen extends StatefulWidget {
   const ReportDetailScreen({super.key, required this.reportId});
@@ -17,6 +18,8 @@ class ReportDetailScreen extends StatefulWidget {
 class _ReportDetailScreenState extends State<ReportDetailScreen> {
   VenueSession? _session;
   LostReport? _report;
+  List<MatchCard> _matches = [];
+  bool _rematching = false;
   Object? _error;
   DeskEvent? _event;
   int _revision = -1;
@@ -41,7 +44,12 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
     final event = s.lastEvent;
     if (event != null && !identical(event, _event)) {
       _event = event;
-      if (event.reportId == widget.reportId) unawaited(_load());
+      if (event.reportId == widget.reportId) {
+        if ({'matchCreated', 'reportStatus'}.contains(event.kind)) {
+          _rematching = false;
+        }
+        unawaited(_load());
+      }
     }
   }
 
@@ -53,9 +61,11 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
     _loading = true;
     try {
       final report = await _session!.client.report.getReport(widget.reportId);
+      final matches = await _session!.client.match.forReport(widget.reportId);
       if (mounted) {
         setState(() {
           _report = report;
+          _matches = matches;
           _error = null;
         });
       }
@@ -141,6 +151,16 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
 
   String _date(DateTime? date) =>
       date?.toLocal().toString().split('.').first ?? 'Not set';
+  Future<void> _rematch() async {
+    setState(() => _rematching = true);
+    final job = await runGuarded(
+      context,
+      () => _session!.client.match.rematch(widget.reportId),
+      onDenied: _session!.onDenied,
+    );
+    if (mounted && job == null) setState(() => _rematching = false);
+  }
+
   @override
   Widget build(BuildContext context) {
     final s = VenueScope.of(context);
@@ -184,6 +204,8 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
                       ],
                     ),
                     ReportStatusChip(r.status),
+                    if (r.lastMatchOutcome == 'match_failed')
+                      const MatchingUnavailable(),
                     if (_error != null) Text(errorMessage(_error!)),
                     const SizedBox(height: 16),
                     Text(
@@ -210,6 +232,29 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
                     Text('Updated: ${_date(r.updatedAt)}'),
                     if (r.closedAt != null)
                       Text('Closed: ${_date(r.closedAt)}'),
+                    const SizedBox(height: 24),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            'Candidates',
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
+                        ),
+                        if ({
+                          ReportStatus.received,
+                          ReportStatus.searching,
+                          ReportStatus.possibleMatch,
+                        }.contains(r.status))
+                          TextButton(
+                            onPressed: _rematching ? null : _rematch,
+                            child: Text(
+                              _rematching ? 'Searching…' : 'Search again',
+                            ),
+                          ),
+                      ],
+                    ),
+                    MatchList(cards: _matches),
                     const SizedBox(height: 24),
                     Card(
                       child: Padding(

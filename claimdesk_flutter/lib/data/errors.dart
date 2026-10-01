@@ -4,6 +4,7 @@ import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart';
 
 String errorMessage(Object error) {
   if (error is NotAMemberException) return error.message;
+  if (error is MatchStateException) return error.message;
   if (error is EmailAccountLoginException) {
     return 'Check your email and password, or try again later.';
   }

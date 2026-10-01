@@ -1,6 +1,22 @@
 import 'package:claimdesk_client/claimdesk_client.dart';
 import 'package:flutter/material.dart';
 
+String matchStateLabel(MatchState state) => switch (state) {
+  MatchState.pending => 'Proposed',
+  MatchState.confirmed => 'Confirmed',
+  MatchState.rejected => 'Dismissed',
+  MatchState.superseded => 'Superseded',
+};
+
+class MatchingUnavailable extends StatelessWidget {
+  const MatchingUnavailable({super.key});
+  @override
+  Widget build(BuildContext context) => const Chip(
+    avatar: Icon(Icons.warning_amber, size: 18),
+    label: Text('Matching unavailable'),
+  );
+}
+
 String reportStatusLabel(ReportStatus status) => switch (status) {
   ReportStatus.received => 'Received',
   ReportStatus.searching => 'Searching',

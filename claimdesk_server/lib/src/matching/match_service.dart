@@ -136,6 +136,16 @@ class MatchService {
         );
       }
       if (completeReportSet) {
+        if (!(startSearching && report.status == ReportStatus.received)) {
+          events.add(
+            DeskEvent(
+              kind: 'reportStatus',
+              venueId: report.venueId,
+              reportId: report.id,
+              at: now,
+            ),
+          );
+        }
         await AuditEvent.db.insertRow(
           s,
           AuditEvent(

@@ -140,7 +140,7 @@ class MatchEndpoint extends Endpoint with VenueGuard {
         'match_confirmed',
         'Match confirmed',
       );
-      return _events(row, now, superseded.map((m) => m.id!).toList());
+      return _events(row, now, superseded);
     });
     await _post(session, events);
     return (await _cards(session, authorized.venueId, [
@@ -249,7 +249,7 @@ class MatchEndpoint extends Endpoint with VenueGuard {
         );
       }
       await _audit(session, tx, row, report, item, 'match_rejected', clean);
-      return _events(row, now, restored.map((m) => m.id!).toList());
+      return _events(row, now, restored);
     });
     await _post(session, events);
     return (await _cards(session, authorized.venueId, [
@@ -418,15 +418,15 @@ class MatchEndpoint extends Endpoint with VenueGuard {
   List<DeskEvent> _events(
     ItemMatch row,
     DateTime now,
-    List<UuidValue> others,
+    List<ItemMatch> others,
   ) => [
-    for (final id in [row.id!, ...others])
+    for (final changed in [row, ...others])
       DeskEvent(
         kind: 'matchStatus',
         venueId: row.venueId,
-        matchId: id,
-        itemId: row.itemId,
-        reportId: row.reportId,
+        matchId: changed.id,
+        itemId: changed.itemId,
+        reportId: changed.reportId,
         at: now,
       ),
     DeskEvent(

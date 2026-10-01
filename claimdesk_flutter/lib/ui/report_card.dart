@@ -37,6 +37,8 @@ class ReportCard extends StatelessWidget {
               spacing: 6,
               children: [
                 ReportStatusChip(report.status),
+                if (report.lastMatchOutcome == 'match_failed')
+                  const MatchingUnavailable(),
                 if (report.categoryHint != null)
                   Chip(label: Text(categoryLabel(report.categoryHint!))),
                 for (final colour in report.colourHints)

@@ -154,7 +154,8 @@ void main() {
           expect(normaliser.calls, 1);
           expect(embedder.queries, 1);
           expect(await ItemMatch.db.count(s), 1);
-          expect(events, hasLength(2));
+          expect(events.where((e) => e.kind == 'matchCreated'), hasLength(1));
+          expect(events.where((e) => e.kind == 'reportStatus'), hasLength(2));
           await ItemMatch.db.updateRow(
             s,
             match.copyWith(state: MatchState.confirmed, score: .99),

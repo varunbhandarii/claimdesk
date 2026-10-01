@@ -46,6 +46,9 @@ class VenueSession extends ChangeNotifier {
   late final StreamSubscription<DeskEvent> _events;
   List<FoundItem> items = [];
   List<LostReport> reports = [];
+  List<MatchCard> inbox = [];
+  bool inboxLoading = true, inboxRefreshing = false, _inboxAgain = false;
+  Object? inboxError;
   ReportStatus? reportStatusFilter;
   UuidValue? reportZoneFilter;
   String? reportCategoryFilter;
@@ -69,7 +72,7 @@ class VenueSession extends ChangeNotifier {
   bool _refreshAgain = false;
   Future<void> start() async {
     live.start();
-    await Future.wait([refreshItems(), refreshReports()]);
+    await Future.wait([refreshItems(), refreshReports(), refreshInbox()]);
   }
 
   void _liveChanged() {
@@ -89,6 +92,7 @@ class VenueSession extends ChangeNotifier {
       () {
         unawaited(refreshItems());
         unawaited(refreshReports());
+        unawaited(refreshInbox());
       },
     );
   }
@@ -185,6 +189,36 @@ class VenueSession extends ChangeNotifier {
     live.dispose();
     photos.dispose();
     super.dispose();
+  }
+
+  Future<void> refreshInbox() async {
+    if (_disposed) return;
+    if (inboxRefreshing) {
+      _inboxAgain = true;
+      return;
+    }
+    inboxRefreshing = true;
+    notifyListeners();
+    try {
+      final result = await client.match.inbox(venue.id!);
+      if (_disposed) return;
+      inbox = result;
+      inboxError = null;
+    } catch (e) {
+      if (_disposed) return;
+      inboxError = e;
+      if (e is NotAMemberException) onDenied();
+    } finally {
+      if (!_disposed) {
+        inboxLoading = false;
+        inboxRefreshing = false;
+        notifyListeners();
+        if (_inboxAgain) {
+          _inboxAgain = false;
+          scheduleRefresh();
+        }
+      }
+    }
   }
 }
 

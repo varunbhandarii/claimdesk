@@ -10,6 +10,7 @@ import '../ui/status.dart';
 import '../ui/attribute_chips.dart';
 import 'edit_item_screen.dart';
 import '../ui/item_form.dart';
+import '../ui/match_list.dart';
 
 class ItemDetailScreen extends StatefulWidget {
   const ItemDetailScreen({super.key, required this.itemId});
@@ -22,6 +23,7 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
   VenueSession? _session;
   FoundItem? _item;
   List<CaptionRun> _runs = [];
+  List<MatchCard> _matches = [];
   Object? _error;
   DeskEvent? _lastEvent;
   int _reconnectRevision = 0;
@@ -60,10 +62,12 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
     try {
       final item = await _session!.client.item.getItem(widget.itemId);
       final runs = await _session!.client.item.captionRuns(widget.itemId);
+      final matches = await _session!.client.match.forItem(widget.itemId);
       if (mounted) {
         setState(() {
           _item = item;
           _runs = runs.reversed.toList();
+          _matches = matches;
           _error = null;
         });
       }
@@ -271,6 +275,12 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
                           ),
                           child: SelectableText(item.captionText!),
                         ),
+                      const SizedBox(height: 24),
+                      Text(
+                        'Matches',
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      MatchList(cards: _matches),
                       const SizedBox(height: 24),
                       Text(
                         'Item journey',
