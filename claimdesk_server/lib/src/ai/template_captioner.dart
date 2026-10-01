@@ -26,7 +26,8 @@ class TemplateCaptioner implements ItemCaptioner {
         category: category,
         colours: colours,
         brand: hints?.brand,
-        marks: [],
+        marks: hints?.marks ?? [],
+        material: hints?.material,
         description: hints?.notes?.trim().isNotEmpty == true
             ? hints!.notes!.trim()
             : '${colours.join(' ')} ${Taxonomy.label(category)} (staff description)'

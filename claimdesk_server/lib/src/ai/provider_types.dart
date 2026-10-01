@@ -10,11 +10,15 @@ class CaptionHints {
     this.fixtureName,
     this.containsPersonalData = false,
     this.personalDataKinds = const [],
+    this.marks = const [],
+    this.material,
   });
   final String? category, brand, notes, fixtureName;
   final List<String> colours;
   final bool containsPersonalData;
   final List<String> personalDataKinds;
+  final List<String> marks;
+  final String? material;
   factory CaptionHints.fromAttributes(ItemAttributes? a) => CaptionHints(
     category: a?.category,
     colours: a?.colours ?? [],
@@ -22,6 +26,8 @@ class CaptionHints {
     notes: a?.description,
     containsPersonalData: a?.containsPersonalData ?? false,
     personalDataKinds: a?.personalDataKinds ?? [],
+    marks: a?.marks ?? [],
+    material: a?.material,
   );
 }
 

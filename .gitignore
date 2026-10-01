@@ -25,3 +25,4 @@ claimdesk_server/test/fixtures/photos/backpack*
 .env
 .env.*
 !*.example
+claimdesk_server/test/fixtures/matching/cache/

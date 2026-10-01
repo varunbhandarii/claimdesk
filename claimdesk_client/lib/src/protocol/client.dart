@@ -270,6 +270,20 @@ class EndpointAdmin extends _isc.EndpointRef {
   @override
   String get name => 'admin';
 
+  _ida.Future<int> seedDemoItems(String secret) =>
+      caller.callServerEndpoint<int>(
+        'admin',
+        'seedDemoItems',
+        {'secret': secret},
+      );
+
+  _ida.Future<int> seedDemoReports(String secret) =>
+      caller.callServerEndpoint<int>(
+        'admin',
+        'seedDemoReports',
+        {'secret': secret},
+      );
+
   _ida.Future<
     ({
       _isc.UuidValue staffId,

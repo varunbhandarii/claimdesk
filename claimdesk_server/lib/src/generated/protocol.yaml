@@ -10,6 +10,8 @@ emailIdp:
 jwtRefresh:
   - refreshAccessToken:
 admin:
+  - seedDemoItems:
+  - seedDemoReports:
   - seedDemo:
 deskStream:
   - watchVenue:

@@ -1,0 +1,1503 @@
+{
+  "version": "synthetic_v1",
+  "description": "Original hand-written text-only matching fixture with reviewed ground truth and deliberate hard negatives.",
+  "seedItems": [
+    "wood_umbrella",
+    "plastic_umbrella",
+    "nike_backpack",
+    "adidas_backpack",
+    "jansport_backpack",
+    "apple_earbuds",
+    "samsung_earbuds",
+    "navy_jacket",
+    "black_jacket",
+    "red_keys",
+    "blue_keys",
+    "brown_wallet",
+    "black_cardholder",
+    "specimen_id",
+    "bank_card",
+    "hydro_bottle",
+    "stanley_cup",
+    "green_bottle",
+    "red_cap",
+    "blue_glasses",
+    "striped_scarf",
+    "usb_charger",
+    "rabbit_plush",
+    "blue_notebook",
+    "tennis_racket",
+    "silver_watch",
+    "silver_ring",
+    "inhaler",
+    "white_shoes",
+    "canvas_tote"
+  ],
+  "seedReports": [
+    "report_01",
+    "report_03",
+    "report_06",
+    "report_08",
+    "report_10",
+    "report_13"
+  ],
+  "items": [
+    {
+      "key": "wood_umbrella",
+      "attributes": {
+        "category": "umbrella",
+        "categoryConfidence": 1,
+        "colours": [
+          "black",
+          "brown"
+        ],
+        "brand": null,
+        "material": "wood and nylon",
+        "marks": [
+          "curved wooden handle",
+          "small chip on handle tip"
+        ],
+        "description": "Black folding umbrella with a curved wooden handle and a chipped tip.",
+        "containsPersonalData": false,
+        "personalDataKinds": [],
+        "keywords": [],
+        "source": "synthetic",
+        "modelId": "handwritten",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Front desk",
+      "foundAtDaysAgo": 1,
+      "restricted": false
+    },
+    {
+      "key": "plastic_umbrella",
+      "attributes": {
+        "category": "umbrella",
+        "categoryConfidence": 1,
+        "colours": [
+          "black"
+        ],
+        "brand": null,
+        "material": "plastic and nylon",
+        "marks": [
+          "straight plastic handle",
+          "blue wrist strap"
+        ],
+        "description": "Black compact umbrella with a straight plastic handle and a blue wrist strap.",
+        "containsPersonalData": false,
+        "personalDataKinds": [],
+        "keywords": [],
+        "source": "synthetic",
+        "modelId": "handwritten",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Pool deck",
+      "foundAtDaysAgo": 2,
+      "restricted": false
+    },
+    {
+      "key": "nike_backpack",
+      "attributes": {
+        "category": "backpack",
+        "categoryConfidence": 1,
+        "colours": [
+          "black"
+        ],
+        "brand": "Nike",
+        "material": "nylon",
+        "marks": [
+          "white swoosh",
+          "torn zipper pull"
+        ],
+        "description": "Black Nike backpack with a white swoosh and torn zipper pull.",
+        "containsPersonalData": false,
+        "personalDataKinds": [],
+        "keywords": [],
+        "source": "synthetic",
+        "modelId": "handwritten",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Gym floor",
+      "foundAtDaysAgo": 3,
+      "restricted": false
+    },
+    {
+      "key": "adidas_backpack",
+      "attributes": {
+        "category": "backpack",
+        "categoryConfidence": 1,
+        "colours": [
+          "black"
+        ],
+        "brand": "Adidas",
+        "material": "polyester",
+        "marks": [
+          "three white stripes",
+          "mesh bottle pocket"
+        ],
+        "description": "Black Adidas backpack with three white stripes and a mesh bottle pocket.",
+        "containsPersonalData": false,
+        "personalDataKinds": [],
+        "keywords": [],
+        "source": "synthetic",
+        "modelId": "handwritten",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Courts",
+      "foundAtDaysAgo": 4,
+      "restricted": false
+    },
+    {
+      "key": "jansport_backpack",
+      "attributes": {
+        "category": "backpack",
+        "categoryConfidence": 1,
+        "colours": [
+          "black"
+        ],
+        "brand": "JanSport",
+        "material": "canvas",
+        "marks": [
+          "red logo patch",
+          "brass zipper"
+        ],
+        "description": "Black JanSport canvas backpack with a red logo patch and brass zipper.",
+        "containsPersonalData": false,
+        "personalDataKinds": [],
+        "keywords": [],
+        "source": "synthetic",
+        "modelId": "handwritten",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Locker rooms",
+      "foundAtDaysAgo": 5,
+      "restricted": false
+    },
+    {
+      "key": "apple_earbuds",
+      "attributes": {
+        "category": "earbuds_or_headphones",
+        "categoryConfidence": 1,
+        "colours": [
+          "white"
+        ],
+        "brand": "Apple",
+        "material": "plastic",
+        "marks": [
+          "rounded case",
+          "small star sticker"
+        ],
+        "description": "White Apple wireless earbuds in a rounded case with a small star sticker.",
+        "containsPersonalData": false,
+        "personalDataKinds": [],
+        "keywords": [],
+        "source": "synthetic",
+        "modelId": "handwritten",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Front desk",
+      "foundAtDaysAgo": 6,
+      "restricted": false
+    },
+    {
+      "key": "samsung_earbuds",
+      "attributes": {
+        "category": "earbuds_or_headphones",
+        "categoryConfidence": 1,
+        "colours": [
+          "white"
+        ],
+        "brand": "Samsung",
+        "material": "plastic",
+        "marks": [
+          "square case",
+          "grey silicone cover"
+        ],
+        "description": "White Samsung wireless earbuds in a square case with a grey silicone cover.",
+        "containsPersonalData": false,
+        "personalDataKinds": [],
+        "keywords": [],
+        "source": "synthetic",
+        "modelId": "handwritten",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Gym floor",
+      "foundAtDaysAgo": 7,
+      "restricted": false
+    },
+    {
+      "key": "navy_jacket",
+      "attributes": {
+        "category": "jacket_or_coat",
+        "categoryConfidence": 1,
+        "colours": [
+          "navy"
+        ],
+        "brand": "Columbia",
+        "material": "fleece",
+        "marks": [
+          "orange zipper",
+          "hoodless"
+        ],
+        "description": "Navy Columbia fleece jacket without a hood and with an orange zipper.",
+        "containsPersonalData": false,
+        "personalDataKinds": [],
+        "keywords": [],
+        "source": "synthetic",
+        "modelId": "handwritten",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Locker rooms",
+      "foundAtDaysAgo": 8,
+      "restricted": false
+    },
+    {
+      "key": "black_jacket",
+      "attributes": {
+        "category": "jacket_or_coat",
+        "categoryConfidence": 1,
+        "colours": [
+          "black"
+        ],
+        "brand": "Columbia",
+        "material": "nylon",
+        "marks": [
+          "hood",
+          "silver zipper"
+        ],
+        "description": "Black Columbia hooded rain jacket with a silver zipper.",
+        "containsPersonalData": false,
+        "personalDataKinds": [],
+        "keywords": [],
+        "source": "synthetic",
+        "modelId": "handwritten",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Parking",
+      "foundAtDaysAgo": 9,
+      "restricted": false
+    },
+    {
+      "key": "red_keys",
+      "attributes": {
+        "category": "keys",
+        "categoryConfidence": 1,
+        "colours": [
+          "silver",
+          "red"
+        ],
+        "brand": null,
+        "material": "metal",
+        "marks": [
+          "red fabric lanyard",
+          "round brass tag"
+        ],
+        "description": "Silver key bunch on a red fabric lanyard with a round brass tag.",
+        "containsPersonalData": false,
+        "personalDataKinds": [],
+        "keywords": [],
+        "source": "synthetic",
+        "modelId": "handwritten",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Front desk",
+      "foundAtDaysAgo": 10,
+      "restricted": false
+    },
+    {
+      "key": "blue_keys",
+      "attributes": {
+        "category": "keys",
+        "categoryConfidence": 1,
+        "colours": [
+          "silver",
+          "blue"
+        ],
+        "brand": null,
+        "material": "metal",
+        "marks": [
+          "blue rubber dolphin",
+          "split ring"
+        ],
+        "description": "Silver key bunch with a blue rubber dolphin on a split ring.",
+        "containsPersonalData": false,
+        "personalDataKinds": [],
+        "keywords": [],
+        "source": "synthetic",
+        "modelId": "handwritten",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Pool deck",
+      "foundAtDaysAgo": 11,
+      "restricted": false
+    },
+    {
+      "key": "brown_wallet",
+      "attributes": {
+        "category": "wallet_or_purse",
+        "categoryConfidence": 1,
+        "colours": [
+          "brown"
+        ],
+        "brand": null,
+        "material": null,
+        "marks": [],
+        "description": "Wallet or purse.",
+        "containsPersonalData": true,
+        "personalDataKinds": [],
+        "keywords": [],
+        "source": "synthetic",
+        "modelId": "handwritten",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Locker rooms",
+      "foundAtDaysAgo": 12,
+      "restricted": true
+    },
+    {
+      "key": "black_cardholder",
+      "attributes": {
+        "category": "wallet_or_purse",
+        "categoryConfidence": 1,
+        "colours": [
+          "black"
+        ],
+        "brand": null,
+        "material": null,
+        "marks": [],
+        "description": "Wallet or purse.",
+        "containsPersonalData": true,
+        "personalDataKinds": [],
+        "keywords": [],
+        "source": "synthetic",
+        "modelId": "handwritten",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Front desk",
+      "foundAtDaysAgo": 13,
+      "restricted": true
+    },
+    {
+      "key": "specimen_id",
+      "attributes": {
+        "category": "id_card_or_pass",
+        "categoryConfidence": 1,
+        "colours": [],
+        "brand": null,
+        "material": null,
+        "marks": [],
+        "description": "ID card or pass.",
+        "containsPersonalData": true,
+        "personalDataKinds": [],
+        "keywords": [],
+        "source": "synthetic",
+        "modelId": "handwritten",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Front desk",
+      "foundAtDaysAgo": 14,
+      "restricted": true
+    },
+    {
+      "key": "bank_card",
+      "attributes": {
+        "category": "bank_card",
+        "categoryConfidence": 1,
+        "colours": [
+          "blue"
+        ],
+        "brand": null,
+        "material": null,
+        "marks": [],
+        "description": "Bank card.",
+        "containsPersonalData": true,
+        "personalDataKinds": [],
+        "keywords": [],
+        "source": "synthetic",
+        "modelId": "handwritten",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Front desk",
+      "foundAtDaysAgo": 15,
+      "restricted": true
+    },
+    {
+      "key": "hydro_bottle",
+      "attributes": {
+        "category": "water_bottle_or_flask",
+        "categoryConfidence": 1,
+        "colours": [
+          "purple"
+        ],
+        "brand": "Hydro Flask",
+        "material": "steel",
+        "marks": [
+          "dent near base",
+          "black loop cap"
+        ],
+        "description": "Purple Hydro Flask steel bottle with a dent near its base and a black loop cap.",
+        "containsPersonalData": false,
+        "personalDataKinds": [],
+        "keywords": [],
+        "source": "synthetic",
+        "modelId": "handwritten",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Gym floor",
+      "foundAtDaysAgo": 16,
+      "restricted": false
+    },
+    {
+      "key": "stanley_cup",
+      "attributes": {
+        "category": "water_bottle_or_flask",
+        "categoryConfidence": 1,
+        "colours": [
+          "pink"
+        ],
+        "brand": "Stanley",
+        "material": "steel",
+        "marks": [
+          "side handle",
+          "clear straw"
+        ],
+        "description": "Pink Stanley tumbler with a side handle and clear straw.",
+        "containsPersonalData": false,
+        "personalDataKinds": [],
+        "keywords": [],
+        "source": "synthetic",
+        "modelId": "handwritten",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Pool deck",
+      "foundAtDaysAgo": 17,
+      "restricted": false
+    },
+    {
+      "key": "green_bottle",
+      "attributes": {
+        "category": "water_bottle_or_flask",
+        "categoryConfidence": 1,
+        "colours": [
+          "green"
+        ],
+        "brand": "Nalgene",
+        "material": "plastic",
+        "marks": [
+          "yellow lid",
+          "mountain sticker"
+        ],
+        "description": "Green Nalgene plastic bottle with a yellow lid and a mountain sticker.",
+        "containsPersonalData": false,
+        "personalDataKinds": [],
+        "keywords": [],
+        "source": "synthetic",
+        "modelId": "handwritten",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Courts",
+      "foundAtDaysAgo": 18,
+      "restricted": false
+    },
+    {
+      "key": "red_cap",
+      "attributes": {
+        "category": "hat_or_cap",
+        "categoryConfidence": 1,
+        "colours": [
+          "red"
+        ],
+        "brand": "Puma",
+        "material": "cotton",
+        "marks": [
+          "white cat logo",
+          "adjustable strap"
+        ],
+        "description": "Red Puma baseball cap with a white cat logo and an adjustable strap.",
+        "containsPersonalData": false,
+        "personalDataKinds": [],
+        "keywords": [],
+        "source": "synthetic",
+        "modelId": "handwritten",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Courts",
+      "foundAtDaysAgo": 19,
+      "restricted": false
+    },
+    {
+      "key": "blue_glasses",
+      "attributes": {
+        "category": "glasses_or_sunglasses",
+        "categoryConfidence": 1,
+        "colours": [
+          "blue"
+        ],
+        "brand": null,
+        "material": "plastic",
+        "marks": [
+          "rectangular frames",
+          "scratched left arm"
+        ],
+        "description": "Blue rectangular glasses with a scratched left arm.",
+        "containsPersonalData": false,
+        "personalDataKinds": [],
+        "keywords": [],
+        "source": "synthetic",
+        "modelId": "handwritten",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Front desk",
+      "foundAtDaysAgo": 20,
+      "restricted": false
+    },
+    {
+      "key": "striped_scarf",
+      "attributes": {
+        "category": "scarf_or_gloves",
+        "categoryConfidence": 1,
+        "colours": [
+          "yellow",
+          "grey"
+        ],
+        "brand": null,
+        "material": "wool",
+        "marks": [
+          "wide stripes",
+          "frayed end"
+        ],
+        "description": "Yellow and grey striped wool scarf with a frayed end.",
+        "containsPersonalData": false,
+        "personalDataKinds": [],
+        "keywords": [],
+        "source": "synthetic",
+        "modelId": "handwritten",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Locker rooms",
+      "foundAtDaysAgo": 1,
+      "restricted": false
+    },
+    {
+      "key": "usb_charger",
+      "attributes": {
+        "category": "charger_or_cable",
+        "categoryConfidence": 1,
+        "colours": [
+          "white"
+        ],
+        "brand": "Anker",
+        "material": "plastic",
+        "marks": [
+          "folding plug",
+          "braided cable"
+        ],
+        "description": "White Anker USB-C charger with a folding plug and braided cable.",
+        "containsPersonalData": false,
+        "personalDataKinds": [],
+        "keywords": [],
+        "source": "synthetic",
+        "modelId": "handwritten",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Front desk",
+      "foundAtDaysAgo": 2,
+      "restricted": false
+    },
+    {
+      "key": "rabbit_plush",
+      "attributes": {
+        "category": "toy_or_plush",
+        "categoryConfidence": 1,
+        "colours": [
+          "beige",
+          "pink"
+        ],
+        "brand": null,
+        "material": "fabric",
+        "marks": [
+          "long pink ears",
+          "one loose button"
+        ],
+        "description": "Beige rabbit plush with long pink ears and a loose button.",
+        "containsPersonalData": false,
+        "personalDataKinds": [],
+        "keywords": [],
+        "source": "synthetic",
+        "modelId": "handwritten",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Pool deck",
+      "foundAtDaysAgo": 3,
+      "restricted": false
+    },
+    {
+      "key": "blue_notebook",
+      "attributes": {
+        "category": "book_or_document",
+        "categoryConfidence": 1,
+        "colours": [
+          "blue"
+        ],
+        "brand": null,
+        "material": "paper",
+        "marks": [
+          "spiral binding",
+          "blank sticker"
+        ],
+        "description": "Blue spiral notebook with a blank sticker on the cover.",
+        "containsPersonalData": false,
+        "personalDataKinds": [],
+        "keywords": [],
+        "source": "synthetic",
+        "modelId": "handwritten",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Gym floor",
+      "foundAtDaysAgo": 4,
+      "restricted": false
+    },
+    {
+      "key": "tennis_racket",
+      "attributes": {
+        "category": "sports_equipment",
+        "categoryConfidence": 1,
+        "colours": [
+          "yellow",
+          "black"
+        ],
+        "brand": "Wilson",
+        "material": "graphite",
+        "marks": [
+          "yellow grip",
+          "black frame"
+        ],
+        "description": "Wilson tennis racket with a yellow grip and black frame.",
+        "containsPersonalData": false,
+        "personalDataKinds": [],
+        "keywords": [],
+        "source": "synthetic",
+        "modelId": "handwritten",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Courts",
+      "foundAtDaysAgo": 5,
+      "restricted": false
+    },
+    {
+      "key": "silver_watch",
+      "attributes": {
+        "category": "smartwatch_or_watch",
+        "categoryConfidence": 1,
+        "colours": [
+          "silver"
+        ],
+        "brand": "Casio",
+        "material": "metal",
+        "marks": [
+          "digital face",
+          "metal link strap"
+        ],
+        "description": "Silver Casio digital watch with a metal link strap.",
+        "containsPersonalData": false,
+        "personalDataKinds": [],
+        "keywords": [],
+        "source": "synthetic",
+        "modelId": "handwritten",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Locker rooms",
+      "foundAtDaysAgo": 6,
+      "restricted": false
+    },
+    {
+      "key": "silver_ring",
+      "attributes": {
+        "category": "jewellery",
+        "categoryConfidence": 1,
+        "colours": [
+          "silver"
+        ],
+        "brand": null,
+        "material": null,
+        "marks": [],
+        "description": "Jewellery.",
+        "containsPersonalData": true,
+        "personalDataKinds": [],
+        "keywords": [],
+        "source": "synthetic",
+        "modelId": "handwritten",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Front desk",
+      "foundAtDaysAgo": 7,
+      "restricted": true
+    },
+    {
+      "key": "inhaler",
+      "attributes": {
+        "category": "medical_device_or_medication",
+        "categoryConfidence": 1,
+        "colours": [
+          "blue"
+        ],
+        "brand": null,
+        "material": null,
+        "marks": [],
+        "description": "Medical device or medication.",
+        "containsPersonalData": true,
+        "personalDataKinds": [],
+        "keywords": [],
+        "source": "synthetic",
+        "modelId": "handwritten",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Front desk",
+      "foundAtDaysAgo": 8,
+      "restricted": true
+    },
+    {
+      "key": "white_shoes",
+      "attributes": {
+        "category": "footwear",
+        "categoryConfidence": 1,
+        "colours": [
+          "white"
+        ],
+        "brand": "Reebok",
+        "material": "leather",
+        "marks": [
+          "green heel patch",
+          "flat laces"
+        ],
+        "description": "White Reebok trainers with green heel patches and flat laces.",
+        "containsPersonalData": false,
+        "personalDataKinds": [],
+        "keywords": [],
+        "source": "synthetic",
+        "modelId": "handwritten",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Locker rooms",
+      "foundAtDaysAgo": 9,
+      "restricted": false
+    },
+    {
+      "key": "canvas_tote",
+      "attributes": {
+        "category": "tote_or_shopping_bag",
+        "categoryConfidence": 1,
+        "colours": [
+          "beige"
+        ],
+        "brand": null,
+        "material": "canvas",
+        "marks": [
+          "printed fern",
+          "long handles"
+        ],
+        "description": "Beige canvas tote bag printed with a fern and long handles.",
+        "containsPersonalData": false,
+        "personalDataKinds": [],
+        "keywords": [],
+        "source": "synthetic",
+        "modelId": "handwritten",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Gym floor",
+      "foundAtDaysAgo": 10,
+      "restricted": false
+    },
+    {
+      "key": "red_suitcase",
+      "attributes": {
+        "category": "suitcase_or_luggage",
+        "categoryConfidence": 1,
+        "colours": [
+          "red"
+        ],
+        "brand": "Samsonite",
+        "material": "plastic",
+        "marks": [
+          "four wheels",
+          "scratched corner"
+        ],
+        "description": "Red Samsonite suitcase with four wheels and a scratched corner.",
+        "containsPersonalData": false,
+        "personalDataKinds": [],
+        "keywords": [],
+        "source": "synthetic",
+        "modelId": "handwritten",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Parking",
+      "foundAtDaysAgo": 11,
+      "restricted": false
+    },
+    {
+      "key": "brown_handbag",
+      "attributes": {
+        "category": "handbag",
+        "categoryConfidence": 1,
+        "colours": [
+          "brown"
+        ],
+        "brand": "Fossil",
+        "material": "leather",
+        "marks": [
+          "gold clasp",
+          "short strap"
+        ],
+        "description": "Brown Fossil leather handbag with a gold clasp and short strap.",
+        "containsPersonalData": false,
+        "personalDataKinds": [],
+        "keywords": [],
+        "source": "synthetic",
+        "modelId": "handwritten",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Front desk",
+      "foundAtDaysAgo": 12,
+      "restricted": false
+    },
+    {
+      "key": "silver_phone",
+      "attributes": {
+        "category": "phone",
+        "categoryConfidence": 1,
+        "colours": [
+          "silver"
+        ],
+        "brand": "Samsung",
+        "material": "metal",
+        "marks": [
+          "transparent case",
+          "cracked corner"
+        ],
+        "description": "Silver Samsung phone in a transparent case with a cracked corner.",
+        "containsPersonalData": false,
+        "personalDataKinds": [],
+        "keywords": [],
+        "source": "synthetic",
+        "modelId": "handwritten",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Gym floor",
+      "foundAtDaysAgo": 13,
+      "restricted": false
+    },
+    {
+      "key": "grey_tablet",
+      "attributes": {
+        "category": "tablet_or_laptop",
+        "categoryConfidence": 1,
+        "colours": [
+          "grey"
+        ],
+        "brand": "Lenovo",
+        "material": "metal",
+        "marks": [
+          "green folio cover",
+          "round sticker"
+        ],
+        "description": "Grey Lenovo tablet in a green folio cover with a round sticker.",
+        "containsPersonalData": false,
+        "personalDataKinds": [],
+        "keywords": [],
+        "source": "synthetic",
+        "modelId": "handwritten",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Locker rooms",
+      "foundAtDaysAgo": 14,
+      "restricted": false
+    },
+    {
+      "key": "black_camera",
+      "attributes": {
+        "category": "camera",
+        "categoryConfidence": 1,
+        "colours": [
+          "black"
+        ],
+        "brand": "Canon",
+        "material": "plastic",
+        "marks": [
+          "red neck strap",
+          "lens cap"
+        ],
+        "description": "Black Canon camera with a red neck strap and lens cap.",
+        "containsPersonalData": false,
+        "personalDataKinds": [],
+        "keywords": [],
+        "source": "synthetic",
+        "modelId": "handwritten",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Parking",
+      "foundAtDaysAgo": 15,
+      "restricted": false
+    },
+    {
+      "key": "orange_ball",
+      "attributes": {
+        "category": "sports_equipment",
+        "categoryConfidence": 1,
+        "colours": [
+          "orange"
+        ],
+        "brand": "Spalding",
+        "material": "rubber",
+        "marks": [
+          "worn black seams"
+        ],
+        "description": "Orange Spalding basketball with worn black seams.",
+        "containsPersonalData": false,
+        "personalDataKinds": [],
+        "keywords": [],
+        "source": "synthetic",
+        "modelId": "handwritten",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Courts",
+      "foundAtDaysAgo": 16,
+      "restricted": false
+    },
+    {
+      "key": "black_stroller",
+      "attributes": {
+        "category": "stroller_or_pram",
+        "categoryConfidence": 1,
+        "colours": [
+          "black",
+          "grey"
+        ],
+        "brand": "Joie",
+        "material": "fabric",
+        "marks": [
+          "grey canopy",
+          "cup holder"
+        ],
+        "description": "Black Joie stroller with a grey canopy and cup holder.",
+        "containsPersonalData": false,
+        "personalDataKinds": [],
+        "keywords": [],
+        "source": "synthetic",
+        "modelId": "handwritten",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Parking",
+      "foundAtDaysAgo": 17,
+      "restricted": false
+    },
+    {
+      "key": "pink_cosmetics",
+      "attributes": {
+        "category": "cosmetics",
+        "categoryConfidence": 1,
+        "colours": [
+          "pink"
+        ],
+        "brand": null,
+        "material": "fabric",
+        "marks": [
+          "quilted pouch",
+          "heart zipper pull"
+        ],
+        "description": "Pink quilted cosmetics pouch with a heart-shaped zipper pull.",
+        "containsPersonalData": false,
+        "personalDataKinds": [],
+        "keywords": [],
+        "source": "synthetic",
+        "modelId": "handwritten",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Pool deck",
+      "foundAtDaysAgo": 18,
+      "restricted": false
+    },
+    {
+      "key": "yellow_umbrella",
+      "attributes": {
+        "category": "umbrella",
+        "categoryConfidence": 1,
+        "colours": [
+          "yellow"
+        ],
+        "brand": null,
+        "material": "nylon",
+        "marks": [
+          "clear curved handle",
+          "sunflower print"
+        ],
+        "description": "Yellow umbrella with a clear curved handle and sunflower print.",
+        "containsPersonalData": false,
+        "personalDataKinds": [],
+        "keywords": [],
+        "source": "synthetic",
+        "modelId": "handwritten",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Parking",
+      "foundAtDaysAgo": 19,
+      "restricted": false
+    },
+    {
+      "key": "orange_hat",
+      "attributes": {
+        "category": "hat_or_cap",
+        "categoryConfidence": 1,
+        "colours": [
+          "orange"
+        ],
+        "brand": null,
+        "material": "wool",
+        "marks": [
+          "ribbed knit",
+          "large pompom"
+        ],
+        "description": "Orange knitted wool hat with a large pompom.",
+        "containsPersonalData": false,
+        "personalDataKinds": [],
+        "keywords": [],
+        "source": "synthetic",
+        "modelId": "handwritten",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Front desk",
+      "foundAtDaysAgo": 20,
+      "restricted": false
+    }
+  ],
+  "reports": [
+    {
+      "key": "report_01",
+      "rawText": "Lost my black brolly with the curved wooden handle, small chip at the tip.",
+      "categoryHint": "umbrella",
+      "colourHints": [
+        "black"
+      ],
+      "brandHint": null,
+      "zone": "Front desk",
+      "whereText": null,
+      "lostAtDaysAgo": 2,
+      "fuzzyDays": 0,
+      "expectedItem": "wood_umbrella"
+    },
+    {
+      "key": "report_02",
+      "rawText": "Black umbrella, straight plastic handle, blue wrist strap. Left it by the pool.",
+      "categoryHint": "umbrella",
+      "colourHints": [
+        "black"
+      ],
+      "brandHint": null,
+      "zone": "Pool deck",
+      "whereText": null,
+      "lostAtDaysAgo": 3,
+      "fuzzyDays": 0,
+      "expectedItem": "plastic_umbrella"
+    },
+    {
+      "key": "report_03",
+      "rawText": "My black Nike rucksack has a white swoosh and the zipper pull is torn.",
+      "categoryHint": "backpack",
+      "colourHints": [
+        "black"
+      ],
+      "brandHint": "Nike",
+      "zone": "Gym floor",
+      "whereText": null,
+      "lostAtDaysAgo": 4,
+      "fuzzyDays": 0,
+      "expectedItem": "nike_backpack"
+    },
+    {
+      "key": "report_04",
+      "rawText": "Black Adidas backpack with three white stripes and a mesh bottle pocket.",
+      "categoryHint": "backpack",
+      "colourHints": [
+        "black"
+      ],
+      "brandHint": "Adidas",
+      "zone": "Courts",
+      "whereText": null,
+      "lostAtDaysAgo": 5,
+      "fuzzyDays": 0,
+      "expectedItem": "adidas_backpack"
+    },
+    {
+      "key": "report_05",
+      "rawText": "Black Jansport canvas schoolbag, red patch and brass zip, pls check.",
+      "categoryHint": "backpack",
+      "colourHints": [
+        "black"
+      ],
+      "brandHint": "JanSport",
+      "zone": "Locker rooms",
+      "whereText": null,
+      "lostAtDaysAgo": 6,
+      "fuzzyDays": 0,
+      "expectedItem": "jansport_backpack"
+    },
+    {
+      "key": "report_06",
+      "rawText": "White Apple earbuds in the round case with a little star sticker.",
+      "categoryHint": "earbuds_or_headphones",
+      "colourHints": [
+        "white"
+      ],
+      "brandHint": "Apple",
+      "zone": "Front desk",
+      "whereText": null,
+      "lostAtDaysAgo": 7,
+      "fuzzyDays": 0,
+      "expectedItem": "apple_earbuds"
+    },
+    {
+      "key": "report_07",
+      "rawText": "White Samsung buds, square charging case inside a grey silicone cover.",
+      "categoryHint": "earbuds_or_headphones",
+      "colourHints": [
+        "white"
+      ],
+      "brandHint": "Samsung",
+      "zone": "Gym floor",
+      "whereText": null,
+      "lostAtDaysAgo": 8,
+      "fuzzyDays": 0,
+      "expectedItem": "samsung_earbuds"
+    },
+    {
+      "key": "report_08",
+      "rawText": "Dark blue Columbia fleece with an orange zip and no hood.",
+      "categoryHint": "jacket_or_coat",
+      "colourHints": [
+        "navy"
+      ],
+      "brandHint": "Columbia",
+      "zone": "Locker rooms",
+      "whereText": null,
+      "lostAtDaysAgo": 9,
+      "fuzzyDays": 0,
+      "expectedItem": "navy_jacket"
+    },
+    {
+      "key": "report_09",
+      "rawText": "Black Columbia rain coat with hood and silver zipper.",
+      "categoryHint": "jacket_or_coat",
+      "colourHints": [
+        "black"
+      ],
+      "brandHint": "Columbia",
+      "zone": "Parking",
+      "whereText": null,
+      "lostAtDaysAgo": 10,
+      "fuzzyDays": 0,
+      "expectedItem": "black_jacket"
+    },
+    {
+      "key": "report_10",
+      "rawText": "Bunch of silver keys on a red fabric lanyard with a round brass tag.",
+      "categoryHint": "keys",
+      "colourHints": [
+        "silver",
+        "red"
+      ],
+      "brandHint": null,
+      "zone": "Front desk",
+      "whereText": null,
+      "lostAtDaysAgo": 11,
+      "fuzzyDays": 0,
+      "expectedItem": "red_keys"
+    },
+    {
+      "key": "report_11",
+      "rawText": "My keys have a blue rubber dolphin on the split ring.",
+      "categoryHint": "keys",
+      "colourHints": [
+        "silver",
+        "blue"
+      ],
+      "brandHint": null,
+      "zone": "Pool deck",
+      "whereText": null,
+      "lostAtDaysAgo": 12,
+      "fuzzyDays": 0,
+      "expectedItem": "blue_keys"
+    },
+    {
+      "key": "report_12",
+      "rawText": "I misplaced a brown wallet in the changing area.",
+      "categoryHint": "wallet_or_purse",
+      "colourHints": [
+        "brown"
+      ],
+      "brandHint": null,
+      "zone": "Locker rooms",
+      "whereText": null,
+      "lostAtDaysAgo": 13,
+      "fuzzyDays": 0,
+      "expectedItem": "brown_wallet"
+    },
+    {
+      "key": "report_13",
+      "rawText": "Purple Hydro Flask bottle, dent near the base, black loop cap.",
+      "categoryHint": "water_bottle_or_flask",
+      "colourHints": [
+        "purple"
+      ],
+      "brandHint": "Hydro Flask",
+      "zone": "Gym floor",
+      "whereText": null,
+      "lostAtDaysAgo": 17,
+      "fuzzyDays": 0,
+      "expectedItem": "hydro_bottle"
+    },
+    {
+      "key": "report_14",
+      "rawText": "Perdi mi vaso Stanley rosa con asa y pajita transparente cerca de la piscina.",
+      "categoryHint": "water_bottle_or_flask",
+      "colourHints": [
+        "pink"
+      ],
+      "brandHint": "Stanley",
+      "zone": "Pool deck",
+      "whereText": null,
+      "lostAtDaysAgo": 18,
+      "fuzzyDays": 0,
+      "expectedItem": "stanley_cup"
+    },
+    {
+      "key": "report_15",
+      "rawText": "Green Nalgene bottle with yellow lid and a mountain sticker.",
+      "categoryHint": "water_bottle_or_flask",
+      "colourHints": [
+        "green"
+      ],
+      "brandHint": "Nalgene",
+      "zone": "Courts",
+      "whereText": null,
+      "lostAtDaysAgo": 19,
+      "fuzzyDays": 0,
+      "expectedItem": "green_bottle"
+    },
+    {
+      "key": "report_16",
+      "rawText": "Red Puma cap with white cat logo, adjustable strap on the back.",
+      "categoryHint": "hat_or_cap",
+      "colourHints": [
+        "red"
+      ],
+      "brandHint": "Puma",
+      "zone": "Courts",
+      "whereText": null,
+      "lostAtDaysAgo": 20,
+      "fuzzyDays": 0,
+      "expectedItem": "red_cap"
+    },
+    {
+      "key": "report_17",
+      "rawText": "Blue rectangular glasses, left arm scratched. I think I left them outside.",
+      "categoryHint": "glasses_or_sunglasses",
+      "colourHints": [
+        "blue"
+      ],
+      "brandHint": null,
+      "zone": "Parking",
+      "whereText": null,
+      "lostAtDaysAgo": 21,
+      "fuzzyDays": 0,
+      "expectedItem": "blue_glasses"
+    },
+    {
+      "key": "report_18",
+      "rawText": "Bufanda de lana amarilla y gris con rayas anchas y un extremo deshilachado.",
+      "categoryHint": "scarf_or_gloves",
+      "colourHints": [
+        "yellow",
+        "grey"
+      ],
+      "brandHint": null,
+      "zone": "Locker rooms",
+      "whereText": null,
+      "lostAtDaysAgo": 2,
+      "fuzzyDays": 0,
+      "expectedItem": "striped_scarf"
+    },
+    {
+      "key": "report_19",
+      "rawText": "Anker USB C charger with folding plug and braided cable, forgot the colour.",
+      "categoryHint": "charger_or_cable",
+      "colourHints": [],
+      "brandHint": "Anker",
+      "zone": "Front desk",
+      "whereText": null,
+      "lostAtDaysAgo": null,
+      "fuzzyDays": 7,
+      "expectedItem": "usb_charger"
+    },
+    {
+      "key": "report_20",
+      "rawText": "Beige rabbit soft toy, long pink ears and one loose button.",
+      "categoryHint": "toy_or_plush",
+      "colourHints": [
+        "beige",
+        "pink"
+      ],
+      "brandHint": null,
+      "zone": "Pool deck",
+      "whereText": null,
+      "lostAtDaysAgo": 4,
+      "fuzzyDays": 0,
+      "expectedItem": "rabbit_plush"
+    },
+    {
+      "key": "report_21",
+      "rawText": "Wilson tennis raquet with yellow grip and black frame. Left near the courts.",
+      "categoryHint": "sports_equipment",
+      "colourHints": [
+        "yellow",
+        "black"
+      ],
+      "brandHint": "Wilson",
+      "zone": "Courts",
+      "whereText": null,
+      "lostAtDaysAgo": 6,
+      "fuzzyDays": 0,
+      "expectedItem": "tennis_racket"
+    },
+    {
+      "key": "report_22",
+      "rawText": "White Reebok trainers with green heel patches and flat laces.",
+      "categoryHint": "footwear",
+      "colourHints": [
+        "white"
+      ],
+      "brandHint": "Reebok",
+      "zone": "Locker rooms",
+      "whereText": null,
+      "lostAtDaysAgo": 10,
+      "fuzzyDays": 0,
+      "expectedItem": "white_shoes"
+    },
+    {
+      "key": "report_23",
+      "rawText": "Large orange Patagonia duffel bag with two wheels and a purple handle.",
+      "categoryHint": "suitcase_or_luggage",
+      "colourHints": [
+        "orange"
+      ],
+      "brandHint": "Patagonia",
+      "zone": "Parking",
+      "whereText": null,
+      "lostAtDaysAgo": 5,
+      "fuzzyDays": 0,
+      "expectedItem": null
+    },
+    {
+      "key": "report_24",
+      "rawText": "Green Bose headphones with a woven headband and copper earcups.",
+      "categoryHint": "earbuds_or_headphones",
+      "colourHints": [
+        "green"
+      ],
+      "brandHint": "Bose",
+      "zone": "Gym floor",
+      "whereText": null,
+      "lostAtDaysAgo": 5,
+      "fuzzyDays": 0,
+      "expectedItem": null
+    },
+    {
+      "key": "report_25",
+      "rawText": "Pink Ray Ban sunglasses with round gold frames and a pearl chain.",
+      "categoryHint": "glasses_or_sunglasses",
+      "colourHints": [
+        "pink",
+        "gold"
+      ],
+      "brandHint": "Ray Ban",
+      "zone": "Pool deck",
+      "whereText": null,
+      "lostAtDaysAgo": 5,
+      "fuzzyDays": 0,
+      "expectedItem": null
+    },
+    {
+      "key": "report_26",
+      "rawText": "White Acer laptop in a red neoprene sleeve with a broken buckle.",
+      "categoryHint": "tablet_or_laptop",
+      "colourHints": [
+        "white",
+        "red"
+      ],
+      "brandHint": "Acer",
+      "zone": "Front desk",
+      "whereText": null,
+      "lostAtDaysAgo": 5,
+      "fuzzyDays": 0,
+      "expectedItem": null
+    },
+    {
+      "key": "report_27",
+      "rawText": "Purple Nikon camera with a yellow strap and silver lens.",
+      "categoryHint": "camera",
+      "colourHints": [
+        "purple",
+        "silver"
+      ],
+      "brandHint": "Nikon",
+      "zone": "Courts",
+      "whereText": null,
+      "lostAtDaysAgo": 5,
+      "fuzzyDays": 0,
+      "expectedItem": null
+    },
+    {
+      "key": "report_28",
+      "rawText": "Orange Osprey backpack with a blue hiking pole loop and green straps.",
+      "categoryHint": "backpack",
+      "colourHints": [
+        "orange",
+        "green"
+      ],
+      "brandHint": "Osprey",
+      "zone": "Parking",
+      "whereText": null,
+      "lostAtDaysAgo": null,
+      "fuzzyDays": 7,
+      "expectedItem": null
+    },
+    {
+      "key": "report_29",
+      "rawText": "Red Yeti travel flask with a green screw lid and a large white triangle.",
+      "categoryHint": "water_bottle_or_flask",
+      "colourHints": [
+        "red",
+        "green"
+      ],
+      "brandHint": "Yeti",
+      "zone": "Locker rooms",
+      "whereText": null,
+      "lostAtDaysAgo": 5,
+      "fuzzyDays": 0,
+      "expectedItem": null
+    },
+    {
+      "key": "report_30",
+      "rawText": "Green Fitbit tracker with a purple woven strap and a square screen.",
+      "categoryHint": "smartwatch_or_watch",
+      "colourHints": [
+        "green",
+        "purple"
+      ],
+      "brandHint": "Fitbit",
+      "zone": "Pool deck",
+      "whereText": null,
+      "lostAtDaysAgo": 5,
+      "fuzzyDays": 0,
+      "expectedItem": null
+    }
+  ]
+}

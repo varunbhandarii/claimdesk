@@ -300,6 +300,44 @@ class Endpoints extends _is.EndpointDispatch {
       name: 'admin',
       endpoint: endpoints['admin']!,
       methodConnectors: {
+        'seedDemoItems': _is.MethodConnector(
+          name: 'seedDemoItems',
+          params: {
+            'secret': _is.ParameterDescription(
+              name: 'secret',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['admin'] as _i5t1w2d2.AdminEndpoint).seedDemoItems(
+                    session,
+                    params['secret'],
+                  ),
+        ),
+        'seedDemoReports': _is.MethodConnector(
+          name: 'seedDemoReports',
+          params: {
+            'secret': _is.ParameterDescription(
+              name: 'secret',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['admin'] as _i5t1w2d2.AdminEndpoint)
+                  .seedDemoReports(
+                    session,
+                    params['secret'],
+                  ),
+        ),
         'seedDemo': _is.MethodConnector(
           name: 'seedDemo',
           params: {
