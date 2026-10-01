@@ -3,3 +3,4 @@ concurrency: 1
 tags:
   integration: {}
   providers: {}
+  http: {}

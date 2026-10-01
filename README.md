@@ -9,6 +9,33 @@ and a durable background worker that prepares photos, captions items, and create
 search embeddings. Private uploads and item endpoints are available through the
 generated client.
 
+Owners can file lost reports without an account at `/v/hawrys-demo`, then keep
+their private ticket link for updates. Staff use the Reports tab to read reports,
+find a reference code, copy contact details, and close a received/searching report
+with a reason. Matching and automatic email notifications are not available yet.
+
+Public intake requires a random `ipHashSalt` of at least 32 characters in ignored
+development/test passwords or `SERVERPOD_PASSWORD_ipHashSalt`. Configure a distinct
+production salt with Cloud managed passwords; never commit salts. Tickets and JSON
+status pages use `no-store` and `noindex`, disclose no report/contact details, and
+use random 128-bit owner tokens. Public handlers deliberately disable URL/query
+logging. The sliding-window limits are per process: 10 POSTs and 60 GETs per
+address in ten minutes. Forwarded addresses are trusted only in production behind
+the Cloud proxy; direct deployments must adjust that trust boundary.
+
+The printable demo poster is at `/web/poster/hawrys-demo.html`. Its QR points to
+the Cloud venue page. Regenerate the committed SVG with `dart run tool/make_qr.dart`
+from the server package. To run the optional local HTTP checks with the server up:
+
+```powershell
+$env:RUN_PUBLIC_HTTP = 'true'
+dart test --tags http test/http
+Remove-Item Env:RUN_PUBLIC_HTTP
+```
+
+These checks create fictional reports in the development demo venue and fill
+the local address's POST limit. Wait ten minutes or restart development afterward.
+
 ## Local setup
 
 Use Flutter 3.47.5 (Dart 3.13.4), Serverpod CLI 4.0.2, Chrome, and an Android SDK.
