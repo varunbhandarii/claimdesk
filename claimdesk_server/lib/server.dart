@@ -12,6 +12,10 @@ import 'src/generated/serverpod.dart';
 import 'src/web/routes/app_config_route.dart';
 import 'src/web/routes/root.dart';
 import 'src/services/photo_upload_relay.dart';
+import 'src/web/public/venue_page_route.dart';
+import 'src/web/public/lost_form_route.dart';
+import 'src/web/public/ticket_route.dart';
+import 'src/web/middleware/rate_limit.dart';
 
 /// The starting point of the Serverpod server.
 void run(List<String> args) async {
@@ -20,6 +24,53 @@ void run(List<String> args) async {
   final pod = Serverpod(args);
 
   configureAuthentication(pod);
+  final ipHashSalt = pod.getPassword('ipHashSalt') ?? '';
+  if (ipHashSalt.length < 32) {
+    throw StateError(
+      'Configure a random ipHashSalt of at least 32 characters before starting public intake.',
+    );
+  }
+  final trustProxy = pod.runMode == 'production';
+  pod.webServer.addMiddleware(
+    rateLimit(
+      limit: 10,
+      window: const Duration(minutes: 10),
+      methods: {Method.post},
+      trustProxy: trustProxy,
+      salt: ipHashSalt,
+    ),
+    '/v',
+  );
+  pod.webServer.addMiddleware(
+    rateLimit(
+      limit: 60,
+      window: const Duration(minutes: 10),
+      methods: {Method.get},
+      trustProxy: trustProxy,
+      salt: ipHashSalt,
+    ),
+    '/v',
+  );
+  pod.webServer.addMiddleware(
+    rateLimit(
+      limit: 60,
+      window: const Duration(minutes: 10),
+      trustProxy: trustProxy,
+      salt: ipHashSalt,
+    ),
+    '/t',
+  );
+  pod.webServer.addRoute(VenuePageRoute(), '/v/:slug');
+  pod.webServer.addRoute(
+    LostFormRoute(salt: ipHashSalt, trustProxy: trustProxy),
+    '/v/:slug/lost',
+  );
+  pod.webServer.addRoute(TicketRoute(), '/t/:token');
+  pod.webServer.addRoute(TicketJsonRoute(), '/t/:token/status.json');
+  pod.webServer.addRoute(
+    StaticRoute.file(File('web/static/robots.txt')),
+    '/robots.txt',
+  );
 
   // Setup a default page at the web root.
   // These are used by the default page.
