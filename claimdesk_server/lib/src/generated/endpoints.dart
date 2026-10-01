@@ -10,11 +10,13 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
+import 'dart:typed_data' as _idt;
 import 'package:claimdesk_server/src/generated/create_item_input.dart'
     as _io3ib2zd;
 import 'package:claimdesk_server/src/generated/item_filter.dart' as _id50o94s;
 import 'package:claimdesk_server/src/generated/item_patch.dart' as _isrhr89g;
 import 'package:claimdesk_server/src/generated/protocol.dart' as _ii1g677k;
+import 'package:claimdesk_server/src/generated/release_input.dart' as _i1zdvvde;
 import 'package:claimdesk_server/src/generated/report_filter.dart' as _icei7w9h;
 import 'package:serverpod/serverpod.dart' as _is;
 import 'package:serverpod_auth_core_server/serverpod_auth_core_server.dart'
@@ -27,6 +29,7 @@ import '../endpoints/admin_endpoint.dart' as _i5t1w2d2;
 import '../endpoints/desk_stream_endpoint.dart' as _io3746h0;
 import '../endpoints/item_endpoint.dart' as _irwxp2xj;
 import '../endpoints/match_endpoint.dart' as _iznotijq;
+import '../endpoints/release_endpoint.dart' as _i3y57dtc;
 import '../endpoints/report_endpoint.dart' as _i90z2r7i;
 import '../endpoints/venue_endpoint.dart' as _im3sz6ep;
 import '../greetings/greeting_endpoint.dart' as _il624ik7;
@@ -69,6 +72,12 @@ class Endpoints extends _is.EndpointDispatch {
         ..initialize(
           server,
           'match',
+          null,
+        ),
+      'release': _i3y57dtc.ReleaseEndpoint()
+        ..initialize(
+          server,
+          'release',
           null,
         ),
       'report': _i90z2r7i.ReportEndpoint()
@@ -300,6 +309,25 @@ class Endpoints extends _is.EndpointDispatch {
       name: 'admin',
       endpoint: endpoints['admin']!,
       methodConnectors: {
+        'runNightly': _is.MethodConnector(
+          name: 'runNightly',
+          params: {
+            'secret': _is.ParameterDescription(
+              name: 'secret',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['admin'] as _i5t1w2d2.AdminEndpoint).runNightly(
+                    session,
+                    params['secret'],
+                  ),
+        ),
         'seedDemoItems': _is.MethodConnector(
           name: 'seedDemoItems',
           params: {
@@ -716,6 +744,100 @@ class Endpoints extends _is.EndpointDispatch {
                 params['matchId'],
                 params['reason'],
               ),
+        ),
+      },
+    );
+    connectors['release'] = _is.EndpointConnector(
+      name: 'release',
+      endpoint: endpoints['release']!,
+      methodConnectors: {
+        'markReady': _is.MethodConnector(
+          name: 'markReady',
+          params: {
+            'matchId': _is.ParameterDescription(
+              name: 'matchId',
+              type: _is.getType<_is.UuidValue>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['release'] as _i3y57dtc.ReleaseEndpoint).markReady(
+                    session,
+                    params['matchId'],
+                  ),
+        ),
+        'release': _is.MethodConnector(
+          name: 'release',
+          params: {
+            'itemId': _is.ParameterDescription(
+              name: 'itemId',
+              type: _is.getType<_is.UuidValue>(),
+              nullable: false,
+            ),
+            'input': _is.ParameterDescription(
+              name: 'input',
+              type: _is.getType<_i1zdvvde.ReleaseInput>(),
+              nullable: false,
+            ),
+            'signaturePng': _is.ParameterDescription(
+              name: 'signaturePng',
+              type: _is.getType<_idt.ByteData?>(),
+              nullable: true,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['release'] as _i3y57dtc.ReleaseEndpoint).release(
+                    session,
+                    params['itemId'],
+                    params['input'],
+                    params['signaturePng'],
+                  ),
+        ),
+        'releaseRecord': _is.MethodConnector(
+          name: 'releaseRecord',
+          params: {
+            'itemId': _is.ParameterDescription(
+              name: 'itemId',
+              type: _is.getType<_is.UuidValue>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['release'] as _i3y57dtc.ReleaseEndpoint)
+                  .releaseRecord(
+                    session,
+                    params['itemId'],
+                  ),
+        ),
+        'signatureUrl': _is.MethodConnector(
+          name: 'signatureUrl',
+          params: {
+            'itemId': _is.ParameterDescription(
+              name: 'itemId',
+              type: _is.getType<_is.UuidValue>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['release'] as _i3y57dtc.ReleaseEndpoint)
+                  .signatureUrl(
+                    session,
+                    params['itemId'],
+                  ),
         ),
       },
     );

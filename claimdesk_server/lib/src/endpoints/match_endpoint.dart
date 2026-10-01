@@ -9,6 +9,8 @@ import '../services/staff_views.dart';
 import '../db/transactions.dart';
 
 class MatchEndpoint extends Endpoint with VenueGuard {
+  @override
+  bool get logSessions => false;
   Future<List<ReportAnswer>> answers(Session session, UuidValue matchId) async {
     final match = await _match(session, matchId);
     return ReportAnswer.db.find(

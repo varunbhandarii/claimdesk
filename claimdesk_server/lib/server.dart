@@ -9,6 +9,8 @@ import 'src/jobs/handlers/caption_item_handler.dart';
 import 'src/jobs/handlers/reembed_item_handler.dart';
 import 'src/jobs/handlers/match_item_handler.dart';
 import 'src/jobs/handlers/match_report_handler.dart';
+import 'src/jobs/handlers/nightly_handler.dart';
+import 'src/jobs/nightly.dart';
 import 'src/cache_busting.dart';
 import 'src/generated/serverpod.dart';
 import 'src/web/routes/app_config_route.dart';
@@ -18,6 +20,7 @@ import 'src/web/public/venue_page_route.dart';
 import 'src/web/public/lost_form_route.dart';
 import 'src/web/public/ticket_route.dart';
 import 'src/web/public/ticket_answer_route.dart';
+import 'src/web/public/ticket_photo_route.dart';
 import 'src/web/middleware/rate_limit.dart';
 
 /// The starting point of the Serverpod server.
@@ -70,6 +73,7 @@ void run(List<String> args) async {
   );
   pod.webServer.addRoute(TicketRoute(), '/t/:token');
   pod.webServer.addRoute(TicketAnswerRoute(), '/t/:token/answer');
+  pod.webServer.addRoute(TicketPhotoRoute(), '/t/:token/photo');
   pod.webServer.addRoute(TicketJsonRoute(), '/t/:token/status.json');
   pod.webServer.addRoute(
     StaticRoute.file(File('web/static/robots.txt')),
@@ -141,6 +145,7 @@ void run(List<String> args) async {
 
   // Start the server.
   await pod.start();
+  await pod.withSession((session) => Nightly.schedule(session));
   Providers.configure(pod);
   JobWorker(
     pod,
@@ -149,6 +154,7 @@ void run(List<String> args) async {
       ReembedItemHandler(),
       MatchReportHandler(),
       MatchItemHandler(),
+      NightlyHandler(),
     ],
     interval: Duration(seconds: Providers.config.workerIntervalSeconds),
   ).start();

@@ -2,8 +2,23 @@ import 'package:serverpod/serverpod.dart';
 
 import '../services/seed_service.dart';
 import '../services/demo_inventory_service.dart';
+import '../generated/protocol.dart';
+import '../jobs/job_queue.dart';
 
 class AdminEndpoint extends Endpoint {
+  @override
+  bool get logSessions => false;
+  Future<WorkItem> runNightly(Session session, String secret) async {
+    _authorize(session, secret);
+    return JobQueue.enqueue(
+      session,
+      kind: 'nightly',
+      payload: WorkPayload(data: {}),
+      identifier: 'nightly_manual_${DateTime.now().microsecondsSinceEpoch}',
+      maxAttempts: 3,
+    );
+  }
+
   Future<int> seedDemoItems(Session session, String secret) async {
     _authorize(session, secret);
     return DemoInventoryService.items(session);

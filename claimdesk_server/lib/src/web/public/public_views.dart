@@ -75,6 +75,13 @@ String _date(DateTime date) =>
     '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
 
 class TicketView {
+  static String idTypeLabel(String value) => switch (value) {
+    'drivers_licence' => "Driver's licence",
+    'passport' => 'Passport',
+    'student_id' => 'Student ID',
+    'other_government_id' => 'Other government ID',
+    _ => 'None',
+  };
   TicketView(this.report, this.venue);
   final LostReport report;
   final Venue venue;

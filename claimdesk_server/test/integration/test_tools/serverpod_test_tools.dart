@@ -13,6 +13,7 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _ida;
 import 'dart:io' as _idi;
+import 'dart:typed_data' as _idt;
 import 'package:claimdesk_server/src/generated/caption_run.dart' as _iknvw4pb;
 import 'package:claimdesk_server/src/generated/create_item_input.dart'
     as _io3ib2zd;
@@ -27,6 +28,9 @@ import 'package:claimdesk_server/src/generated/match_card.dart' as _i1d6w25f;
 import 'package:claimdesk_server/src/generated/photo_upload_ticket.dart'
     as _i0p7t3ak;
 import 'package:claimdesk_server/src/generated/protocol.dart' as _ii1g677k;
+import 'package:claimdesk_server/src/generated/release_input.dart' as _i1zdvvde;
+import 'package:claimdesk_server/src/generated/release_summary.dart'
+    as _i4eg1fod;
 import 'package:claimdesk_server/src/generated/report_answer.dart' as _in630fta;
 import 'package:claimdesk_server/src/generated/report_filter.dart' as _icei7w9h;
 import 'package:claimdesk_server/src/generated/staff_membership.dart'
@@ -178,6 +182,8 @@ class TestEndpoints {
 
   late final _MatchEndpoint match;
 
+  late final _ReleaseEndpoint release;
+
   late final _ReportEndpoint report;
 
   late final _VenueEndpoint venue;
@@ -213,6 +219,10 @@ class _InternalTestEndpoints extends TestEndpoints
       serializationManager,
     );
     match = _MatchEndpoint(
+      endpoints,
+      serializationManager,
+    );
+    release = _ReleaseEndpoint(
       endpoints,
       serializationManager,
     );
@@ -558,6 +568,37 @@ class _AdminEndpoint {
   final _is.EndpointDispatch _endpointDispatch;
 
   final _is.SerializationManager _serializationManager;
+
+  _ida.Future<_idm342zh.WorkItem> runNightly(
+    _ist.TestSessionBuilder sessionBuilder,
+    String secret,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'admin',
+            method: 'runNightly',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'admin',
+          methodName: 'runNightly',
+          parameters: _ist.testObjectToJson({'secret': secret}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<_idm342zh.WorkItem>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
 
   _ida.Future<int> seedDemoItems(
     _ist.TestSessionBuilder sessionBuilder,
@@ -1211,6 +1252,147 @@ class _MatchEndpoint {
                   _localCallContext.arguments,
                 )
                 as _ida.Future<_i1d6w25f.MatchCard>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+}
+
+class _ReleaseEndpoint {
+  _ReleaseEndpoint(
+    this._endpointDispatch,
+    this._serializationManager,
+  );
+
+  final _is.EndpointDispatch _endpointDispatch;
+
+  final _is.SerializationManager _serializationManager;
+
+  _ida.Future<_i1d6w25f.MatchCard> markReady(
+    _ist.TestSessionBuilder sessionBuilder,
+    _is.UuidValue matchId,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'release',
+            method: 'markReady',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'release',
+          methodName: 'markReady',
+          parameters: _ist.testObjectToJson({'matchId': matchId}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<_i1d6w25f.MatchCard>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _ida.Future<_i4eg1fod.ReleaseSummary> release(
+    _ist.TestSessionBuilder sessionBuilder,
+    _is.UuidValue itemId,
+    _i1zdvvde.ReleaseInput input,
+    _idt.ByteData? signaturePng,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'release',
+            method: 'release',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'release',
+          methodName: 'release',
+          parameters: _ist.testObjectToJson({
+            'itemId': itemId,
+            'input': input,
+            'signaturePng': signaturePng,
+          }),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<_i4eg1fod.ReleaseSummary>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _ida.Future<_i4eg1fod.ReleaseSummary?> releaseRecord(
+    _ist.TestSessionBuilder sessionBuilder,
+    _is.UuidValue itemId,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'release',
+            method: 'releaseRecord',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'release',
+          methodName: 'releaseRecord',
+          parameters: _ist.testObjectToJson({'itemId': itemId}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<_i4eg1fod.ReleaseSummary?>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _ida.Future<String?> signatureUrl(
+    _ist.TestSessionBuilder sessionBuilder,
+    _is.UuidValue itemId,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'release',
+            method: 'signatureUrl',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'release',
+          methodName: 'signatureUrl',
+          parameters: _ist.testObjectToJson({'itemId': itemId}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<String?>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();

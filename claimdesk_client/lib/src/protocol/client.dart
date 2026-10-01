@@ -11,6 +11,7 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _ida;
+import 'dart:typed_data' as _idt;
 import 'package:claimdesk_client/src/protocol/caption_run.dart' as _i9gd0od7;
 import 'package:claimdesk_client/src/protocol/create_item_input.dart'
     as _i0l2w05c;
@@ -24,6 +25,9 @@ import 'package:claimdesk_client/src/protocol/lost_report.dart' as _izbvtt9c;
 import 'package:claimdesk_client/src/protocol/match_card.dart' as _i7d074dr;
 import 'package:claimdesk_client/src/protocol/photo_upload_ticket.dart'
     as _i1f97sgb;
+import 'package:claimdesk_client/src/protocol/release_input.dart' as _it3buqyw;
+import 'package:claimdesk_client/src/protocol/release_summary.dart'
+    as _ilaxo0vw;
 import 'package:claimdesk_client/src/protocol/report_answer.dart' as _ib1z5a5v;
 import 'package:claimdesk_client/src/protocol/report_filter.dart' as _ii8h5ytv;
 import 'package:claimdesk_client/src/protocol/staff_membership.dart'
@@ -271,6 +275,13 @@ class EndpointAdmin extends _isc.EndpointRef {
   @override
   String get name => 'admin';
 
+  _ida.Future<_i5t1jx4h.WorkItem> runNightly(String secret) =>
+      caller.callServerEndpoint<_i5t1jx4h.WorkItem>(
+        'admin',
+        'runNightly',
+        {'secret': secret},
+      );
+
   _ida.Future<int> seedDemoItems(String secret) =>
       caller.callServerEndpoint<int>(
         'admin',
@@ -478,6 +489,49 @@ class EndpointMatch extends _isc.EndpointRef {
 }
 
 /// {@category Endpoint}
+class EndpointRelease extends _isc.EndpointRef {
+  EndpointRelease(_isc.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'release';
+
+  _ida.Future<_i7d074dr.MatchCard> markReady(_isc.UuidValue matchId) =>
+      caller.callServerEndpoint<_i7d074dr.MatchCard>(
+        'release',
+        'markReady',
+        {'matchId': matchId},
+      );
+
+  _ida.Future<_ilaxo0vw.ReleaseSummary> release(
+    _isc.UuidValue itemId,
+    _it3buqyw.ReleaseInput input,
+    _idt.ByteData? signaturePng,
+  ) => caller.callServerEndpoint<_ilaxo0vw.ReleaseSummary>(
+    'release',
+    'release',
+    {
+      'itemId': itemId,
+      'input': input,
+      'signaturePng': signaturePng,
+    },
+  );
+
+  _ida.Future<_ilaxo0vw.ReleaseSummary?> releaseRecord(_isc.UuidValue itemId) =>
+      caller.callServerEndpoint<_ilaxo0vw.ReleaseSummary?>(
+        'release',
+        'releaseRecord',
+        {'itemId': itemId},
+      );
+
+  _ida.Future<String?> signatureUrl(_isc.UuidValue itemId) =>
+      caller.callServerEndpoint<String?>(
+        'release',
+        'signatureUrl',
+        {'itemId': itemId},
+      );
+}
+
+/// {@category Endpoint}
 class EndpointReport extends _isc.EndpointRef {
   EndpointReport(_isc.EndpointCaller caller) : super(caller);
 
@@ -619,6 +673,7 @@ class Client extends _isc.ServerpodClientShared {
     deskStream = EndpointDeskStream(this);
     item = EndpointItem(this);
     match = EndpointMatch(this);
+    release = EndpointRelease(this);
     report = EndpointReport(this);
     venue = EndpointVenue(this);
     greeting = EndpointGreeting(this);
@@ -637,6 +692,8 @@ class Client extends _isc.ServerpodClientShared {
 
   late final EndpointMatch match;
 
+  late final EndpointRelease release;
+
   late final EndpointReport report;
 
   late final EndpointVenue venue;
@@ -653,6 +710,7 @@ class Client extends _isc.ServerpodClientShared {
     'deskStream': deskStream,
     'item': item,
     'match': match,
+    'release': release,
     'report': report,
     'venue': venue,
     'greeting': greeting,

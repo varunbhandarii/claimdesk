@@ -38,8 +38,14 @@ class TicketJsonRoute extends PublicRoute {
       return PublicPage.json({'message': 'No ticket here'}, status: 404);
     }
     final venue = await Venue.db.findById(session, report.venueId);
-    return venue == null
-        ? PublicPage.json({'message': 'No ticket here'}, status: 404)
-        : PublicPage.json(TicketView(report, venue).toJson());
+    if (venue == null) {
+      return PublicPage.json({'message': 'No ticket here'}, status: 404);
+    }
+    final values = await TicketContext.values(session, report, venue);
+    return PublicPage.json({
+      ...TicketView(report, venue).toJson(),
+      'answered': values['answered'],
+      if (values['receipt'] != null) 'receipt': values['receipt'],
+    });
   }
 }

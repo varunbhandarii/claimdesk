@@ -35,9 +35,34 @@ class TicketContext {
     final questions = VerificationQuestions.forCategory(
       report.attributes?.category ?? report.categoryHint ?? 'other',
     );
+    final item = match == null || report.status != ReportStatus.readyForPickup
+        ? null
+        : await FoundItem.db.findById(session, match.itemId);
+    final photo =
+        item != null &&
+        item.venueId == report.venueId &&
+        item.status == ItemStatus.matched &&
+        !item.restricted &&
+        item.thumbPath != null;
+    final receipt = report.status == ReportStatus.returned
+        ? await ReleaseRecord.db.findFirstRow(
+            session,
+            where: (t) =>
+                t.reportId.equals(report.id!) &
+                t.venueId.equals(report.venueId),
+          )
+        : null;
     return {
       ...TicketView(report, venue).toMap(),
       'answered': answers.length == 2,
+      'photo': photo,
+      'photoPath': '/t/${report.publicToken}/photo',
+      'receipt': receipt == null
+          ? null
+          : {
+              'returnedAt': TicketView(report, venue).date(receipt.releasedAt),
+              'idTypeSeen': TicketView.idTypeLabel(receipt.idTypeSeen),
+            },
       'ownerEcho':
           report.status == ReportStatus.possibleMatch &&
               answers.length == 2 &&
@@ -59,7 +84,11 @@ class TicketContext {
             'question': questions[i],
             'value':
                 fields['answer${i + 1}'] ??
-                (editing && answers.length == 2 ? answers[i].answer : ''),
+                (editing &&
+                        report.status == ReportStatus.possibleMatch &&
+                        answers.length == 2
+                    ? answers[i].answer
+                    : ''),
             'error': errors['answer${i + 1}'],
           },
       ],

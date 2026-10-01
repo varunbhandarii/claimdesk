@@ -87,6 +87,7 @@ void main() {
             'filedAt',
             'updatedAt',
             'venue',
+            'answered',
           });
         }
       },

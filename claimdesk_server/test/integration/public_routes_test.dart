@@ -101,6 +101,7 @@ void main() {
           'filedAt',
           'updatedAt',
           'venue',
+          'answered',
         });
         expect(data['status'], 'received');
         expect(await LostReport.db.count(s), 1);

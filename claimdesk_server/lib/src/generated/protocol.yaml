@@ -10,6 +10,7 @@ emailIdp:
 jwtRefresh:
   - refreshAccessToken:
 admin:
+  - runNightly:
   - seedDemoItems:
   - seedDemoReports:
   - seedDemo:
@@ -32,6 +33,11 @@ match:
   - rematch:
   - confirm:
   - reject:
+release:
+  - markReady:
+  - release:
+  - releaseRecord:
+  - signatureUrl:
 report:
   - listReports:
   - getReport:
