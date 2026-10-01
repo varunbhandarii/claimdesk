@@ -7,6 +7,10 @@ import '../data/errors.dart';
 import '../ui/status.dart';
 import '../ui/categories.dart';
 import '../ui/match_list.dart';
+import '../ui/owner_answers.dart';
+import '../ui/release_receipt.dart';
+import '../app/routes.dart';
+import 'match_detail_screen.dart';
 
 class ReportDetailScreen extends StatefulWidget {
   const ReportDetailScreen({super.key, required this.reportId});
@@ -19,6 +23,8 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
   VenueSession? _session;
   LostReport? _report;
   List<MatchCard> _matches = [];
+  List<ReportAnswer> _answers = [];
+  ReleaseSummary? _release;
   bool _rematching = false;
   Object? _error;
   DeskEvent? _event;
@@ -62,10 +68,22 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
     try {
       final report = await _session!.client.report.getReport(widget.reportId);
       final matches = await _session!.client.match.forReport(widget.reportId);
+      final confirmed = matches
+          .where((c) => c.match.state == MatchState.confirmed)
+          .firstOrNull;
+      final answers = confirmed == null
+          ? <ReportAnswer>[]
+          : await _session!.client.match.answers(confirmed.match.id!);
+      final release =
+          report.status != ReportStatus.returned || confirmed == null
+          ? null
+          : await _session!.client.release.releaseRecord(confirmed.item.id!);
       if (mounted) {
         setState(() {
           _report = report;
           _matches = matches;
+          _answers = answers;
+          _release = release;
           _error = null;
         });
       }
@@ -204,6 +222,34 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
                       ],
                     ),
                     ReportStatusChip(r.status),
+                    if (_release != null) ReleaseReceipt(summary: _release!),
+                    if ({
+                      ReportStatus.possibleMatch,
+                      ReportStatus.readyForPickup,
+                    }.contains(r.status)) ...[
+                      OwnerAnswers(
+                        answers: _answers,
+                        postedAt: _matches
+                            .where((c) => c.match.state == MatchState.confirmed)
+                            .firstOrNull
+                            ?.match
+                            .decidedAt,
+                      ),
+                      for (final confirmed in _matches.where(
+                        (c) => c.match.state == MatchState.confirmed,
+                      ))
+                        TextButton(
+                          onPressed: () => openDeskScreen(
+                            context,
+                            s,
+                            MatchDetailScreen(
+                              matchId: confirmed.match.id!,
+                              reportId: r.id!,
+                            ),
+                          ),
+                          child: const Text('Review confirmed match'),
+                        ),
+                    ],
                     if (r.lastMatchOutcome == 'match_failed')
                       const MatchingUnavailable(),
                     if (_error != null) Text(errorMessage(_error!)),

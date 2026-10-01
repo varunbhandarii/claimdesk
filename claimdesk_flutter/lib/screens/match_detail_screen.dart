@@ -8,6 +8,10 @@ import '../ui/match_actions.dart';
 import '../ui/match_chips.dart';
 import '../ui/photo_view.dart';
 import '../ui/status.dart';
+import '../ui/owner_answers.dart';
+import '../app/routes.dart';
+import 'release_screen.dart';
+import 'item_detail_screen.dart';
 
 class MatchDetailScreen extends StatefulWidget {
   const MatchDetailScreen({
@@ -23,6 +27,8 @@ class MatchDetailScreen extends StatefulWidget {
 class _MatchDetailScreenState extends State<MatchDetailScreen> {
   VenueSession? _session;
   MatchCard? _card;
+  List<ReportAnswer> _answers = [];
+  ReleaseSummary? _release;
   Object? _error;
   DeskEvent? _last;
   int _revision = -1;
@@ -63,9 +69,15 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
       if (card == null) {
         throw StateError('This proposal is no longer available.');
       }
+      final answers = await _session!.client.match.answers(widget.matchId);
+      final release = await _session!.client.release.releaseRecord(
+        card.item.id!,
+      );
       if (mounted) {
         setState(() {
           _card = card;
+          _answers = answers;
+          _release = release;
           _error = null;
         });
       }
@@ -91,6 +103,30 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
 
   String _date(DateTime? date) =>
       date?.toLocal().toString().split('.').first ?? 'Not set';
+  Future<void> _returnItem() async {
+    final s = _session!, c = _card!;
+    final summary = await openDeskScreen<ReleaseSummary>(
+      context,
+      s,
+      ReleaseScreen(
+        item: c.item,
+        matchId: c.match.id,
+        reportRefCode: c.report.refCode,
+        answers: _answers,
+      ),
+    );
+    if (summary != null && mounted) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => VenueScope(
+            session: s,
+            child: ItemDetailScreen(itemId: c.item.id!),
+          ),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final s = VenueScope.of(context), c = _card;
@@ -166,6 +202,10 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
                       SelectableText(
                         c.report.ownerOnlyDetails ?? 'Not provided',
                       ),
+                      OwnerAnswers(
+                        answers: _answers,
+                        postedAt: c.match.decidedAt,
+                      ),
                       const Divider(height: 32),
                       Text(
                         '${matchStateLabel(c.match.state)} · ${c.match.label} · ${c.match.score.toStringAsFixed(2)}',
@@ -214,7 +254,13 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
                         ],
                       ),
                       const SizedBox(height: 16),
-                      MatchActions(match: c.match, onChanged: _load),
+                      MatchActions(
+                        match: c.match,
+                        onChanged: _load,
+                        reportStatus: c.report.status,
+                        releasedAt: _release?.record.releasedAt,
+                        onRelease: _returnItem,
+                      ),
                     ],
                   ),
                 ),

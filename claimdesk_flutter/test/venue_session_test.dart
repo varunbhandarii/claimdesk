@@ -74,6 +74,14 @@ void main() {
         at: DateTime.now(),
       ),
     );
+    client.events.add(
+      DeskEvent(
+        kind: 'reportAnswered',
+        venueId: venueId,
+        reportId: itemId,
+        at: DateTime.now(),
+      ),
+    );
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 999));
     expect(session.inbox, isEmpty);

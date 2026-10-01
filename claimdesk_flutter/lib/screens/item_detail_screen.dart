@@ -11,6 +11,9 @@ import '../ui/attribute_chips.dart';
 import 'edit_item_screen.dart';
 import '../ui/item_form.dart';
 import '../ui/match_list.dart';
+import '../ui/release_receipt.dart';
+import 'release_screen.dart';
+import 'match_detail_screen.dart';
 
 class ItemDetailScreen extends StatefulWidget {
   const ItemDetailScreen({super.key, required this.itemId});
@@ -24,6 +27,7 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
   FoundItem? _item;
   List<CaptionRun> _runs = [];
   List<MatchCard> _matches = [];
+  ReleaseSummary? _release;
   Object? _error;
   DeskEvent? _lastEvent;
   int _reconnectRevision = 0;
@@ -63,11 +67,15 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
       final item = await _session!.client.item.getItem(widget.itemId);
       final runs = await _session!.client.item.captionRuns(widget.itemId);
       final matches = await _session!.client.match.forItem(widget.itemId);
+      final release = await _session!.client.release.releaseRecord(
+        widget.itemId,
+      );
       if (mounted) {
         setState(() {
           _item = item;
           _runs = runs.reversed.toList();
           _matches = matches;
+          _release = release;
           _error = null;
         });
       }
@@ -225,34 +233,69 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
                       Wrap(
                         spacing: 12,
                         children: [
-                          FilledButton.icon(
-                            onPressed: _acting
-                                ? null
-                                : () async {
-                                    final edited =
-                                        await openDeskScreen<FoundItem>(
-                                          context,
-                                          session,
-                                          EditItemScreen(item: item),
-                                        );
-                                    if (edited != null && mounted) {
-                                      setState(() => _item = edited);
-                                    }
-                                  },
-                            icon: const Icon(Icons.edit_outlined),
-                            label: const Text('Edit details'),
-                          ),
-                          OutlinedButton.icon(
-                            onPressed:
-                                !_acting && item.status == ItemStatus.unclaimed
-                                ? _recaption
-                                : null,
-                            icon: const Icon(Icons.auto_awesome_outlined),
-                            label: const Text('Recaption'),
-                          ),
+                          if (item.status != ItemStatus.claimed)
+                            FilledButton.icon(
+                              onPressed: _acting
+                                  ? null
+                                  : () async {
+                                      final edited =
+                                          await openDeskScreen<FoundItem>(
+                                            context,
+                                            session,
+                                            EditItemScreen(item: item),
+                                          );
+                                      if (edited != null && mounted) {
+                                        setState(() => _item = edited);
+                                      }
+                                    },
+                              icon: const Icon(Icons.edit_outlined),
+                              label: const Text('Edit details'),
+                            ),
+                          if (item.status != ItemStatus.claimed)
+                            OutlinedButton.icon(
+                              onPressed:
+                                  !_acting &&
+                                      item.status == ItemStatus.unclaimed
+                                  ? _recaption
+                                  : null,
+                              icon: const Icon(Icons.auto_awesome_outlined),
+                              label: const Text('Recaption'),
+                            ),
                         ],
                       ),
                       const Divider(height: 40),
+                      if (_release != null)
+                        ReleaseReceipt(summary: _release!, showSignature: true),
+                      if (item.status == ItemStatus.unclaimed)
+                        FilledButton(
+                          onPressed: () async {
+                            final released =
+                                await openDeskScreen<ReleaseSummary>(
+                                  context,
+                                  session,
+                                  ReleaseScreen(item: item),
+                                );
+                            if (released != null) await _load();
+                          },
+                          child: const Text('Release to walk-in'),
+                        ),
+                      if (item.status == ItemStatus.matched)
+                        for (final reserved in _matches.where(
+                          (c) => c.match.state == MatchState.confirmed,
+                        ))
+                          TextButton(
+                            onPressed: () => openDeskScreen(
+                              context,
+                              session,
+                              MatchDetailScreen(
+                                matchId: reserved.match.id!,
+                                reportId: reserved.report.id!,
+                              ),
+                            ),
+                            child: Text(
+                              'Reserved for report ${reserved.report.refCode}',
+                            ),
+                          ),
                       if (item.attributes != null)
                         AttributeChips(
                           attributes: item.attributes!,

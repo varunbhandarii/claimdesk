@@ -48,15 +48,40 @@ Future<String?> askDismissReason(
 }
 
 class MatchActions extends StatefulWidget {
-  const MatchActions({super.key, required this.match, this.onChanged});
+  const MatchActions({
+    super.key,
+    required this.match,
+    this.onChanged,
+    this.reportStatus,
+    this.onRelease,
+    this.releasedAt,
+  });
   final ItemMatch match;
   final VoidCallback? onChanged;
+  final ReportStatus? reportStatus;
+  final VoidCallback? onRelease;
+  final DateTime? releasedAt;
   @override
   State<MatchActions> createState() => _MatchActionsState();
 }
 
 class _MatchActionsState extends State<MatchActions> {
   bool _busy = false;
+  Future<void> _ready() async {
+    final s = VenueScope.of(context);
+    setState(() => _busy = true);
+    final result = await runGuarded(
+      context,
+      () => s.client.release.markReady(widget.match.id!),
+      onDenied: s.onDenied,
+    );
+    if (mounted) setState(() => _busy = false);
+    if (result != null) {
+      s.scheduleRefresh();
+      widget.onChanged?.call();
+    }
+  }
+
   Future<void> _act(bool confirm) async {
     final session = VenueScope.of(context);
     final actionContext = Navigator.of(context).context;
@@ -97,15 +122,36 @@ class _MatchActionsState extends State<MatchActions> {
     spacing: 8,
     runSpacing: 8,
     children: [
+      if (widget.releasedAt != null ||
+          widget.reportStatus == ReportStatus.returned)
+        Text(
+          'Released${widget.releasedAt == null ? '' : ' on ${widget.releasedAt!.toLocal().toString().split('.').first}'}',
+        ),
+      if (widget.match.state == MatchState.confirmed &&
+          widget.releasedAt == null &&
+          widget.reportStatus != ReportStatus.returned) ...[
+        if (widget.reportStatus == ReportStatus.possibleMatch)
+          FilledButton(
+            onPressed: _busy ? null : _ready,
+            child: const Text('Mark ready for pickup'),
+          ),
+        if (widget.onRelease != null)
+          FilledButton(
+            onPressed: _busy ? null : widget.onRelease,
+            child: const Text('Release item'),
+          ),
+      ],
       if (widget.match.state == MatchState.pending)
         FilledButton(
           onPressed: _busy ? null : () => _act(true),
           child: const Text('Confirm'),
         ),
       if ({
-        MatchState.pending,
-        MatchState.confirmed,
-      }.contains(widget.match.state))
+            MatchState.pending,
+            MatchState.confirmed,
+          }.contains(widget.match.state) &&
+          widget.releasedAt == null &&
+          widget.reportStatus != ReportStatus.returned)
         OutlinedButton(
           onPressed: _busy ? null : () => _act(false),
           child: Text(

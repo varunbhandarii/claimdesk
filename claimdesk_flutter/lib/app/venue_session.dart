@@ -11,7 +11,10 @@ class VenueSession extends ChangeNotifier {
     required this.membership,
     required this.onDenied,
   }) {
-    photos = PhotoUrls((id, thumb) => client.item.photoUrl(id, thumb: thumb));
+    photos = PhotoUrls(
+      (id, thumb) => client.item.photoUrl(id, thumb: thumb),
+      fetchSignature: client.release.signatureUrl,
+    );
     live = VenueEvents(
       openStream: () => client.deskStream.watchVenue(venue.id!),
       onReconnect: () {

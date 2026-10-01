@@ -37,6 +37,7 @@ dependencies:
   serverpod_auth_idp_client: 4.0.2
   image_picker: ^1.2.3
   shared_preferences: ^2.5.5
+  signature: 6.4.0
 
 dev_dependencies:
   # Used for agents to drive the app through the Dart MCP

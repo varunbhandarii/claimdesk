@@ -4,6 +4,27 @@ import 'package:claimdesk_flutter/data/photo_urls.dart';
 import 'fixtures.dart';
 
 void main() {
+  test(
+    'Signature URLs have a separate short-lived cache and are invalidated with the item',
+    () async {
+      var calls = 0;
+      final urls = PhotoUrls(
+        (_, _) async => 'https://example.test/photo',
+        fetchSignature: (_) async {
+          calls++;
+          return 'https://example.test/signature';
+        },
+      );
+      await urls.get(itemId);
+      expect(await urls.signature(itemId), 'https://example.test/signature');
+      await urls.signature(itemId);
+      expect(calls, 1);
+      urls.invalidate(itemId);
+      await urls.signature(itemId);
+      expect(calls, 2);
+      urls.dispose();
+    },
+  );
   TestWidgetsFlutterBinding.ensureInitialized();
   test(
     'shares in-flight requests, refetches disposable URLs and clears on sign-out',
