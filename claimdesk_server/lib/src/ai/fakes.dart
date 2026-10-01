@@ -2,6 +2,7 @@ import 'dart:math';
 import 'dart:typed_data';
 import '../generated/protocol.dart';
 import '../policy/taxonomy.dart';
+import '../matching/english_lexemes.dart';
 import 'provider_types.dart';
 import 'text_template.dart';
 
@@ -78,11 +79,15 @@ class FakeEmbedder implements TextEmbedder {
   Future<List<double>> embedDocument(String text) async {
     if (fail) throw StateError('Embedding unavailable');
     final vector = List<double>.filled(dimensions, 0);
-    for (final token in RegExp(
-      r'[a-z0-9_]+',
-    ).allMatches(Taxonomy.canonicalize(text))) {
+    final tokens = EnglishLexemes.tokens(Taxonomy.canonicalize(text));
+    final features = [
+      ...tokens,
+      for (var i = 0; i + 1 < tokens.length; i++)
+        '${tokens[i]} ${tokens[i + 1]}',
+    ];
+    for (final token in features) {
       var hash = 2166136261;
-      for (final c in token.group(0)!.codeUnits) {
+      for (final c in token.codeUnits) {
         hash = ((hash ^ c) * 16777619) & 0xffffffff;
       }
       vector[hash % dimensions] += hash & 0x80000000 == 0 ? 1 : -1;

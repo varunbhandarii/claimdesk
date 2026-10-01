@@ -16,6 +16,7 @@ dependencies:
   serverpod: 4.0.2
   serverpod_auth_idp_server: 4.0.2
   serverpod_cloud_storage: 4.0.2
+  porter_2_stemmer: ^3.0.2
 
 dev_dependencies:
   barcode: ^2.2.9
