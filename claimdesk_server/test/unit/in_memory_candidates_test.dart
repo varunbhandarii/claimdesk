@@ -2,10 +2,90 @@ import 'package:claimdesk_server/src/ai/fakes.dart';
 import 'package:claimdesk_server/src/generated/protocol.dart';
 import 'package:claimdesk_server/src/matching/english_lexemes.dart';
 import 'package:claimdesk_server/src/matching/in_memory_candidates.dart';
+import 'package:claimdesk_server/src/matching/candidate_query.dart';
 import 'package:serverpod/serverpod.dart';
 import 'package:test/test.dart';
 
 void main() {
+  test(
+    'reference permits only eligible vector-only ties at the float32 cutoff',
+    () {
+      final venue = const Uuid().v4obj();
+      final at = DateTime.utc(2026, 10, 2);
+      final report = LostReport(
+        venueId: venue,
+        refCode: 'REPORT',
+        publicToken: '',
+        rawText: '',
+        colourHints: [],
+        lostAt: at,
+        embedding: Vector([1, 0]),
+      );
+      final items = [
+        for (var i = 0; i < 26; i++)
+          FoundItem(
+            id: const Uuid().v4obj(),
+            venueId: venue,
+            refCode: 'ITEM$i',
+            status: ItemStatus.unclaimed,
+            loggedByAuthUserId: venue,
+            foundAt: at,
+            embedding: Vector([0, 1]),
+          ),
+      ];
+      Candidate row(FoundItem item, {double coverage = 0}) => Candidate(
+        report: report,
+        item: item,
+        zones: [],
+        cosSim: 0,
+        keywordCoverage: coverage,
+        matchedKeywords: [],
+      );
+      final reference = items.take(25).map(row).toList();
+      final actual = [...reference.skip(1), row(items.last)];
+      final checker = InMemoryCandidates(now: () => at);
+      expect(checker.selectionAgrees(report, items, actual, reference), isTrue);
+      expect(
+        checker.selectionAgrees(report, items, [
+          ...actual.take(24),
+          row(items.last, coverage: .1),
+        ], reference),
+        isFalse,
+      );
+      expect(
+        checker.selectionAgrees(report, items, [
+          ...actual.take(24),
+          row(
+            items.last.copyWith(
+              venueId: const Uuid().v4obj(),
+              id: const Uuid().v4obj(),
+            ),
+          ),
+        ], reference),
+        isFalse,
+      );
+      final distinct = [
+        ...items.take(25),
+        items.last.copyWith(embedding: Vector([.2, 1])),
+      ];
+      expect(
+        checker.selectionAgrees(report, distinct, [
+          ...actual.take(24),
+          row(distinct.last),
+        ], reference),
+        isFalse,
+      );
+      expect(
+        checker.selectionAgrees(
+          report,
+          items,
+          actual.take(24).toList(),
+          reference,
+        ),
+        isFalse,
+      );
+    },
+  );
   test('English reference stems words and drops the PostgreSQL stop list', () {
     expect(EnglishLexemes.of('the wooden handles and curved umbrellas'), {
       'wooden',

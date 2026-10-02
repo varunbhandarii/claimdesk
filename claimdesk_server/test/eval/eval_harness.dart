@@ -220,8 +220,9 @@ class EvalHarness {
       ).forReport(report, items, zones);
       final sqlIds = sql.map((c) => c.item.id).toSet(),
           referenceIds = reference.map((c) => c.item.id).toSet();
-      if (sqlIds.length != referenceIds.length ||
-          !sqlIds.containsAll(referenceIds)) {
+      if (!InMemoryCandidates(
+        now: () => now,
+      ).selectionAgrees(report, items, sql, reference)) {
         differences.add(
           '${reportKeys[report.id]} SQL-only=${sqlIds.difference(referenceIds).map((id) => itemKeys[id]).toList()} reference-only=${referenceIds.difference(sqlIds).map((id) => itemKeys[id]).toList()}',
         );
