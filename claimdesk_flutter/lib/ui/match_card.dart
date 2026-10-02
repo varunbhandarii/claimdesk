@@ -86,6 +86,12 @@ class MatchCardTile extends StatelessWidget {
               Wrap(
                 spacing: 8,
                 children: [
+                  if (card.match.algorithmVersion.endsWith('-draft'))
+                    const Chip(
+                      label: Text('Preliminary'),
+                      side: BorderSide(color: Color(0xff6b7280)),
+                      backgroundColor: Colors.transparent,
+                    ),
                   Chip(
                     label: Text(
                       '${strong ? 'Strong' : 'Possible'} · ${card.match.score.toStringAsFixed(2)}',

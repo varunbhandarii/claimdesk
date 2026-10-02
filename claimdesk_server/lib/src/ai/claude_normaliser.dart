@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'claude_model_ids.dart';
 import 'dart:math';
 import 'package:http/http.dart' as http;
 import 'caption_validator.dart';
@@ -19,7 +20,10 @@ class ClaudeNormaliser implements ReportNormaliser {
   final http.Client client;
   final Duration timeout;
   final Future<void> Function(Duration) delay;
-  String? get effort => model == 'claude-opus-5-5' ? 'low' : null;
+  String? get effort =>
+      model.startsWith('claude-opus-') || model.startsWith('claude-sonnet-')
+      ? 'low'
+      : null;
   @override
   String get id => 'claude_normaliser';
   @override
@@ -76,7 +80,7 @@ class ClaudeNormaliser implements ReportNormaliser {
           returnedModel = body['model'] is String ? body['model'] : '';
           input = (body['usage']?['input_tokens'] as num?)?.toInt();
           output = (body['usage']?['output_tokens'] as num?)?.toInt();
-          if (returnedModel != model) {
+          if (!matchesClaudeModel(model, returnedModel)) {
             outcome = 'invalid_json';
             error = 'Unexpected normalisation model';
             retry = true;

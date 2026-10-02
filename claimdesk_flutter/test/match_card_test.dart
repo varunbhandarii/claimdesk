@@ -4,6 +4,29 @@ import 'package:flutter_test/flutter_test.dart';
 import 'match_fixtures.dart';
 
 void main() {
+  for (final version in ['v1-draft', 'v1']) {
+    testWidgets(
+      '$version displays Preliminary only while refinement is pending',
+      (tester) async {
+        final card = matchCard();
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: MatchCardTile(
+                card: card.copyWith(
+                  match: card.match.copyWith(algorithmVersion: version),
+                ),
+              ),
+            ),
+          ),
+        );
+        expect(
+          find.text('Preliminary'),
+          version.endsWith('-draft') ? findsOneWidget : findsNothing,
+        );
+      },
+    );
+  }
   testWidgets(
     'card shows both references, score, leader and stored readable keywords',
     (tester) async {

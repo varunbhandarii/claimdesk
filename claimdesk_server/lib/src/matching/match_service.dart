@@ -12,7 +12,12 @@ class MatchService {
     List<ScoredCandidate> scored, {
     bool completeReportSet = true,
     bool startSearching = false,
+    bool draft = false,
+    String? algorithmVersion,
   }) async {
+    final version =
+        algorithmVersion ??
+        (draft ? '${Scorer.algorithmVersion}-draft' : Scorer.algorithmVersion);
     final events = await s.db.transaction((tx) async {
       if (!await JobClaim.current(s, job, transaction: tx, lock: true)) {
         return <DeskEvent>[];
@@ -66,7 +71,7 @@ class MatchService {
           label: candidate.label,
           rank: 1,
           explanation: candidate.explanation,
-          algorithmVersion: Scorer.algorithmVersion,
+          algorithmVersion: version,
           createdAt: previous?.createdAt ?? now,
           updatedAt: now,
         );
@@ -119,6 +124,19 @@ class MatchService {
             ),
           );
         }
+        if (!draft &&
+            previousVersion(old, row.itemId)?.endsWith('-draft') == true) {
+          events.add(
+            DeskEvent(
+              kind: 'matchStatus',
+              venueId: report.venueId,
+              reportId: report.id,
+              itemId: row.itemId,
+              matchId: saved.id,
+              at: now,
+            ),
+          );
+        }
       }
       if (startSearching && report.status == ReportStatus.received) {
         await LostReport.db.updateRow(
@@ -135,7 +153,7 @@ class MatchService {
           ),
         );
       }
-      if (completeReportSet) {
+      if (completeReportSet && !draft) {
         if (!(startSearching && report.status == ReportStatus.received)) {
           events.add(
             DeskEvent(
@@ -155,7 +173,7 @@ class MatchService {
             action: 'match_completed',
             payload: AuditPayload(
               summary: 'Report compared with found items',
-              data: {'algorithmVersion': Scorer.algorithmVersion},
+              data: {'algorithmVersion': version},
             ),
           ),
           transaction: tx,
@@ -166,5 +184,12 @@ class MatchService {
     for (final event in events) {
       await s.messages.postMessage('venue_${event.venueId}', event);
     }
+  }
+
+  String? previousVersion(List<ItemMatch> rows, UuidValue itemId) {
+    for (final row in rows) {
+      if (row.itemId == itemId) return row.algorithmVersion;
+    }
+    return null;
   }
 }

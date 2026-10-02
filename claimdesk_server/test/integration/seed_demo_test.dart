@@ -16,6 +16,7 @@ import 'package:claimdesk_server/src/seed/demo_inventory.dart';
 import 'package:test/test.dart';
 import 'test_tools/fixtures.dart';
 import 'test_tools/serverpod_test_tools.dart';
+import 'test_tools/worker_cleanup.dart';
 
 void main() {
   test('deployable demo bundle equals the reviewed fixture selections', () {
@@ -37,6 +38,8 @@ void main() {
     }
   });
   withServerpod('Idempotent demo inventory', (builder, endpoints) {
+    setUp(() => clearWorkerTestData(builder.build()));
+    tearDown(() => clearWorkerTestData(builder.build()));
     test(
       'items and reports seed twice with unchanged ids, jobs and timestamps and produce proposals',
       () async {
@@ -179,5 +182,5 @@ void main() {
       );
       expect(await FoundItem.db.count(builder.build()), 0);
     });
-  });
+  }, rollbackDatabase: RollbackDatabase.disabled);
 }

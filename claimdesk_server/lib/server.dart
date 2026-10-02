@@ -157,5 +157,6 @@ void run(List<String> args) async {
       NightlyHandler(),
     ],
     interval: Duration(seconds: Providers.config.workerIntervalSeconds),
+    concurrency: Providers.config.workerConcurrency,
   ).start();
 }

@@ -8,9 +8,12 @@ import 'package:serverpod/serverpod.dart';
 import 'package:test/test.dart';
 import 'test_tools/fixtures.dart';
 import 'test_tools/serverpod_test_tools.dart';
+import 'test_tools/worker_cleanup.dart';
 
 void main() {
   withServerpod('Given found-item intake', (builder, endpoints) {
+    setUp(() => clearWorkerTestData(builder.build()));
+    tearDown(() => clearWorkerTestData(builder.build()));
     late Session s;
     late Venue venue;
     late Zone zone;
@@ -280,5 +283,5 @@ void main() {
         isNull,
       );
     });
-  });
+  }, rollbackDatabase: RollbackDatabase.disabled);
 }

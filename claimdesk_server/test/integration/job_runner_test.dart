@@ -6,6 +6,7 @@ import 'package:claimdesk_server/src/jobs/job_worker.dart';
 import 'package:serverpod/serverpod.dart';
 import 'package:test/test.dart';
 import 'test_tools/serverpod_test_tools.dart';
+import 'test_tools/worker_cleanup.dart';
 
 class _Handler extends JobHandler {
   _Handler(this.callback);
@@ -18,6 +19,8 @@ class _Handler extends JobHandler {
 
 void main() {
   withServerpod('Given durable work', (builder, _) {
+    setUp(() => clearWorkerTestData(builder.build()));
+    tearDown(() => clearWorkerTestData(builder.build()));
     late Session s;
     late DateTime now;
     setUp(() {
@@ -166,7 +169,7 @@ void main() {
       );
       expect((await WorkItem.db.find(s)).single.runAt, now);
     });
-  });
+  }, rollbackDatabase: RollbackDatabase.disabled);
   withServerpod('Given concurrent workers', (builder, _) {
     tearDown(() async {
       await WorkItem.db.deleteWhere(
@@ -174,6 +177,211 @@ void main() {
         where: (t) => Constant.bool(true),
       );
     });
+    test(
+      'three blocked jobs start on distinct sessions before any completes',
+      () async {
+        final s = builder.build();
+        final allStarted = Completer<void>(), release = Completer<void>();
+        final sessions = <Session>[];
+        for (var n = 0; n < 3; n++) {
+          await JobQueue.enqueue(
+            s,
+            kind: 'record',
+            payload: WorkPayload(data: {}),
+          );
+        }
+        final worker = JobWorker(
+          s.serverpod,
+          concurrency: 3,
+          renewLeases: false,
+          handlers: [
+            _Handler((session, _) async {
+              sessions.add(session);
+              if (sessions.length == 3) allStarted.complete();
+              await release.future;
+            }),
+          ],
+        );
+        final run = worker.tick(s);
+        try {
+          await allStarted.future.timeout(const Duration(seconds: 2));
+          expect(sessions.toSet(), hasLength(3));
+          expect(sessions, isNot(contains(s)));
+          expect(
+            await WorkItem.db.count(
+              s,
+              where: (t) => t.state.equals(WorkState.running),
+            ),
+            3,
+          );
+        } finally {
+          release.complete();
+          await run;
+        }
+        expect(
+          await WorkItem.db.count(
+            s,
+            where: (t) => t.state.equals(WorkState.done),
+          ),
+          3,
+        );
+      },
+    );
+    test(
+      'one slot preserves start order and completion precedes the next start',
+      () async {
+        final s = builder.build();
+        final calls = <String>[];
+        final now = DateTime.now().toUtc();
+        for (var n = 0; n < 3; n++) {
+          await JobQueue.enqueue(
+            s,
+            kind: 'record',
+            payload: WorkPayload(data: {'n': '$n'}),
+            runAt: now.subtract(Duration(seconds: 3 - n)),
+          );
+        }
+        await JobWorker(
+          s.serverpod,
+          concurrency: 1,
+          renewLeases: false,
+          handlers: [
+            _Handler((_, job) async {
+              calls.add('start${job.payload.data['n']}');
+              await Future<void>.delayed(const Duration(milliseconds: 5));
+              calls.add('end${job.payload.data['n']}');
+            }),
+          ],
+        ).tick(s);
+        expect(calls, ['start0', 'end0', 'start1', 'end1', 'start2', 'end2']);
+      },
+    );
+    test(
+      'a throwing sibling retries alone without delaying the others',
+      () async {
+        final s = builder.build();
+        final now = DateTime.now().toUtc();
+        for (var n = 0; n < 3; n++) {
+          await JobQueue.enqueue(
+            s,
+            kind: 'record',
+            payload: WorkPayload(data: {'n': '$n'}),
+            runAt: now,
+          );
+        }
+        await JobWorker(
+          s.serverpod,
+          concurrency: 3,
+          clock: () => now,
+          renewLeases: false,
+          handlers: [
+            _Handler((_, job) async {
+              if (job.payload.data['n'] == '1') {
+                throw StateError('test failure');
+              }
+            }),
+          ],
+        ).tick(s);
+        final rows = await WorkItem.db.find(s);
+        expect(rows.where((r) => r.state == WorkState.done), hasLength(2));
+        final retry = rows.singleWhere((r) => r.state == WorkState.pending);
+        expect(retry.payload.data['n'], '1');
+        expect(retry.runAt, now.add(const Duration(seconds: 5)));
+        expect(retry.attempts, 1);
+      },
+    );
+    test(
+      'stop waits for every in-flight job and does not claim another',
+      () async {
+        final s = builder.build();
+        final started = Completer<void>(), release = Completer<void>();
+        var calls = 0;
+        final worker = JobWorker(
+          s.serverpod,
+          concurrency: 3,
+          renewLeases: false,
+          interval: const Duration(hours: 1),
+          handlers: [
+            _Handler((_, _) async {
+              if (++calls == 3) started.complete();
+              await release.future;
+            }),
+          ],
+        )..start();
+        try {
+          for (var n = 0; n < 4; n++) {
+            await JobQueue.enqueue(
+              s,
+              kind: 'record',
+              payload: WorkPayload(data: {}),
+            );
+          }
+          await started.future.timeout(const Duration(seconds: 2));
+          var stopped = false;
+          final stopping = worker.stop().then((_) => stopped = true);
+          await Future<void>.delayed(const Duration(milliseconds: 30));
+          expect(stopped, false);
+          release.complete();
+          await stopping;
+          expect(calls, 3);
+          expect(
+            await WorkItem.db.count(
+              s,
+              where: (t) => t.state.equals(WorkState.pending),
+            ),
+            1,
+          );
+        } finally {
+          if (!release.isCompleted) release.complete();
+          await worker.stop();
+          s.serverpod.experimental.shutdownTasks.removeTask('job-worker');
+        }
+      },
+    );
+    test(
+      'a freed slot starts newly committed work while a sibling remains blocked',
+      () async {
+        final s = builder.build();
+        final entered = Completer<void>(),
+            release = Completer<void>(),
+            newcomer = Completer<void>();
+        final worker = JobWorker(
+          s.serverpod,
+          concurrency: 3,
+          renewLeases: false,
+          interval: const Duration(hours: 1),
+          handlers: [
+            _Handler((_, job) async {
+              if (job.payload.data['slow'] == 'true') {
+                entered.complete();
+                await release.future;
+              } else {
+                newcomer.complete();
+              }
+            }),
+          ],
+        )..start();
+        try {
+          await JobQueue.enqueue(
+            s,
+            kind: 'record',
+            payload: WorkPayload(data: {'slow': 'true'}),
+          );
+          await entered.future.timeout(const Duration(seconds: 2));
+          await JobQueue.enqueue(
+            s,
+            kind: 'record',
+            payload: WorkPayload(data: {}),
+          );
+          await newcomer.future.timeout(const Duration(seconds: 2));
+          expect(release.isCompleted, false);
+        } finally {
+          release.complete();
+          await worker.stop();
+          s.serverpod.experimental.shutdownTasks.removeTask('job-worker');
+        }
+      },
+    );
     test('separate workers claim each of three jobs once', () async {
       final s = builder.build();
       final calls = <UuidValue>[];
@@ -282,6 +490,65 @@ void main() {
         expect(calls, 1);
       } finally {
         finish.complete();
+        await task;
+      }
+    });
+    test('heartbeat renews a blocked job while its sibling finishes', () async {
+      final s = builder.build();
+      final entered = Completer<void>(),
+          siblingDone = Completer<void>(),
+          release = Completer<void>();
+      final slow = await JobQueue.enqueue(
+        s,
+        kind: 'record',
+        payload: WorkPayload(data: {'slow': 'true'}),
+      );
+      final fast = await JobQueue.enqueue(
+        s,
+        kind: 'record',
+        payload: WorkPayload(data: {}),
+      );
+      final worker = JobWorker(
+        s.serverpod,
+        concurrency: 3,
+        lease: const Duration(milliseconds: 600),
+        handlers: [
+          _Handler((_, job) async {
+            if (job.id == slow.id) {
+              entered.complete();
+              await release.future;
+            } else {
+              siblingDone.complete();
+            }
+          }),
+        ],
+      );
+      final task = worker.tick(s);
+      try {
+        await Future.wait([
+          entered.future,
+          siblingDone.future,
+        ]).timeout(const Duration(seconds: 2));
+        await Future<void>.delayed(const Duration(milliseconds: 800));
+        expect(
+          (await WorkItem.db.findById(s, fast.id!))!.state,
+          WorkState.done,
+        );
+        expect(
+          (await WorkItem.db.findById(
+            s,
+            slow.id!,
+          ))!.leaseUntil!.isAfter(DateTime.now().toUtc()),
+          true,
+        );
+        await JobWorker(
+          s.serverpod,
+          handlers: [
+            _Handler((_, _) async => fail('Renewed sibling was reclaimed')),
+          ],
+        ).tick(s);
+      } finally {
+        release.complete();
         await task;
       }
     });

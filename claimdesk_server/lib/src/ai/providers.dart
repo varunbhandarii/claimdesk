@@ -31,6 +31,7 @@ class Providers {
           ? ClaudeCaptioner(
               apiKey: config.anthropicApiKey!,
               model: config.captionModel,
+              effort: config.captionEffort,
             )
           : FakeCaptioner(),
     );

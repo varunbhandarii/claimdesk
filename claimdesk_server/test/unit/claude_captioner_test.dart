@@ -9,6 +9,35 @@ import 'caption_examples.dart';
 
 void main() {
   Future<void> noDelay(Duration _) async {}
+  for (final effort in ['', 'low', 'medium', 'high']) {
+    test('caption request preserves schema with effort "$effort"', () async {
+      final captioner = ClaudeCaptioner(
+        apiKey: 'test',
+        effort: effort,
+        client: MockClient((request) async {
+          final sent = jsonDecode(request.body);
+          expect(sent['output_config']['format']['type'], 'json_schema');
+          expect(
+            sent['output_config'].containsKey('effort'),
+            effort.isNotEmpty,
+          );
+          if (effort.isNotEmpty) {
+            expect(sent['output_config']['effort'], effort);
+          }
+          expect(sent.containsKey('thinking'), false);
+          return http.Response(jsonEncode(claudeBody()), 200);
+        }),
+      );
+      addTearDown(captioner.client.close);
+      expect(
+        (await captioner.describe(
+          Uint8List(0),
+          promptVersion: 'caption_v1',
+        )).outcome,
+        'ok',
+      );
+    });
+  }
   test(
     'parses text after thinking and captures usage and requested model',
     () async {

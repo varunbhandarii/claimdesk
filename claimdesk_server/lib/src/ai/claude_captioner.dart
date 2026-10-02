@@ -11,12 +11,14 @@ class ClaudeCaptioner implements ItemCaptioner {
   ClaudeCaptioner({
     required this.apiKey,
     this.model = 'claude-opus-5-5',
+    this.effort = 'low',
     http.Client? client,
     Future<void> Function(Duration)? delay,
     this.timeout = const Duration(seconds: 120),
   }) : client = client ?? http.Client(),
        delay = delay ?? Future<void>.delayed;
   final String apiKey, model;
+  final String effort;
   final http.Client client;
   final Duration timeout;
   final Future<void> Function(Duration) delay;
@@ -75,6 +77,7 @@ class ClaudeCaptioner implements ItemCaptioner {
                   },
                 ],
                 'output_config': {
+                  if (effort.isNotEmpty) 'effort': effort,
                   'format': {'type': 'json_schema', 'schema': captionSchema()},
                 },
               }),

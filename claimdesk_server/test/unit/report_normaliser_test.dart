@@ -18,6 +18,61 @@ Map<String, dynamic> sample() => jsonDecode(
 void main() {
   Future<void> noDelay(Duration _) async {}
   test(
+    'published Haiku alias accepts only its known dated model response',
+    () async {
+      final normaliser = ClaudeNormaliser(
+        apiKey: 'test',
+        model: 'claude-haiku-4-5',
+        client: MockClient(
+          (_) async => http.Response(
+            jsonEncode(sample()..['model'] = 'claude-haiku-4-5-20251001'),
+            200,
+          ),
+        ),
+      );
+      addTearDown(normaliser.client.close);
+      final result = await normaliser.normalise(
+        'a black umbrella',
+        const ReportHints(),
+      );
+      expect(result.outcome, 'ok');
+      expect(result.attributes!.modelId, 'claude-haiku-4-5-20251001');
+    },
+  );
+  for (final model in [
+    'claude-opus-5-5',
+    'claude-sonnet-5-5',
+    'claude-haiku-4-5',
+  ]) {
+    test('$model sends supported effort and never sends thinking', () async {
+      final normaliser = ClaudeNormaliser(
+        apiKey: 'test',
+        model: model,
+        client: MockClient((request) async {
+          final sent = jsonDecode(request.body);
+          expect(sent['output_config']['format']['type'], 'json_schema');
+          expect(
+            sent['output_config'].containsKey('effort'),
+            !model.contains('haiku'),
+          );
+          if (!model.contains('haiku')) {
+            expect(sent['output_config']['effort'], 'low');
+          }
+          expect(sent.containsKey('thinking'), false);
+          return http.Response(jsonEncode(sample()..['model'] = model), 200);
+        }),
+      );
+      addTearDown(normaliser.client.close);
+      expect(
+        (await normaliser.normalise(
+          'a black umbrella',
+          const ReportHints(),
+        )).outcome,
+        'ok',
+      );
+    });
+  }
+  test(
     'selects text by type and sends only report and permitted hints',
     () async {
       final body = sample();

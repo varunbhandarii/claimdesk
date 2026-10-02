@@ -17,6 +17,7 @@ import 'package:serverpod/serverpod.dart';
 import 'package:test/test.dart';
 import 'test_tools/fixtures.dart';
 import 'test_tools/serverpod_test_tools.dart';
+import 'test_tools/worker_cleanup.dart';
 
 class _DelayedCaptioner extends FakeCaptioner {
   _DelayedCaptioner() : super(fixtureName: 'umbrella');
@@ -35,6 +36,8 @@ class _DelayedCaptioner extends FakeCaptioner {
 
 void main() {
   withServerpod('Given photo captioning', (builder, endpoints) {
+    setUp(() => clearWorkerTestData(builder.build()));
+    tearDown(() => clearWorkerTestData(builder.build()));
     late Session s;
     late Venue venue;
     late JobWorker worker;
@@ -318,5 +321,5 @@ void main() {
       expect(row.embedding, isNotNull);
       expect(await CaptionRun.db.count(s), 0);
     });
-  });
+  }, rollbackDatabase: RollbackDatabase.disabled);
 }

@@ -10,6 +10,7 @@ import '../../policy/retention.dart';
 import '../../services/child_records.dart';
 import '../../matching/match_jobs.dart';
 import '../job_handler.dart';
+import '../timing_log.dart';
 
 Future<PreparedImage?> _prepare(Uint8List bytes) =>
     Isolate.run(() => prepareImage(bytes));
@@ -21,6 +22,8 @@ class CaptionItemHandler extends JobHandler {
   Future<void> run(Session session, WorkItem job) async {
     var item = await FoundItem.db.findById(session, job.payload.entityId!);
     if (item == null || item.venueId != job.venueId) return;
+    var prepareMs = 0, storeMs = 0;
+    final createdAt = item.createdAt;
     // Resume a crash after the attribute commit by finishing only the embedding.
     if (item.status == ItemStatus.unclaimed && item.attributes != null) {
       if (item.embedding == null) {
@@ -48,6 +51,7 @@ class CaptionItemHandler extends JobHandler {
       final prepared = await _prepare(
         data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes),
       );
+      prepareMs = preparationTimer.elapsedMilliseconds;
       session.log(
         'Caption image prepared in ${preparationTimer.elapsedMilliseconds} ms',
       );
@@ -88,6 +92,7 @@ class CaptionItemHandler extends JobHandler {
           options: options,
         ),
       ]);
+      storeMs = storageTimer.elapsedMilliseconds;
       session.log(
         'Caption images stored in ${storageTimer.elapsedMilliseconds} ms',
       );
@@ -102,6 +107,7 @@ class CaptionItemHandler extends JobHandler {
       item = changed.single;
       await _post(session, item, 'itemStatus');
     }
+    final captionTimer = Stopwatch()..start();
     final result =
         await (item.photoPath == null
                 ? TemplateCaptioner()
@@ -111,6 +117,7 @@ class CaptionItemHandler extends JobHandler {
               promptVersion: version,
               hints: CaptionHints.fromAttributes(item.attributes),
             );
+    final captionMs = captionTimer.elapsedMilliseconds;
     final attrs = result.attributes;
     if (attrs == null) throw StateError('Caption chain returned no attributes');
     final safe = protectAttributes(attrs);
@@ -185,7 +192,18 @@ class CaptionItemHandler extends JobHandler {
       return updated;
     });
     if (committed != null) {
+      final embedTimer = Stopwatch()..start();
       await embedItem(session, job, committed);
+      session.log(
+        intakeTiming(
+          reference: item.refCode,
+          prepareMs: prepareMs,
+          captionMs: captionMs,
+          storeMs: storeMs,
+          embedMs: embedTimer.elapsedMilliseconds,
+          totalMs: DateTime.now().toUtc().difference(createdAt).inMilliseconds,
+        ),
+      );
       await _post(session, committed, 'itemStatus');
     }
   }

@@ -4,6 +4,7 @@ library;
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
+import 'package:claimdesk_server/src/ai/provider_types.dart';
 import 'package:claimdesk_server/src/ai/claude_captioner.dart';
 import 'package:claimdesk_server/src/ai/gemini_embedder.dart';
 import 'package:claimdesk_server/src/ai/image_prep.dart';
@@ -16,6 +17,76 @@ void main() {
       env['CLAIMDESK_LIVE_PROVIDERS'] == '1' &&
       (env['ANTHROPIC_API_KEY']?.isNotEmpty ?? false) &&
       (env['GEMINI_API_KEY']?.isNotEmpty ?? false);
+  test(
+    'four photos retain category, privacy and marks at low caption effort',
+    () async {
+      final rows = <Map<String, Object?>>[];
+      var lowPasses = true;
+      for (final name in [
+        'umbrella',
+        'backpack',
+        'mock_id_card',
+        'generated_wooden_umbrella',
+      ]) {
+        final suffix = name == 'generated_wooden_umbrella' ? 'png' : 'jpg';
+        final prepared = prepareImage(
+          await File('test/fixtures/photos/$name.$suffix').readAsBytes(),
+        );
+        expect(prepared, isNotNull);
+        final outcomes = <String, CaptionResult>{};
+        for (final effort in ['medium', 'low']) {
+          final provider = ClaudeCaptioner(
+            apiKey: env['ANTHROPIC_API_KEY']!,
+            effort: effort,
+          );
+          try {
+            final timer = Stopwatch()..start();
+            final result = await provider.describe(
+              prepared!.jpeg,
+              promptVersion: 'caption_v1',
+            );
+            outcomes[effort] = result;
+            rows.add({
+              'fixture': name,
+              'effort': effort,
+              'elapsedMs': timer.elapsedMilliseconds,
+              'outcome': result.outcome,
+              'category': result.attributes?.category,
+              'colours': result.attributes?.colours,
+              'marksCount': result.attributes?.marks.length,
+              'personalData': result.attributes?.containsPersonalData,
+            });
+          } finally {
+            provider.client.close();
+          }
+        }
+        final medium = outcomes['medium']!, low = outcomes['low']!;
+        final a = medium.attributes, b = low.attributes;
+        lowPasses =
+            lowPasses &&
+            medium.outcome == 'ok' &&
+            low.outcome == 'ok' &&
+            a != null &&
+            b != null &&
+            a.category == b.category &&
+            a.containsPersonalData == b.containsPersonalData &&
+            (a.marks.length - b.marks.length).abs() <= 1;
+      }
+      stdout.writeln(
+        jsonEncode({
+          'captionEffortComparison': rows,
+          'lowPasses': lowPasses,
+          'recommendedEffort': lowPasses ? 'low' : 'medium',
+        }),
+      );
+      // A failed comparison is a measured choice of medium, not an invented pass.
+      expect(rows.every((row) => row['outcome'] == 'ok'), true);
+    },
+    skip: enabled
+        ? false
+        : 'Opt in with provider keys and CLAIMDESK_LIVE_PROVIDERS=1.',
+    timeout: const Timeout(Duration(minutes: 12)),
+  );
   for (final name in ['umbrella', 'backpack', 'mock_id_card']) {
     test(
       'real providers describe and embed $name',

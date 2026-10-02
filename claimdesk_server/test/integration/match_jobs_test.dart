@@ -1,6 +1,7 @@
 @Tags(['integration'])
 library;
 
+import 'dart:async';
 import 'package:claimdesk_server/src/ai/fakes.dart';
 import 'package:claimdesk_server/src/ai/providers.dart';
 import 'package:claimdesk_server/src/ai/report_normaliser.dart';
@@ -17,6 +18,7 @@ import 'package:serverpod/serverpod.dart';
 import 'package:test/test.dart';
 import 'test_tools/fixtures.dart';
 import 'test_tools/serverpod_test_tools.dart';
+import 'test_tools/worker_cleanup.dart';
 
 class CountingNormaliser extends HintNormaliser {
   int calls = 0;
@@ -36,8 +38,19 @@ class CountingEmbedder extends FakeEmbedder {
   }
 }
 
+class DelayedNormaliser implements ReportNormaliser {
+  final result = Completer<NormaliseResult>();
+  @override
+  String get id => 'delayed';
+  @override
+  Future<NormaliseResult> normalise(String rawText, ReportHints hints) =>
+      result.future;
+}
+
 void main() {
   withServerpod('Durable matching', (builder, _) {
+    setUp(() => clearWorkerTestData(builder.build()));
+    tearDown(() => clearWorkerTestData(builder.build()));
     late Session s;
     late Venue venue;
     late CountingNormaliser normaliser;
@@ -116,6 +129,11 @@ void main() {
     test(
       'enqueue failure rolls back both report and its creation audit',
       () async {
+        addTearDown(
+          () => s.db.unsafeSimpleExecute(
+            'ALTER TABLE work_item DROP CONSTRAINT IF EXISTS no_matching',
+          ),
+        );
         await s.db.unsafeSimpleExecute(
           "ALTER TABLE work_item ADD CONSTRAINT no_matching CHECK (kind <> 'match_report')",
         );
@@ -148,14 +166,19 @@ void main() {
           expect(match.label, 'strong');
           expect(match.explanation.category, 1);
           expect(match.explanation.cosSim, closeTo(1, 1e-6));
-          expect(events.map((e) => e.kind), ['matchCreated', 'reportStatus']);
+          expect(events.map((e) => e.kind), [
+            'matchCreated',
+            'reportStatus',
+            'matchStatus',
+            'reportStatus',
+          ]);
           await MatchReportHandler().run(s, claim);
           await flushEventQueue();
           expect(normaliser.calls, 1);
           expect(embedder.queries, 1);
           expect(await ItemMatch.db.count(s), 1);
           expect(events.where((e) => e.kind == 'matchCreated'), hasLength(1));
-          expect(events.where((e) => e.kind == 'reportStatus'), hasLength(2));
+          expect(events.where((e) => e.kind == 'reportStatus'), hasLength(3));
           await ItemMatch.db.updateRow(
             s,
             match.copyWith(state: MatchState.confirmed, score: .99),
@@ -171,6 +194,158 @@ void main() {
         }
       },
     );
+    Future<List<ItemMatch>> drafts(UuidValue reportId) async {
+      final deadline = DateTime.now().add(const Duration(seconds: 2));
+      while (DateTime.now().isBefore(deadline)) {
+        final rows = await ItemMatch.db.find(
+          s,
+          where: (t) => t.reportId.equals(reportId),
+        );
+        if (rows.isNotEmpty &&
+            rows.every((r) => r.algorithmVersion == 'v1-draft')) {
+          return rows;
+        }
+        await Future<void>.delayed(const Duration(milliseconds: 10));
+      }
+      fail(
+        'Draft rows did not become available while normalisation was blocked',
+      );
+    }
+
+    test(
+      'drafts search before Claude completes; refinement updates IDs and removes dropped rows',
+      () async {
+        final a = await shelf('ITEM01'), b = await shelf('ITEM02');
+        final report = await submit();
+        final delayed = DelayedNormaliser();
+        Providers.normaliser = delayed;
+        final claim = (await worker.claim(s))!;
+        final events = <DeskEvent>[];
+        final sub = s.messages
+            .createStream<DeskEvent>('venue_${venue.id}')
+            .listen(events.add);
+        final run = MatchReportHandler().run(s, claim);
+        try {
+          final preliminary = await drafts(report.id!);
+          expect(preliminary, hasLength(2));
+          expect(delayed.result.isCompleted, false);
+          final searching = (await LostReport.db.findById(s, report.id!))!;
+          expect(searching.status, ReportStatus.searching);
+          expect(searching.attributes, isNull);
+          expect(searching.embedding, isNull);
+          expect(
+            await AuditEvent.db.count(
+              s,
+              where: (t) => t.action.equals('match_completed'),
+            ),
+            0,
+          );
+          await FoundItem.db.updateRow(
+            s,
+            b.copyWith(status: ItemStatus.disposed),
+          );
+          delayed.result.complete(
+            NormaliseResult(
+              outcome: 'ok',
+              attributes: a.attributes!.copyWith(
+                source: 'report_llm',
+                modelId: 'test-refined',
+                marks: ['curved wooden handle'],
+              ),
+            ),
+          );
+          await run;
+          await flushEventQueue();
+          final finalRow = (await ItemMatch.db.find(s)).single;
+          expect(
+            finalRow.id,
+            preliminary.singleWhere((r) => r.itemId == a.id).id,
+          );
+          expect(finalRow.algorithmVersion, 'v1');
+          expect(
+            (await LostReport.db.findById(s, report.id!))!.attributes!.source,
+            'report_llm',
+          );
+          expect(embedder.queries, 2);
+          expect(
+            await AuditEvent.db.count(
+              s,
+              where: (t) => t.action.equals('match_completed'),
+            ),
+            1,
+          );
+          expect(events.map((e) => e.kind), [
+            'matchCreated',
+            'matchCreated',
+            'reportStatus',
+            'matchStatus',
+            'reportStatus',
+          ]);
+        } finally {
+          if (!delayed.result.isCompleted) {
+            delayed.result.completeError(StateError('cleanup'));
+          }
+          await run.catchError((Object _) {});
+          await sub.cancel();
+        }
+      },
+    );
+    test(
+      'a failure after the draft is recoverable without duplicates; hint fallback embeds once',
+      () async {
+        await shelf('ITEM01');
+        final report = await submit();
+        final delayed = DelayedNormaliser();
+        Providers.normaliser = delayed;
+        final claim = (await worker.claim(s))!;
+        final run = MatchReportHandler().run(s, claim);
+        final failure = expectLater(run, throwsStateError);
+        final preliminary = await drafts(report.id!);
+        delayed.result.completeError(
+          StateError('injected crash between passes'),
+        );
+        await failure;
+        expect(
+          (await LostReport.db.findById(s, report.id!))!.attributes,
+          isNull,
+        );
+        Providers.normaliser = HintNormaliser();
+        embedder.queries = 0;
+        await MatchReportHandler().run(s, claim);
+        final refined = (await ItemMatch.db.find(s)).single;
+        expect(refined.id, preliminary.single.id);
+        expect(refined.algorithmVersion, 'v1');
+        expect(embedder.queries, 1);
+        expect(
+          await AuditEvent.db.count(
+            s,
+            where: (t) => t.action.equals('match_completed'),
+          ),
+          1,
+        );
+      },
+    );
+    test('a decision made on a draft survives refinement unchanged', () async {
+      final item = await shelf('ITEM01');
+      final report = await submit();
+      final delayed = DelayedNormaliser();
+      Providers.normaliser = delayed;
+      final claim = (await worker.claim(s))!;
+      final run = MatchReportHandler().run(s, claim);
+      final preliminary = (await drafts(report.id!)).single;
+      await ItemMatch.db.updateRow(
+        s,
+        preliminary.copyWith(state: MatchState.confirmed, score: .98),
+      );
+      delayed.result.complete(
+        NormaliseResult(outcome: 'ok', attributes: item.attributes!),
+      );
+      await run;
+      final decided = (await ItemMatch.db.findById(s, preliminary.id!))!;
+      expect(decided.state, MatchState.confirmed);
+      expect(decided.score, .98);
+      expect(decided.algorithmVersion, 'v1-draft');
+    });
     test(
       'stale pending proposals are removed while decided rows survive',
       () async {
@@ -305,5 +480,5 @@ void main() {
         );
       },
     );
-  });
+  }, rollbackDatabase: RollbackDatabase.disabled);
 }

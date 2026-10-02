@@ -1,5 +1,6 @@
 import 'package:serverpod/serverpod.dart';
 import '../../ai/providers.dart';
+import '../../ai/report_normaliser.dart';
 import '../../ai/text_template.dart';
 import '../../generated/protocol.dart';
 import '../../matching/candidate_query.dart';
@@ -23,26 +24,73 @@ class MatchReportHandler extends JobHandler {
     final createdAt = report.createdAt;
     final reference = report.refCode;
     final phaseTimer = Stopwatch()..start();
+    List<double>? draftVector;
+    int? draftMs;
+    var normalisationMs = 0;
+    var reuseDraft = false;
     if (report.attributes == null) {
       final zone = report.zoneId == null
           ? null
           : await Zone.db.findById(s, report.zoneId!);
-      final result = await Providers.normaliser.normalise(
-        report.rawText,
-        ReportHints(
-          categoryHint: report.categoryHint,
-          colourHints: report.colourHints,
-          brandHint: report.brandHint,
-          zoneName: zone?.name,
-          whereText: report.whereText,
-        ),
+      final hints = ReportHints(
+        categoryHint: report.categoryHint,
+        colourHints: report.colourHints,
+        brandHint: report.brandHint,
+        zoneName: zone?.name,
+        whereText: report.whereText,
       );
+      final normaliseTimer = Stopwatch()..start();
+      // Observe rejection immediately, even if the first pass fails before await.
+      final refined = Providers.normaliser
+          .normalise(report.rawText, hints)
+          .then<NormaliseResult>(
+            (result) {
+              normaliseTimer.stop();
+              return result;
+            },
+            onError: (Object _, StackTrace _) {
+              normaliseTimer.stop();
+              return const NormaliseResult(
+                attributes: null,
+                outcome: 'transport_error',
+              );
+            },
+          );
+      try {
+        final draft = await HintNormaliser().normalise(report.rawText, hints);
+        draftVector = await Providers.embedder.embedQuery(
+          TextTemplate.render(draft.attributes!),
+        );
+        _validateEmbedding(draftVector);
+        final temporary = report.copyWith(
+          attributes: draft.attributes,
+          embedding: Vector(draftVector),
+          embeddingModel: Providers.embedder.modelId,
+        );
+        final rows = await CandidateQuery().forReport(s, temporary);
+        await MatchService().apply(
+          s,
+          job,
+          report,
+          rows.map(const Scorer().score).toList(),
+          startSearching: true,
+          draft: true,
+        );
+        draftMs = DateTime.now().toUtc().difference(createdAt).inMilliseconds;
+      } catch (_) {
+        // Draft availability is best effort; the durable refined path still runs.
+        draftVector = null;
+        s.log('Preliminary matching unavailable; continuing refined matching');
+      }
+      final result = await refined;
+      normalisationMs = normaliseTimer.elapsedMilliseconds;
       if (result.attributes == null) {
         throw StateError('Normalisation returned no attributes');
       }
       s.log(
         'Report normalisation ${result.outcome} in ${result.attempts.fold<int>(0, (total, attempt) => total + attempt.latencyMs)} ms',
       );
+      reuseDraft = result.outcome == 'fallback_hints' && draftVector != null;
       final snapshot = report;
       report = await s.db.transaction<LostReport?>((tx) async {
         final current = await LostReport.db.findById(
@@ -91,19 +139,18 @@ class MatchReportHandler extends JobHandler {
       });
       if (report == null) return;
     }
-    final normalisationMs = phaseTimer.elapsedMilliseconds;
     phaseTimer.reset();
     if (report.embedding == null) {
       final embeddingTimer = Stopwatch()..start();
-      final values = await Providers.embedder.embedQuery(
-        TextTemplate.render(report.attributes!),
-      );
+      final values = reuseDraft
+          ? draftVector!
+          : await Providers.embedder.embedQuery(
+              TextTemplate.render(report.attributes!),
+            );
       s.log(
         'Report query embedding completed in ${embeddingTimer.elapsedMilliseconds} ms',
       );
-      if (values.length != 1536 || values.any((v) => !v.isFinite)) {
-        throw const FormatException('Invalid report embedding');
-      }
+      _validateEmbedding(values);
       final snapshot = report;
       report = await s.db.transaction<LostReport?>((tx) async {
         final current = await LostReport.db.findById(
@@ -143,10 +190,17 @@ class MatchReportHandler extends JobHandler {
     s.log(
       'Matching timing report=$reference '
       'waitBeforeClaimMs=${job.updatedAt.difference(job.runAt).inMilliseconds} '
+      'draftMs=${draftMs ?? 0} '
       'normalisationMs=$normalisationMs embeddingMs=$embeddingMs '
       'candidateApplyMs=${phaseTimer.elapsedMilliseconds} '
       'totalMs=${DateTime.now().toUtc().difference(createdAt).inMilliseconds}',
     );
+  }
+
+  void _validateEmbedding(List<double> values) {
+    if (values.length != 1536 || values.any((value) => !value.isFinite)) {
+      throw const FormatException('Invalid report embedding');
+    }
   }
 
   @override
