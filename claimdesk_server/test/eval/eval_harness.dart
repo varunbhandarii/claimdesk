@@ -9,6 +9,7 @@ import 'package:claimdesk_server/src/generated/protocol.dart';
 import 'package:claimdesk_server/src/matching/candidate_query.dart';
 import 'package:claimdesk_server/src/matching/in_memory_candidates.dart';
 import 'package:claimdesk_server/src/matching/scorer.dart';
+import 'package:claimdesk_server/src/matching/match_weights.dart';
 import 'package:claimdesk_server/src/services/seed_service.dart';
 import 'package:serverpod/serverpod.dart';
 import 'metrics.dart';
@@ -18,12 +19,17 @@ class EvalHarness {
     required this.embedder,
     required this.normaliser,
     this.cache,
+    this.set = 'text',
+    this.weights = const MatchWeights(),
     DateTime? now,
   }) : now = now ?? DateTime.now().toUtc();
   final TextEmbedder embedder;
   final ReportNormaliser normaliser;
   final Directory? cache;
   final DateTime now;
+  final String set;
+  final MatchWeights weights;
+  final normalisationMs = <String, int>{};
   late List<FoundItem> items;
   late List<LostReport> reports;
   late List<Zone> zones;
@@ -68,6 +74,9 @@ class EvalHarness {
   }
 
   Future<void> seed(Session s) async {
+    if (!{'text', 'photo', 'combined'}.contains(set)) {
+      throw ArgumentError('Unknown evaluation set');
+    }
     final venue = await Venue.db.insertRow(
       s,
       Venue(name: 'Evaluation desk', slug: 'eval-${const Uuid().v4()}'),
@@ -94,7 +103,11 @@ class EvalHarness {
         ),
     ]);
     items = [];
-    for (final raw in fixture['items'] as List) {
+    final inputItems = <dynamic>[
+      if (set != 'photo') ...fixture['items'] as List,
+      if (set != 'text') ...fixture['photoItems'] as List,
+    ];
+    for (final raw in inputItems) {
       final attrs = protectAttributes(
         ItemAttributes.fromJson(raw['attributes'] as Map<String, dynamic>),
       );
@@ -115,11 +128,16 @@ class EvalHarness {
           loggedByAuthUserId: venueId,
         ),
       );
-      items.add(item);
+      // Compare the reference with the same float32 vectors pgvector stores.
+      items.add((await FoundItem.db.findById(s, item.id!))!);
       itemKeys[item.id!] = raw['key'] as String;
     }
     reports = [];
-    for (final raw in fixture['reports'] as List) {
+    final inputReports = <dynamic>[
+      if (set != 'photo') ...fixture['reports'] as List,
+      if (set != 'text') ...fixture['photoReports'] as List,
+    ];
+    for (final raw in inputReports) {
       final hints = ReportHints(
         categoryHint: raw['categoryHint'] as String?,
         colourHints: (raw['colourHints'] as List).cast<String>(),
@@ -130,8 +148,9 @@ class EvalHarness {
       final model = normaliser is ClaudeNormaliser
           ? '${(normaliser as ClaudeNormaliser).model}:${(normaliser as ClaudeNormaliser).effort ?? 'default'}'
           : normaliser.id;
-      final identity = '$model:normalise_v1:${jsonEncode(raw)}';
+      final identity = '$model:normalise_v1:timed-v2:${jsonEncode(raw)}';
       final result = await _cached(identity, () async {
+        final timer = Stopwatch()..start();
         final normalized = await normaliser.normalise(
           raw['rawText'] as String,
           hints,
@@ -141,10 +160,17 @@ class EvalHarness {
             'Evaluation normaliser failed: ${normalized.outcome}',
           );
         }
-        return protectAttributes(normalized.attributes!).toJson();
+        return {
+          'attributes': protectAttributes(normalized.attributes!).toJson(),
+          'latencyMs': timer.elapsedMilliseconds,
+        };
       });
+      normalisationMs[raw['key'] as String] =
+          (result as Map)['latencyMs'] as int;
       final attrs = protectAttributes(
-        ItemAttributes.fromJson((result as Map).cast<String, dynamic>()),
+        ItemAttributes.fromJson(
+          (result['attributes'] as Map).cast<String, dynamic>(),
+        ),
       );
       var report = LostReport(
         venueId: venueId,
@@ -169,7 +195,7 @@ class EvalHarness {
         embeddingModel: embedder.modelId,
       );
       report = await LostReport.db.insertRow(s, report);
-      reports.add(report);
+      reports.add((await LostReport.db.findById(s, report.id!))!);
       reportKeys[report.id!] = raw['key'] as String;
       expected[report.id!] = raw['expectedItem'] as String?;
     }
@@ -180,6 +206,8 @@ class EvalHarness {
       List<EvalRanking> rankings,
       List<String> differences,
       String cosineDistribution,
+      List<double> trueCosines,
+      List<double> falseCosines,
     })
   >
   run(Session s) async {
@@ -205,7 +233,7 @@ class EvalHarness {
           );
         }
       }
-      final rows = Scorer.kept(sql.map(const Scorer().score));
+      final rows = Scorer.kept(sql.map(Scorer(weights: weights).score));
       rankings.add((
         reportKey: reportKeys[report.id]!,
         expectedItem: expected[report.id],
@@ -227,6 +255,8 @@ class EvalHarness {
       differences: differences,
       cosineDistribution:
           'True pairs: ${distribution(trueCos)}\nFalse pairs: ${distribution(falseCos)}',
+      trueCosines: trueCos,
+      falseCosines: falseCos,
     );
   }
 }

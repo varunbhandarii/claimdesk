@@ -10,6 +10,7 @@ emailIdp:
 jwtRefresh:
   - refreshAccessToken:
 admin:
+  - attachSeedPhoto:
   - runNightly:
   - seedDemoItems:
   - seedDemoReports:

@@ -309,6 +309,49 @@ class Endpoints extends _is.EndpointDispatch {
       name: 'admin',
       endpoint: endpoints['admin']!,
       methodConnectors: {
+        'attachSeedPhoto': _is.MethodConnector(
+          name: 'attachSeedPhoto',
+          params: {
+            'secret': _is.ParameterDescription(
+              name: 'secret',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'refCode': _is.ParameterDescription(
+              name: 'refCode',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'jpeg': _is.ParameterDescription(
+              name: 'jpeg',
+              type: _is.getType<_idt.ByteData>(),
+              nullable: false,
+            ),
+            'recaption': _is.ParameterDescription(
+              name: 'recaption',
+              type: _is.getType<bool>(),
+              nullable: false,
+            ),
+            'force': _is.ParameterDescription(
+              name: 'force',
+              type: _is.getType<bool>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['admin'] as _i5t1w2d2.AdminEndpoint)
+                  .attachSeedPhoto(
+                    session,
+                    params['secret'],
+                    params['refCode'],
+                    params['jpeg'],
+                    recaption: params['recaption'],
+                    force: params['force'],
+                  ),
+        ),
         'runNightly': _is.MethodConnector(
           name: 'runNightly',
           params: {

@@ -569,6 +569,47 @@ class _AdminEndpoint {
 
   final _is.SerializationManager _serializationManager;
 
+  _ida.Future<_iskydu8k.FoundItem> attachSeedPhoto(
+    _ist.TestSessionBuilder sessionBuilder,
+    String secret,
+    String refCode,
+    _idt.ByteData jpeg, {
+    required bool recaption,
+    required bool force,
+  }) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'admin',
+            method: 'attachSeedPhoto',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'admin',
+          methodName: 'attachSeedPhoto',
+          parameters: _ist.testObjectToJson({
+            'secret': secret,
+            'refCode': refCode,
+            'jpeg': jpeg,
+            'recaption': recaption,
+            'force': force,
+          }),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<_iskydu8k.FoundItem>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
   _ida.Future<_idm342zh.WorkItem> runNightly(
     _ist.TestSessionBuilder sessionBuilder,
     String secret,

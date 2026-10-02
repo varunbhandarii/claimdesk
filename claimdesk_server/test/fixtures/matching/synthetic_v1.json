@@ -1,5 +1,5 @@
 {
-  "version": "synthetic_v1",
+  "version": "synthetic_v2",
   "description": "Original hand-written text-only matching fixture with reviewed ground truth and deliberate hard negatives.",
   "seedItems": [
     "wood_umbrella",
@@ -1496,6 +1496,1085 @@
       "zone": "Pool deck",
       "whereText": null,
       "lostAtDaysAgo": 5,
+      "fuzzyDays": 0,
+      "expectedItem": null
+    }
+  ],
+  "photoItems": [
+    {
+      "key": "wood_umbrella",
+      "attributes": {
+        "__className__": "ItemAttributes",
+        "category": "umbrella",
+        "categoryConfidence": 0.97,
+        "colours": [
+          "black",
+          "brown"
+        ],
+        "material": "wood and fabric",
+        "marks": [
+          "curved wooden crook handle",
+          "small light-coloured leaf-shaped inlay at handle tip",
+          "silver metal collar band below handle",
+          "fabric closure strap around canopy"
+        ],
+        "description": "Black folded umbrella with a curved polished wooden crook handle, silver collar ring, and fabric strap securing the canopy.",
+        "containsPersonalData": false,
+        "personalDataKinds": [],
+        "imageQuality": "good",
+        "keywords": [],
+        "source": "vision",
+        "modelId": "claude-opus-5-5",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Front desk",
+      "foundAtDaysAgo": 1,
+      "restricted": false
+    },
+    {
+      "key": "plastic_umbrella",
+      "attributes": {
+        "__className__": "ItemAttributes",
+        "category": "umbrella",
+        "categoryConfidence": 0.97,
+        "colours": [
+          "black",
+          "navy"
+        ],
+        "material": "nylon or polyester fabric with plastic handle",
+        "marks": [
+          "navy blue cord wrist strap",
+          "dark cylindrical plastic handle",
+          "fabric closure strap around folded canopy"
+        ],
+        "description": "Black compact folding umbrella, closed and strapped, with a dark cylindrical handle and a navy blue cord wrist loop.",
+        "containsPersonalData": false,
+        "personalDataKinds": [],
+        "imageQuality": "good",
+        "keywords": [],
+        "source": "vision",
+        "modelId": "claude-opus-5-5",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Pool deck",
+      "foundAtDaysAgo": 2,
+      "restricted": false
+    },
+    {
+      "key": "nike_backpack",
+      "attributes": {
+        "__className__": "ItemAttributes",
+        "category": "backpack",
+        "categoryConfidence": 0.98,
+        "colours": [
+          "black",
+          "white"
+        ],
+        "material": "canvas or polyester fabric",
+        "marks": [
+          "round white embroidered patch on front",
+          "front zip pocket with silver zipper pull and frayed cord",
+          "black mesh side pocket",
+          "top carry handle",
+          "worn, slightly faded fabric"
+        ],
+        "description": "Black fabric backpack with a round white embroidered patch, front zippered pocket with metal pull and cord, mesh side pocket, and top handle; shows light wear.",
+        "containsPersonalData": false,
+        "personalDataKinds": [],
+        "imageQuality": "good",
+        "keywords": [],
+        "source": "vision",
+        "modelId": "claude-opus-5-5",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Gym floor",
+      "foundAtDaysAgo": 3,
+      "restricted": false
+    },
+    {
+      "key": "adidas_backpack",
+      "attributes": {
+        "__className__": "ItemAttributes",
+        "category": "backpack",
+        "categoryConfidence": 0.98,
+        "colours": [
+          "black",
+          "white"
+        ],
+        "material": "fabric (polyester/canvas) with mesh",
+        "marks": [
+          "three horizontal white stripes on front",
+          "black mesh side pocket",
+          "zippered front pocket",
+          "top carry handle"
+        ],
+        "description": "Black fabric backpack with three white horizontal stripes across the front, zippered front pocket, mesh side pocket, top grab handle and padded shoulder straps. No legible brand logo.",
+        "containsPersonalData": false,
+        "personalDataKinds": [],
+        "imageQuality": "good",
+        "keywords": [],
+        "source": "vision",
+        "modelId": "claude-opus-5-5",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Courts",
+      "foundAtDaysAgo": 4,
+      "restricted": false
+    },
+    {
+      "key": "jansport_backpack",
+      "attributes": {
+        "__className__": "ItemAttributes",
+        "category": "backpack",
+        "categoryConfidence": 0.98,
+        "colours": [
+          "black",
+          "red"
+        ],
+        "material": "canvas",
+        "marks": [
+          "blank red rectangular patch on front",
+          "brass/antique gold metal zippers",
+          "front zip pocket",
+          "side slip pockets",
+          "faded washed canvas appearance"
+        ],
+        "description": "Black canvas backpack with a blank red rectangular patch on the front, brass-coloured zippers, a front zip pocket, side pockets and top carry handle.",
+        "containsPersonalData": false,
+        "personalDataKinds": [],
+        "imageQuality": "good",
+        "keywords": [],
+        "source": "vision",
+        "modelId": "claude-opus-5-5",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Locker rooms",
+      "foundAtDaysAgo": 5,
+      "restricted": false
+    },
+    {
+      "key": "apple_earbuds",
+      "attributes": {
+        "__className__": "ItemAttributes",
+        "category": "earbuds_or_headphones",
+        "categoryConfidence": 0.93,
+        "colours": [
+          "white",
+          "gold"
+        ],
+        "material": "glossy plastic",
+        "marks": [
+          "small gold star sticker on lid front",
+          "charging port centered on bottom edge",
+          "small status light dot on front"
+        ],
+        "description": "White glossy rounded-rectangle wireless earbuds charging case with a gold star sticker on the front, small indicator light, and charging port at the bottom.",
+        "containsPersonalData": false,
+        "personalDataKinds": [],
+        "imageQuality": "good",
+        "keywords": [],
+        "source": "vision",
+        "modelId": "claude-opus-5-5",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Front desk",
+      "foundAtDaysAgo": 6,
+      "restricted": false
+    },
+    {
+      "key": "samsung_earbuds",
+      "attributes": {
+        "__className__": "ItemAttributes",
+        "category": "earbuds_or_headphones",
+        "categoryConfidence": 0.97,
+        "colours": [
+          "white",
+          "grey"
+        ],
+        "material": "plastic and silicone",
+        "marks": [
+          "grey silicone protective case cover",
+          "keyring loop on case side",
+          "scuff marks on front of grey cover",
+          "rounded bean-shaped white earbuds"
+        ],
+        "description": "White wireless earbuds in open white charging case fitted with a grey silicone protective cover featuring a side keyring loop; cover shows minor scuffs.",
+        "containsPersonalData": false,
+        "personalDataKinds": [],
+        "imageQuality": "good",
+        "keywords": [],
+        "source": "vision",
+        "modelId": "claude-opus-5-5",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Gym floor",
+      "foundAtDaysAgo": 7,
+      "restricted": false
+    },
+    {
+      "key": "navy_jacket",
+      "attributes": {
+        "__className__": "ItemAttributes",
+        "category": "jacket_or_coat",
+        "categoryConfidence": 0.97,
+        "colours": [
+          "navy",
+          "orange"
+        ],
+        "material": "fleece",
+        "marks": [
+          "contrasting orange full-length front zipper",
+          "two zippered side pockets with orange zips",
+          "high stand-up collar",
+          "elasticated cuffs"
+        ],
+        "description": "Navy blue fleece full-zip jacket with contrasting orange front zipper, two orange-zippered hand pockets, stand-up collar and elasticated cuffs; appears child or small adult size.",
+        "containsPersonalData": false,
+        "personalDataKinds": [],
+        "imageQuality": "good",
+        "keywords": [],
+        "source": "vision",
+        "modelId": "claude-opus-5-5",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Locker rooms",
+      "foundAtDaysAgo": 8,
+      "restricted": false
+    },
+    {
+      "key": "black_jacket",
+      "attributes": {
+        "__className__": "ItemAttributes",
+        "category": "jacket_or_coat",
+        "categoryConfidence": 0.97,
+        "colours": [
+          "black",
+          "silver"
+        ],
+        "material": "nylon",
+        "marks": [
+          "contrasting silver full-length front zipper",
+          "attached hood with drawcord",
+          "elasticated cuffs",
+          "two side zip pockets"
+        ],
+        "description": "Black lightweight hooded windbreaker jacket in shiny nylon with a silver full-length zipper, elastic cuffs and side zip pockets, laid flat on a wooden counter.",
+        "containsPersonalData": false,
+        "personalDataKinds": [],
+        "imageQuality": "good",
+        "keywords": [],
+        "source": "vision",
+        "modelId": "claude-opus-5-5",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Parking",
+      "foundAtDaysAgo": 9,
+      "restricted": false
+    },
+    {
+      "key": "red_keys",
+      "attributes": {
+        "__className__": "ItemAttributes",
+        "category": "keys",
+        "categoryConfidence": 0.97,
+        "colours": [
+          "red",
+          "silver",
+          "gold"
+        ],
+        "material": "metal and polyester webbing",
+        "marks": [
+          "red fabric wrist lanyard",
+          "plain round brass tag",
+          "three silver keys",
+          "metal clip with split ring"
+        ],
+        "description": "Bunch of three silver keys on a split ring with a plain round brass tag, attached by clip to a red woven wrist lanyard.",
+        "containsPersonalData": false,
+        "personalDataKinds": [],
+        "imageQuality": "good",
+        "keywords": [],
+        "source": "vision",
+        "modelId": "claude-opus-5-5",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Front desk",
+      "foundAtDaysAgo": 10,
+      "restricted": false
+    },
+    {
+      "key": "blue_keys",
+      "attributes": {
+        "__className__": "ItemAttributes",
+        "category": "keys",
+        "categoryConfidence": 0.97,
+        "colours": [
+          "silver",
+          "blue",
+          "white"
+        ],
+        "material": "metal and rubber/plastic",
+        "marks": [
+          "blue and white dolphin keychain charm",
+          "three silver keys on split ring",
+          "small linking ring attaching charm"
+        ],
+        "description": "Set of three silver keys on a metal split ring with a blue and white cartoon dolphin keychain charm.",
+        "containsPersonalData": false,
+        "personalDataKinds": [],
+        "imageQuality": "good",
+        "keywords": [],
+        "source": "vision",
+        "modelId": "claude-opus-5-5",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Pool deck",
+      "foundAtDaysAgo": 11,
+      "restricted": false
+    },
+    {
+      "key": "brown_wallet",
+      "attributes": {
+        "__className__": "ItemAttributes",
+        "category": "wallet_or_purse",
+        "categoryConfidence": 0.97,
+        "colours": [
+          "brown"
+        ],
+        "marks": [],
+        "description": "wallet or purse",
+        "containsPersonalData": false,
+        "personalDataKinds": [],
+        "imageQuality": "good",
+        "keywords": [],
+        "source": "vision",
+        "modelId": "claude-opus-5-5",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Locker rooms",
+      "foundAtDaysAgo": 12,
+      "restricted": false
+    },
+    {
+      "key": "black_cardholder",
+      "attributes": {
+        "__className__": "ItemAttributes",
+        "category": "wallet_or_purse",
+        "categoryConfidence": 0.95,
+        "colours": [
+          "black"
+        ],
+        "marks": [],
+        "description": "wallet or purse",
+        "containsPersonalData": false,
+        "personalDataKinds": [],
+        "imageQuality": "good",
+        "keywords": [],
+        "source": "vision",
+        "modelId": "claude-opus-5-5",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Front desk",
+      "foundAtDaysAgo": 13,
+      "restricted": false
+    },
+    {
+      "key": "specimen_id",
+      "attributes": {
+        "__className__": "ItemAttributes",
+        "category": "id_card_or_pass",
+        "categoryConfidence": 0.97,
+        "colours": [],
+        "marks": [],
+        "description": "id card or pass",
+        "containsPersonalData": true,
+        "personalDataKinds": [
+          "id_document",
+          "name_text",
+          "other"
+        ],
+        "imageQuality": "good",
+        "keywords": [],
+        "source": "vision",
+        "modelId": "claude-opus-5-5",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Front desk",
+      "foundAtDaysAgo": 14,
+      "restricted": true
+    },
+    {
+      "key": "bank_card",
+      "attributes": {
+        "__className__": "ItemAttributes",
+        "category": "bank_card",
+        "categoryConfidence": 0.8,
+        "colours": [
+          "blue"
+        ],
+        "marks": [],
+        "description": "bank card",
+        "containsPersonalData": false,
+        "personalDataKinds": [],
+        "imageQuality": "good",
+        "keywords": [],
+        "source": "vision",
+        "modelId": "claude-opus-5-5",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Front desk",
+      "foundAtDaysAgo": 15,
+      "restricted": false
+    },
+    {
+      "key": "hydro_bottle",
+      "attributes": {
+        "__className__": "ItemAttributes",
+        "category": "water_bottle_or_flask",
+        "categoryConfidence": 0.97,
+        "colours": [
+          "purple",
+          "black"
+        ],
+        "material": "metal (likely stainless steel) with plastic cap",
+        "marks": [
+          "large dent near base on front",
+          "black screw cap with carry loop",
+          "small scuffs and scratches on body"
+        ],
+        "description": "Purple matte metal water bottle with black plastic loop-handle screw cap; noticeable dent near the bottom and minor scuffs on the body.",
+        "containsPersonalData": false,
+        "personalDataKinds": [],
+        "imageQuality": "good",
+        "keywords": [],
+        "source": "vision",
+        "modelId": "claude-opus-5-5",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Gym floor",
+      "foundAtDaysAgo": 16,
+      "restricted": false
+    },
+    {
+      "key": "stanley_cup",
+      "attributes": {
+        "__className__": "ItemAttributes",
+        "category": "water_bottle_or_flask",
+        "categoryConfidence": 0.95,
+        "colours": [
+          "pink",
+          "silver",
+          "transparent"
+        ],
+        "material": "stainless steel with plastic lid",
+        "marks": [
+          "large side handle",
+          "clear lid with pink square straw cover",
+          "clear plastic straw",
+          "silver steel rim band",
+          "tapered base"
+        ],
+        "description": "Large pink insulated tumbler with matte finish, side handle, clear plastic lid with pink rotating straw cover, clear straw, and silver stainless steel rim.",
+        "containsPersonalData": false,
+        "personalDataKinds": [],
+        "imageQuality": "good",
+        "keywords": [],
+        "source": "vision",
+        "modelId": "claude-opus-5-5",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Pool deck",
+      "foundAtDaysAgo": 17,
+      "restricted": false
+    },
+    {
+      "key": "green_bottle",
+      "attributes": {
+        "__className__": "ItemAttributes",
+        "category": "water_bottle_or_flask",
+        "categoryConfidence": 0.97,
+        "colours": [
+          "green",
+          "yellow",
+          "transparent"
+        ],
+        "material": "plastic",
+        "marks": [
+          "mountain and sun sticker with pine trees",
+          "yellow screw-top lid with carry loop",
+          "translucent green body"
+        ],
+        "description": "Translucent green plastic water bottle with a yellow screw-on lid featuring a carry loop, decorated with a mountain landscape sticker showing snowy peaks, pine trees and a yellow sun.",
+        "containsPersonalData": false,
+        "personalDataKinds": [],
+        "imageQuality": "good",
+        "keywords": [],
+        "source": "vision",
+        "modelId": "claude-opus-5-5",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Courts",
+      "foundAtDaysAgo": 18,
+      "restricted": false
+    },
+    {
+      "key": "red_cap",
+      "attributes": {
+        "__className__": "ItemAttributes",
+        "category": "hat_or_cap",
+        "categoryConfidence": 0.98,
+        "colours": [
+          "red",
+          "beige"
+        ],
+        "material": "cotton twill",
+        "marks": [
+          "blank off-white square patch stitched diagonally on front",
+          "adjustable rear strap with metal buckle",
+          "stitched eyelets on crown panels",
+          "multiple rows of stitching on brim"
+        ],
+        "description": "Red cotton baseball cap with a blank off-white diamond-oriented patch on the front, curved brim with stitched rows, and adjustable red strap with metal buckle at back.",
+        "containsPersonalData": false,
+        "personalDataKinds": [],
+        "imageQuality": "good",
+        "keywords": [],
+        "source": "vision",
+        "modelId": "claude-opus-5-5",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Courts",
+      "foundAtDaysAgo": 19,
+      "restricted": false
+    },
+    {
+      "key": "blue_glasses",
+      "attributes": {
+        "__className__": "ItemAttributes",
+        "category": "glasses_or_sunglasses",
+        "categoryConfidence": 0.98,
+        "colours": [
+          "blue",
+          "transparent"
+        ],
+        "material": "plastic (acetate)",
+        "marks": [
+          "translucent blue rectangular frame",
+          "clear lenses",
+          "faint printing on inner left temple arm"
+        ],
+        "description": "Pair of prescription-style eyeglasses with a translucent dark blue rectangular plastic frame and clear lenses, found on a wooden desk.",
+        "containsPersonalData": false,
+        "personalDataKinds": [],
+        "imageQuality": "good",
+        "keywords": [],
+        "source": "vision",
+        "modelId": "claude-opus-5-5",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Front desk",
+      "foundAtDaysAgo": 20,
+      "restricted": false
+    },
+    {
+      "key": "striped_scarf",
+      "attributes": {
+        "__className__": "ItemAttributes",
+        "category": "scarf_or_gloves",
+        "categoryConfidence": 0.97,
+        "colours": [
+          "yellow",
+          "grey"
+        ],
+        "material": "knitted wool-like fabric",
+        "marks": [
+          "wide alternating mustard yellow and grey stripes",
+          "fringed tassel ends in both colours",
+          "soft fuzzy brushed texture"
+        ],
+        "description": "Long knitted scarf with wide alternating mustard yellow and grey stripes and fringed tassels at both ends, found loosely looped on a wooden desk.",
+        "containsPersonalData": false,
+        "personalDataKinds": [],
+        "imageQuality": "good",
+        "keywords": [],
+        "source": "vision",
+        "modelId": "claude-opus-5-5",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Locker rooms",
+      "foundAtDaysAgo": 1,
+      "restricted": false
+    },
+    {
+      "key": "usb_charger",
+      "attributes": {
+        "__className__": "ItemAttributes",
+        "category": "charger_or_cable",
+        "categoryConfidence": 0.97,
+        "colours": [
+          "white"
+        ],
+        "material": "plastic and braided fabric",
+        "marks": [
+          "braided white USB-C cable coiled with a white strap",
+          "folding US-style two-prong plug",
+          "minor scuffs and marks on adapter casing"
+        ],
+        "description": "White square power adapter with folding two-prong US plug, connected to a coiled white braided USB-C cable held by a white fastening strap.",
+        "containsPersonalData": false,
+        "personalDataKinds": [],
+        "imageQuality": "good",
+        "keywords": [],
+        "source": "vision",
+        "modelId": "claude-opus-5-5",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Front desk",
+      "foundAtDaysAgo": 2,
+      "restricted": false
+    },
+    {
+      "key": "rabbit_plush",
+      "attributes": {
+        "__className__": "ItemAttributes",
+        "category": "toy_or_plush",
+        "categoryConfidence": 0.97,
+        "colours": [
+          "beige",
+          "pink"
+        ],
+        "material": "plush fabric",
+        "marks": [
+          "long floppy ears with pink inner lining",
+          "small beige button attached at chest with thread",
+          "pink nose and pink foot pads",
+          "black bead eyes"
+        ],
+        "description": "Beige plush bunny rabbit with long floppy pink-lined ears, pink nose and foot pads, black eyes, and a small button hanging on thread at its chest.",
+        "containsPersonalData": false,
+        "personalDataKinds": [],
+        "imageQuality": "good",
+        "keywords": [],
+        "source": "vision",
+        "modelId": "claude-opus-5-5",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Pool deck",
+      "foundAtDaysAgo": 3,
+      "restricted": false
+    },
+    {
+      "key": "blue_notebook",
+      "attributes": {
+        "__className__": "ItemAttributes",
+        "category": "book_or_document",
+        "categoryConfidence": 0.95,
+        "colours": [
+          "blue",
+          "black"
+        ],
+        "material": "cardboard cover, paper, metal spiral",
+        "marks": [
+          "blank white rectangular label on top right of cover",
+          "black wire spiral binding on left",
+          "scuffs and scratches across cover",
+          "slightly worn bottom-left corner"
+        ],
+        "description": "Blue spiral-bound notebook with black wire binding, a blank white label in the upper right corner, and a scuffed, scratched cover.",
+        "containsPersonalData": false,
+        "personalDataKinds": [],
+        "imageQuality": "good",
+        "keywords": [],
+        "source": "vision",
+        "modelId": "claude-opus-5-5",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Gym floor",
+      "foundAtDaysAgo": 4,
+      "restricted": false
+    },
+    {
+      "key": "tennis_racket",
+      "attributes": {
+        "__className__": "ItemAttributes",
+        "category": "sports_equipment",
+        "categoryConfidence": 0.97,
+        "colours": [
+          "black",
+          "yellow",
+          "white"
+        ],
+        "material": "graphite/composite frame with synthetic strings and grip tape",
+        "marks": [
+          "bright yellow overgrip wrapped on handle",
+          "glossy black frame",
+          "white strings",
+          "small white accents along frame"
+        ],
+        "description": "Tennis racket with glossy black frame, white strings, and bright yellow overgrip on the handle, lying on a wooden counter.",
+        "containsPersonalData": false,
+        "personalDataKinds": [],
+        "imageQuality": "good",
+        "keywords": [],
+        "source": "vision",
+        "modelId": "claude-opus-5-5",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Courts",
+      "foundAtDaysAgo": 5,
+      "restricted": false
+    },
+    {
+      "key": "silver_watch",
+      "attributes": {
+        "__className__": "ItemAttributes",
+        "category": "smartwatch_or_watch",
+        "categoryConfidence": 0.97,
+        "colours": [
+          "silver",
+          "black"
+        ],
+        "material": "stainless steel metal",
+        "marks": [
+          "rectangular digital display with blank screen",
+          "link metal bracelet strap",
+          "four side push buttons",
+          "scratches on case near bottom of display"
+        ],
+        "description": "Silver rectangular digital wristwatch with a metal link bracelet, black-framed blank LCD screen, and four side buttons, lying on a wooden desk.",
+        "containsPersonalData": false,
+        "personalDataKinds": [],
+        "imageQuality": "good",
+        "keywords": [],
+        "source": "vision",
+        "modelId": "claude-opus-5-5",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Locker rooms",
+      "foundAtDaysAgo": 6,
+      "restricted": false
+    },
+    {
+      "key": "silver_ring",
+      "attributes": {
+        "__className__": "ItemAttributes",
+        "category": "jewellery",
+        "categoryConfidence": 0.95,
+        "colours": [
+          "silver"
+        ],
+        "marks": [],
+        "description": "jewellery",
+        "containsPersonalData": false,
+        "personalDataKinds": [],
+        "imageQuality": "good",
+        "keywords": [],
+        "source": "vision",
+        "modelId": "claude-opus-5-5",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Front desk",
+      "foundAtDaysAgo": 7,
+      "restricted": false
+    },
+    {
+      "key": "inhaler",
+      "attributes": {
+        "__className__": "ItemAttributes",
+        "category": "medical_device_or_medication",
+        "categoryConfidence": 0.95,
+        "colours": [
+          "blue"
+        ],
+        "marks": [],
+        "description": "medical device or medication",
+        "containsPersonalData": false,
+        "personalDataKinds": [],
+        "imageQuality": "good",
+        "keywords": [],
+        "source": "vision",
+        "modelId": "claude-opus-5-5",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Front desk",
+      "foundAtDaysAgo": 8,
+      "restricted": false
+    },
+    {
+      "key": "white_shoes",
+      "attributes": {
+        "__className__": "ItemAttributes",
+        "category": "footwear",
+        "categoryConfidence": 0.97,
+        "colours": [
+          "white",
+          "green"
+        ],
+        "material": "leather",
+        "marks": [
+          "green heel tabs",
+          "perforated three-stripe dot pattern on sides",
+          "white laces",
+          "scuffed toe caps",
+          "embossed text on sidewall (not clearly legible)"
+        ],
+        "description": "Pair of white low-top leather sneakers with green heel tabs, perforated side detailing and white laces; visible wear and scuffs on toes and soles.",
+        "containsPersonalData": false,
+        "personalDataKinds": [],
+        "imageQuality": "good",
+        "keywords": [],
+        "source": "vision",
+        "modelId": "claude-opus-5-5",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Locker rooms",
+      "foundAtDaysAgo": 9,
+      "restricted": false
+    },
+    {
+      "key": "canvas_tote",
+      "attributes": {
+        "__className__": "ItemAttributes",
+        "category": "tote_or_shopping_bag",
+        "categoryConfidence": 0.97,
+        "colours": [
+          "beige",
+          "green"
+        ],
+        "material": "canvas",
+        "marks": [
+          "green fern leaf print on front",
+          "two long self-fabric shoulder straps",
+          "slight soiling on lower straps"
+        ],
+        "description": "Natural beige canvas tote bag with a large green fern frond print on the front and two long matching fabric shoulder straps.",
+        "containsPersonalData": false,
+        "personalDataKinds": [],
+        "imageQuality": "good",
+        "keywords": [],
+        "source": "vision",
+        "modelId": "claude-opus-5-5",
+        "promptVersion": "caption_v1"
+      },
+      "zone": "Gym floor",
+      "foundAtDaysAgo": 10,
+      "restricted": false
+    }
+  ],
+  "photoReports": [
+    {
+      "key": "photo_report_01",
+      "rawText": "My black folded brolly has a curved brown wooden crook handle, a silver collar ring, and a little pale shape at the handle tip.",
+      "categoryHint": "umbrella",
+      "colourHints": [
+        "black",
+        "brown"
+      ],
+      "brandHint": null,
+      "zone": "Front desk",
+      "whereText": null,
+      "lostAtDaysAgo": 2,
+      "fuzzyDays": 0,
+      "expectedItem": "wood_umbrella"
+    },
+    {
+      "key": "photo_report_02",
+      "rawText": "Lost my black compact umbrella, straight plastic handle with a navy blue wrist cord.",
+      "categoryHint": "umbrella",
+      "colourHints": [
+        "black",
+        "navy"
+      ],
+      "brandHint": null,
+      "zone": "Pool deck",
+      "whereText": null,
+      "lostAtDaysAgo": 3,
+      "fuzzyDays": 0,
+      "expectedItem": "plastic_umbrella"
+    },
+    {
+      "key": "photo_report_03",
+      "rawText": "Black backpack w a round white patch on the front; zipper cord is frayed and it has a mesh side pocket.",
+      "categoryHint": "backpack",
+      "colourHints": [
+        "black"
+      ],
+      "brandHint": null,
+      "zone": "Gym floor",
+      "whereText": null,
+      "lostAtDaysAgo": 4,
+      "fuzzyDays": 0,
+      "expectedItem": "nike_backpack"
+    },
+    {
+      "key": "photo_report_04",
+      "rawText": "My black canvas backpack has a blank red rectangular patch and brass-looking zips on the front pocket.",
+      "categoryHint": "backpack",
+      "colourHints": [
+        "black"
+      ],
+      "brandHint": null,
+      "zone": "Locker rooms",
+      "whereText": null,
+      "lostAtDaysAgo": 6,
+      "fuzzyDays": 0,
+      "expectedItem": "jansport_backpack"
+    },
+    {
+      "key": "photo_report_05",
+      "rawText": "Perdi mi chaqueta de forro polar azul marino, con cremallera naranja y cuello alto, sin capucha.",
+      "categoryHint": "jacket_or_coat",
+      "colourHints": [
+        "navy"
+      ],
+      "brandHint": null,
+      "zone": "Locker rooms",
+      "whereText": null,
+      "lostAtDaysAgo": 9,
+      "fuzzyDays": 0,
+      "expectedItem": "navy_jacket"
+    },
+    {
+      "key": "photo_report_06",
+      "rawText": "Busco mi bufanda con rayas anchas amarillas y grises y flecos en los dos extremos.",
+      "categoryHint": "scarf_or_gloves",
+      "colourHints": [
+        "yellow",
+        "grey"
+      ],
+      "brandHint": null,
+      "zone": "Locker rooms",
+      "whereText": null,
+      "lostAtDaysAgo": 2,
+      "fuzzyDays": 0,
+      "expectedItem": "striped_scarf"
+    },
+    {
+      "key": "photo_report_07",
+      "rawText": "Three silver keys on a split ring with a blue and white little dolphin charm, dropped by the pool.",
+      "categoryHint": "keys",
+      "colourHints": [
+        "silver",
+        "blue"
+      ],
+      "brandHint": null,
+      "zone": "Pool deck",
+      "whereText": null,
+      "lostAtDaysAgo": 12,
+      "fuzzyDays": 0,
+      "expectedItem": "blue_keys"
+    },
+    {
+      "key": "photo_report_08",
+      "rawText": "A big insulated tumbler with a side handle, clear lid and clear plastic straw. The base tapers in.",
+      "categoryHint": "water_bottle_or_flask",
+      "colourHints": [],
+      "brandHint": null,
+      "zone": "Pool deck",
+      "whereText": null,
+      "lostAtDaysAgo": 18,
+      "fuzzyDays": 0,
+      "expectedItem": "stanley_cup"
+    },
+    {
+      "key": "photo_report_09",
+      "rawText": "Purple metal water bottle, black screw cap with a carry loop and a big dent near the base. Might have left it in Parking, not sure.",
+      "categoryHint": "water_bottle_or_flask",
+      "colourHints": [
+        "purple"
+      ],
+      "brandHint": null,
+      "zone": "Parking",
+      "whereText": null,
+      "lostAtDaysAgo": 17,
+      "fuzzyDays": 0,
+      "expectedItem": "hydro_bottle"
+    },
+    {
+      "key": "photo_report_10",
+      "rawText": "Beige canvas tote bag with a green fern leaf print and long matching shoulder straps. A bit grubby at the straps.",
+      "categoryHint": "tote_or_shopping_bag",
+      "colourHints": [
+        "beige",
+        "green"
+      ],
+      "brandHint": null,
+      "zone": "Gym floor",
+      "whereText": null,
+      "lostAtDaysAgo": 11,
+      "fuzzyDays": 0,
+      "expectedItem": "canvas_tote"
+    },
+    {
+      "key": "photo_report_11",
+      "rawText": "Small white rounded wireless earbud charging case with a gold star sticker on the front and a port at the bottom.",
+      "categoryHint": "earbuds_or_headphones",
+      "colourHints": [
+        "white"
+      ],
+      "brandHint": null,
+      "zone": "Front desk",
+      "whereText": null,
+      "lostAtDaysAgo": 7,
+      "fuzzyDays": 0,
+      "expectedItem": "apple_earbuds"
+    },
+    {
+      "key": "photo_report_12",
+      "rawText": "Beige bunny plush w long pink-lined ears, pink nose and feet, and a tiny button hanging from thread on its chest.",
+      "categoryHint": "toy_or_plush",
+      "colourHints": [
+        "beige",
+        "pink"
+      ],
+      "brandHint": null,
+      "zone": "Pool deck",
+      "whereText": null,
+      "lostAtDaysAgo": 4,
+      "fuzzyDays": 0,
+      "expectedItem": "rabbit_plush"
+    },
+    {
+      "key": "photo_report_13",
+      "rawText": "A bright red umbrella with a white straight handle and a completely transparent dome canopy.",
+      "categoryHint": "umbrella",
+      "colourHints": [
+        "red",
+        "white"
+      ],
+      "brandHint": null,
+      "zone": "Front desk",
+      "whereText": null,
+      "lostAtDaysAgo": 2,
+      "fuzzyDays": 0,
+      "expectedItem": null
+    },
+    {
+      "key": "photo_report_14",
+      "rawText": "Orange over-ear headphones with thick green ear cushions and a rigid orange headband.",
+      "categoryHint": "earbuds_or_headphones",
+      "colourHints": [
+        "orange",
+        "green"
+      ],
+      "brandHint": null,
+      "zone": "Gym floor",
+      "whereText": null,
+      "lostAtDaysAgo": 3,
+      "fuzzyDays": 0,
+      "expectedItem": null
+    },
+    {
+      "key": "photo_report_15",
+      "rawText": "Purple tablet in a transparent violet case, cracked corner and a bright purple folding cover.",
+      "categoryHint": "tablet_or_laptop",
+      "colourHints": [
+        "purple"
+      ],
+      "brandHint": null,
+      "zone": "Locker rooms",
+      "whereText": null,
+      "lostAtDaysAgo": 4,
       "fuzzyDays": 0,
       "expectedItem": null
     }

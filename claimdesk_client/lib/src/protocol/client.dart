@@ -275,6 +275,24 @@ class EndpointAdmin extends _isc.EndpointRef {
   @override
   String get name => 'admin';
 
+  _ida.Future<_i8bj3kzd.FoundItem> attachSeedPhoto(
+    String secret,
+    String refCode,
+    _idt.ByteData jpeg, {
+    required bool recaption,
+    required bool force,
+  }) => caller.callServerEndpoint<_i8bj3kzd.FoundItem>(
+    'admin',
+    'attachSeedPhoto',
+    {
+      'secret': secret,
+      'refCode': refCode,
+      'jpeg': jpeg,
+      'recaption': recaption,
+      'force': force,
+    },
+  );
+
   _ida.Future<_i5t1jx4h.WorkItem> runNightly(String secret) =>
       caller.callServerEndpoint<_i5t1jx4h.WorkItem>(
         'admin',
