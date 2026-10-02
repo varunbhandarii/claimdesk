@@ -10,8 +10,8 @@ class MatchWeights {
     this.brand = .08,
     this.zone = .06,
     this.time = .06,
-    this.semanticLow = .85,
-    this.semanticHigh = .99,
+    this.semanticLow = .76,
+    this.semanticHigh = .97,
   });
   final double sem, lex, category, colour, brand, zone, time;
   final double semanticLow, semanticHigh;

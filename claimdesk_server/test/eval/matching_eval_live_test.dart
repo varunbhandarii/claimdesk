@@ -33,12 +33,12 @@ void main() {
               double.tryParse(
                 Platform.environment['EVAL_SEMANTIC_LOW'] ?? '',
               ) ??
-              .85,
+              const MatchWeights().semanticLow,
           semanticHigh:
               double.tryParse(
                 Platform.environment['EVAL_SEMANTIC_HIGH'] ?? '',
               ) ??
-              .99,
+              const MatchWeights().semanticHigh,
         );
         final failures = <String>[];
         for (final set in ['text', 'photo', 'combined']) {
@@ -90,8 +90,38 @@ void main() {
             })}',
           );
           failures.addAll(result.differences);
-          if (m.recall3 < .90 || m.mrr < .80 || m.strongFpr > .10)
+          if (m.recall3 < .90 || m.mrr < .80 || m.strongFpr > .10) {
             failures.add('$set metrics missed live gates');
+          }
+          if (set != 'text') {
+            final hero = result.rankings.singleWhere(
+              (r) => r.reportKey == 'photo_report_01',
+            );
+            if (!hero.rows.any(
+              (r) =>
+                  r.itemKey == 'wood_umbrella' &&
+                  r.result.candidate.item.attributes?.source == 'vision' &&
+                  r.result.label == 'strong',
+            )) {
+              failures.add('$set photo-backed wooden umbrella is not strong');
+            }
+            final control = result.rankings.singleWhere(
+              (r) => r.reportKey == 'photo_report_02',
+            );
+            if (control.rows
+                .where((r) => r.itemKey == 'wood_umbrella')
+                .any(
+                  (r) =>
+                      r.result.label == 'strong' ||
+                      r.result.explanation.matchedKeywords.any(
+                        (k) => k.contains('wood'),
+                      ),
+                )) {
+              failures.add(
+                '$set plastic control has a strong wooden umbrella or wooden chip',
+              );
+            }
+          }
         }
         expect(failures, isEmpty, reason: failures.join('\n'));
       },

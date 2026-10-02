@@ -67,9 +67,9 @@ void main() {
   test('semantic signal clamps at calibrated endpoints', () {
     for (final pair in [
       (-1.0, 0.0),
-      (.85, 0.0),
-      (.92, .5),
-      (.99, 1.0),
+      (.76, 0.0),
+      (.865, .5),
+      (.97, 1.0),
       (1.0, 1.0),
     ]) {
       expect(
