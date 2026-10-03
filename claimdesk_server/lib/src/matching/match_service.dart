@@ -3,6 +3,7 @@ import '../generated/protocol.dart';
 import '../jobs/job_handler.dart';
 import 'candidate_query.dart';
 import 'scorer.dart';
+import 'apply_profile.dart';
 
 class MatchService {
   Future<void> apply(
@@ -14,19 +15,30 @@ class MatchService {
     bool startSearching = false,
     bool draft = false,
     String? algorithmVersion,
+    ApplyProfile? profile,
   }) async {
+    Future<T> locked<T>(Future<T> Function() query) =>
+        profile == null ? query() : profile.lock(query);
+    Future<T> written<T>(Future<T> Function() query) =>
+        profile == null ? query() : profile.write(query);
     final version =
         algorithmVersion ??
         (draft ? '${Scorer.algorithmVersion}-draft' : Scorer.algorithmVersion);
+    final transactionTimer = Stopwatch()..start();
     final events = await s.db.transaction((tx) async {
-      if (!await JobClaim.current(s, job, transaction: tx, lock: true)) {
+      if (profile != null) profile.applyAttempts++;
+      if (!await locked(
+        () => JobClaim.current(s, job, transaction: tx, lock: true),
+      )) {
         return <DeskEvent>[];
       }
-      final report = await LostReport.db.findById(
-        s,
-        snapshot.id!,
-        transaction: tx,
-        lockMode: LockMode.forUpdate,
+      final report = await locked(
+        () => LostReport.db.findById(
+          s,
+          snapshot.id!,
+          transaction: tx,
+          lockMode: LockMode.forUpdate,
+        ),
       );
       if (report == null ||
           report.venueId != job.venueId ||
@@ -35,11 +47,13 @@ class MatchService {
           report.updatedAt != snapshot.updatedAt) {
         return <DeskEvent>[];
       }
-      final old = await ItemMatch.db.find(
-        s,
-        where: (t) => t.reportId.equals(report.id!),
-        transaction: tx,
-        lockMode: LockMode.forUpdate,
+      final old = await locked(
+        () => ItemMatch.db.find(
+          s,
+          where: (t) => t.reportId.equals(report.id!),
+          transaction: tx,
+          lockMode: LockMode.forUpdate,
+        ),
       );
       final byItem = {for (final row in old) row.itemId: row};
       final retained = <ItemMatch>[];
@@ -47,11 +61,13 @@ class MatchService {
       final now = DateTime.now().toUtc();
       for (final candidate in Scorer.kept(scored)) {
         final input = candidate.candidate.item;
-        final item = await FoundItem.db.findById(
-          s,
-          input.id!,
-          transaction: tx,
-          lockMode: LockMode.forUpdate,
+        final item = await locked(
+          () => FoundItem.db.findById(
+            s,
+            input.id!,
+            transaction: tx,
+            lockMode: LockMode.forUpdate,
+          ),
         );
         if (item == null ||
             item.venueId != report.venueId ||
@@ -99,7 +115,7 @@ class MatchService {
       for (final row in old.where(
         (r) => r.state == MatchState.pending && !keptIds.contains(r.itemId),
       )) {
-        await ItemMatch.db.deleteRow(s, row, transaction: tx);
+        await written(() => ItemMatch.db.deleteRow(s, row, transaction: tx));
       }
       final all = [...kept, ...old.where((r) => r.state != MatchState.pending)]
         ..sort((a, b) => b.score.compareTo(a.score));
@@ -109,8 +125,12 @@ class MatchService {
           rank: all.indexWhere((r) => r.itemId == row.itemId) + 1,
         );
         final saved = row.id == null
-            ? await ItemMatch.db.insertRow(s, ranked, transaction: tx)
-            : await ItemMatch.db.updateRow(s, ranked, transaction: tx);
+            ? await written(
+                () => ItemMatch.db.insertRow(s, ranked, transaction: tx),
+              )
+            : await written(
+                () => ItemMatch.db.updateRow(s, ranked, transaction: tx),
+              );
         if (proposed.contains(row) &&
             {'strong', 'possible'}.contains(row.label)) {
           events.add(
@@ -139,10 +159,12 @@ class MatchService {
         }
       }
       if (startSearching && report.status == ReportStatus.received) {
-        await LostReport.db.updateRow(
-          s,
-          report.copyWith(status: ReportStatus.searching, updatedAt: now),
-          transaction: tx,
+        await written(
+          () => LostReport.db.updateRow(
+            s,
+            report.copyWith(status: ReportStatus.searching, updatedAt: now),
+            transaction: tx,
+          ),
         );
         events.add(
           DeskEvent(
@@ -164,26 +186,39 @@ class MatchService {
             ),
           );
         }
-        await AuditEvent.db.insertRow(
-          s,
-          AuditEvent(
-            venueId: report.venueId,
-            entityType: 'report',
-            entityId: report.id!,
-            action: 'match_completed',
-            payload: AuditPayload(
-              summary: 'Report compared with found items',
-              data: {'algorithmVersion': version},
+        Future<void> audit() async {
+          await AuditEvent.db.insertRow(
+            s,
+            AuditEvent(
+              venueId: report.venueId,
+              entityType: 'report',
+              entityId: report.id!,
+              action: 'match_completed',
+              payload: AuditPayload(
+                summary: 'Report compared with found items',
+                data: {'algorithmVersion': version},
+              ),
             ),
-          ),
-          transaction: tx,
-        );
+            transaction: tx,
+          );
+        }
+
+        if (profile == null) {
+          await audit();
+        } else {
+          await profile.audit(audit);
+        }
       }
       return events;
     });
+    if (profile != null) {
+      profile.transactionMs += transactionTimer.elapsedMilliseconds;
+    }
+    final eventTimer = Stopwatch()..start();
     for (final event in events) {
       await s.messages.postMessage('venue_${event.venueId}', event);
     }
+    if (profile != null) profile.eventsMs += eventTimer.elapsedMilliseconds;
   }
 
   String? previousVersion(List<ItemMatch> rows, UuidValue itemId) {

@@ -3,6 +3,7 @@ import 'package:serverpod/serverpod.dart';
 import '../ai/text_template.dart';
 import '../generated/protocol.dart';
 import '../policy/taxonomy.dart';
+import 'apply_profile.dart';
 
 typedef MatchWindow = ({DateTime start, DateTime end});
 
@@ -61,46 +62,60 @@ class CandidateQuery {
     ].join(' '),
   );
 
-  Future<List<Candidate>> forReport(Session s, LostReport report) async {
+  Future<List<Candidate>> forReport(
+    Session s,
+    LostReport report, {
+    ApplyProfile? profile,
+  }) async {
+    Future<T> measured<T>(Future<T> Function() query) =>
+        profile == null ? query() : profile.candidate(query);
     final window = reportWindow(report, now());
     final vector = report.embedding == null
         ? <FoundItem>[]
-        : await FoundItem.db.find(
-            s,
-            where: (t) =>
-                t.venueId.equals(report.venueId) &
-                t.status.equals(ItemStatus.unclaimed) &
-                Expression('${t.embedding} IS NOT NULL') &
-                t.foundAt.between(window.start, window.end),
-            orderByList: (t) => [
-              t.embedding.distanceCosine(Vector(report.embedding!.toList())),
-              t.id,
-            ],
-            limit: 25,
+        : await measured(
+            () => FoundItem.db.find(
+              s,
+              where: (t) =>
+                  t.venueId.equals(report.venueId) &
+                  t.status.equals(ItemStatus.unclaimed) &
+                  Expression('${t.embedding} IS NOT NULL') &
+                  t.foundAt.between(window.start, window.end),
+              orderByList: (t) => [
+                t.embedding.distanceCosine(Vector(report.embedding!.toList())),
+                t.id,
+              ],
+              limit: 25,
+            ),
           );
-    final lex = await _lexical(
-      s,
-      table: 'found_item',
-      document: 'f."captionText"',
-      filter: '''f."status" = 'unclaimed'
+    final lex = await measured(
+      () => _lexical(
+        s,
+        table: 'found_item',
+        document: 'f."captionText"',
+        filter: '''f."status" = 'unclaimed'
         AND f."captionText" IS NOT NULL AND f."foundAt" BETWEEN @lo AND @hi''',
-      text: reportText(report),
-      venueId: report.venueId,
-      window: window,
+        text: reportText(report),
+        venueId: report.venueId,
+        window: window,
+      ),
     );
     final ids = {...vector.map((i) => i.id!), ...lex.rows.keys};
     if (ids.isEmpty) return [];
-    final items = await FoundItem.db.find(
-      s,
-      where: (t) =>
-          t.id.inSet(ids) &
-          t.venueId.equals(report.venueId) &
-          t.status.equals(ItemStatus.unclaimed) &
-          t.foundAt.between(window.start, window.end),
+    final items = await measured(
+      () => FoundItem.db.find(
+        s,
+        where: (t) =>
+            t.id.inSet(ids) &
+            t.venueId.equals(report.venueId) &
+            t.status.equals(ItemStatus.unclaimed) &
+            t.foundAt.between(window.start, window.end),
+      ),
     );
-    final zones = await Zone.db.find(
-      s,
-      where: (t) => t.venueId.equals(report.venueId),
+    final zones = await measured(
+      () => Zone.db.find(
+        s,
+        where: (t) => t.venueId.equals(report.venueId),
+      ),
     );
     final byId = {for (final item in items) item.id!: item};
     return [

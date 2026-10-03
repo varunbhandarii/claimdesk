@@ -6,6 +6,7 @@ import '../../generated/protocol.dart';
 import '../../matching/candidate_query.dart';
 import '../../matching/match_service.dart';
 import '../../matching/scorer.dart';
+import '../../matching/apply_profile.dart';
 import '../job_handler.dart';
 
 class MatchReportHandler extends JobHandler {
@@ -67,7 +68,12 @@ class MatchReportHandler extends JobHandler {
           embedding: Vector(draftVector),
           embeddingModel: Providers.embedder.modelId,
         );
-        final rows = await CandidateQuery().forReport(s, temporary);
+        final draftProfile = ApplyProfile();
+        final rows = await CandidateQuery().forReport(
+          s,
+          temporary,
+          profile: draftProfile,
+        );
         await MatchService().apply(
           s,
           job,
@@ -75,7 +81,9 @@ class MatchReportHandler extends JobHandler {
           rows.map(const Scorer().score).toList(),
           startSearching: true,
           draft: true,
+          profile: draftProfile,
         );
+        s.log(draftProfile.line(reference, draft: true));
         draftMs = DateTime.now().toUtc().difference(createdAt).inMilliseconds;
       } catch (_) {
         // Draft availability is best effort; the durable refined path still runs.
@@ -179,14 +187,17 @@ class MatchReportHandler extends JobHandler {
     }
     final embeddingMs = phaseTimer.elapsedMilliseconds;
     phaseTimer.reset();
-    final rows = await CandidateQuery().forReport(s, report);
+    final profile = ApplyProfile();
+    final rows = await CandidateQuery().forReport(s, report, profile: profile);
     await MatchService().apply(
       s,
       job,
       report,
       rows.map(const Scorer().score).toList(),
       startSearching: true,
+      profile: profile,
     );
+    s.log(profile.line(reference, draft: false));
     s.log(
       'Matching timing report=$reference '
       'waitBeforeClaimMs=${job.updatedAt.difference(job.runAt).inMilliseconds} '
