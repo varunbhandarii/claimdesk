@@ -66,6 +66,7 @@ class CandidateQuery {
     Session s,
     LostReport report, {
     ApplyProfile? profile,
+    List<Zone>? zones,
   }) async {
     Future<T> measured<T>(Future<T> Function() query) =>
         profile == null ? query() : profile.candidate(query);
@@ -111,12 +112,14 @@ class CandidateQuery {
             t.foundAt.between(window.start, window.end),
       ),
     );
-    final zones = await measured(
-      () => Zone.db.find(
-        s,
-        where: (t) => t.venueId.equals(report.venueId),
-      ),
-    );
+    final List<Zone> venueZones =
+        zones ??
+        await measured<List<Zone>>(
+          () => Zone.db.find(
+            s,
+            where: (t) => t.venueId.equals(report.venueId),
+          ),
+        );
     final byId = {for (final item in items) item.id!: item};
     return [
       for (final id in ids)
@@ -124,7 +127,7 @@ class CandidateQuery {
           Candidate(
             report: report,
             item: item,
-            zones: zones,
+            zones: venueZones,
             cosSim: cosine(report.embedding, item.embedding),
             keywordCoverage: lex.total == 0
                 ? null

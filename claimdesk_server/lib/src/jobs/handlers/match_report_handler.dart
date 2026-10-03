@@ -29,10 +29,16 @@ class MatchReportHandler extends JobHandler {
     int? draftMs;
     var normalisationMs = 0;
     var reuseDraft = false;
+    List<Zone>? zones;
     if (report.attributes == null) {
+      // Use the same venue metadata for both passes, including group scoring.
+      zones = await Zone.db.find(
+        s,
+        where: (t) => t.venueId.equals(report!.venueId),
+      );
       final zone = report.zoneId == null
           ? null
-          : await Zone.db.findById(s, report.zoneId!);
+          : zones.where((z) => z.id == report!.zoneId).firstOrNull;
       final hints = ReportHints(
         categoryHint: report.categoryHint,
         colourHints: report.colourHints,
@@ -73,6 +79,7 @@ class MatchReportHandler extends JobHandler {
           s,
           temporary,
           profile: draftProfile,
+          zones: zones,
         );
         await MatchService().apply(
           s,
@@ -188,7 +195,12 @@ class MatchReportHandler extends JobHandler {
     final embeddingMs = phaseTimer.elapsedMilliseconds;
     phaseTimer.reset();
     final profile = ApplyProfile();
-    final rows = await CandidateQuery().forReport(s, report, profile: profile);
+    final rows = await CandidateQuery().forReport(
+      s,
+      report,
+      profile: profile,
+      zones: zones,
+    );
     await MatchService().apply(
       s,
       job,

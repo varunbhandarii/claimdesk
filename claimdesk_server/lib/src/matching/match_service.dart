@@ -59,16 +59,24 @@ class MatchService {
       final retained = <ItemMatch>[];
       final proposed = <ItemMatch>[];
       final now = DateTime.now().toUtc();
-      for (final candidate in Scorer.kept(scored)) {
+      final candidates = Scorer.kept(scored);
+      final candidateIds = candidates.map((c) => c.candidate.item.id!).toSet();
+      final items = candidateIds.isEmpty
+          ? <FoundItem>[]
+          : await locked(
+              () => FoundItem.db.find(
+                s,
+                where: (t) =>
+                    t.id.inSet(candidateIds) & t.venueId.equals(report.venueId),
+                orderBy: (t) => t.id,
+                transaction: tx,
+                lockMode: LockMode.forUpdate,
+              ),
+            );
+      final itemById = {for (final item in items) item.id!: item};
+      for (final candidate in candidates) {
         final input = candidate.candidate.item;
-        final item = await locked(
-          () => FoundItem.db.findById(
-            s,
-            input.id!,
-            transaction: tx,
-            lockMode: LockMode.forUpdate,
-          ),
-        );
+        final item = itemById[input.id];
         if (item == null ||
             item.venueId != report.venueId ||
             item.status != ItemStatus.unclaimed ||
@@ -112,25 +120,45 @@ class MatchService {
           if (n < 3 || retained[n].score >= .45) retained[n],
       ];
       final keptIds = kept.map((r) => r.itemId).toSet();
-      for (final row in old.where(
-        (r) => r.state == MatchState.pending && !keptIds.contains(r.itemId),
-      )) {
-        await written(() => ItemMatch.db.deleteRow(s, row, transaction: tx));
+      final dropped = old
+          .where(
+            (r) => r.state == MatchState.pending && !keptIds.contains(r.itemId),
+          )
+          .map((r) => r.id!)
+          .toSet();
+      if (dropped.isNotEmpty) {
+        await written(
+          () => ItemMatch.db.deleteWhere(
+            s,
+            where: (t) =>
+                t.id.inSet(dropped) & t.state.equals(MatchState.pending),
+            transaction: tx,
+          ),
+        );
       }
       final all = [...kept, ...old.where((r) => r.state != MatchState.pending)]
         ..sort((a, b) => b.score.compareTo(a.score));
       final events = <DeskEvent>[];
+      final ranked = [
+        for (final row in kept)
+          row.copyWith(
+            rank: all.indexWhere((r) => r.itemId == row.itemId) + 1,
+          ),
+      ];
+      final inserts = ranked.where((r) => r.id == null).toList();
+      final updates = ranked.where((r) => r.id != null).toList();
+      final saved = [
+        if (inserts.isNotEmpty)
+          ...await written(
+            () => ItemMatch.db.insert(s, inserts, transaction: tx),
+          ),
+        if (updates.isNotEmpty)
+          ...await written(
+            () => ItemMatch.db.update(s, updates, transaction: tx),
+          ),
+      ];
+      final savedByItem = {for (final row in saved) row.itemId: row};
       for (final row in kept) {
-        final ranked = row.copyWith(
-          rank: all.indexWhere((r) => r.itemId == row.itemId) + 1,
-        );
-        final saved = row.id == null
-            ? await written(
-                () => ItemMatch.db.insertRow(s, ranked, transaction: tx),
-              )
-            : await written(
-                () => ItemMatch.db.updateRow(s, ranked, transaction: tx),
-              );
         if (proposed.contains(row) &&
             {'strong', 'possible'}.contains(row.label)) {
           events.add(
@@ -139,7 +167,7 @@ class MatchService {
               venueId: report.venueId,
               reportId: report.id,
               itemId: row.itemId,
-              matchId: saved.id,
+              matchId: savedByItem[row.itemId]!.id,
               at: now,
             ),
           );
@@ -152,7 +180,7 @@ class MatchService {
               venueId: report.venueId,
               reportId: report.id,
               itemId: row.itemId,
-              matchId: saved.id,
+              matchId: savedByItem[row.itemId]!.id,
               at: now,
             ),
           );
