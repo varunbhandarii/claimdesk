@@ -28,6 +28,7 @@ item:
   - updateItem:
   - recaption:
   - captionRuns:
+  - history:
 match:
   - answers:
   - inbox:
@@ -42,6 +43,7 @@ release:
   - releaseRecord:
   - signatureUrl:
 report:
+  - history:
   - listReports:
   - getReport:
   - findByRefCode:

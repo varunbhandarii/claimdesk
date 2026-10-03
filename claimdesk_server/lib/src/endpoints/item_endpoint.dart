@@ -14,6 +14,7 @@ import '../services/child_records.dart';
 import '../services/upload_tickets.dart';
 import '../services/photo_upload_relay.dart';
 import '../services/item_attention.dart';
+import '../services/record_history.dart';
 import '../services/staff_views.dart';
 
 class ItemEndpoint extends Endpoint with VenueGuard {
@@ -366,6 +367,9 @@ class ItemEndpoint extends Endpoint with VenueGuard {
       orderBy: (t) => t.createdAt,
     );
   }
+
+  Future<List<HistoryEntry>> history(Session session, UuidValue itemId) async =>
+      RecordHistory.item(session, await _authorizedItem(session, itemId));
 
   Future<FoundItem> _authorizedItem(Session s, UuidValue id) async {
     final item = await FoundItem.db.findById(s, id);

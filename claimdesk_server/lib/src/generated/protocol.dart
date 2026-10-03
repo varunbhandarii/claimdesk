@@ -13,6 +13,7 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:claimdesk_server/src/generated/caption_run.dart' as _iknvw4pb;
 import 'package:claimdesk_server/src/generated/found_item.dart' as _iskydu8k;
+import 'package:claimdesk_server/src/generated/history_entry.dart' as _iv8y2aad;
 import 'package:claimdesk_server/src/generated/lost_report.dart' as _i63i6mgk;
 import 'package:claimdesk_server/src/generated/match_card.dart' as _i1d6w25f;
 import 'package:claimdesk_server/src/generated/report_answer.dart' as _in630fta;
@@ -35,6 +36,7 @@ import 'desk_event.dart' as _iz4ruabw;
 import 'desk_summary.dart' as _ip6mi6ty;
 import 'found_item.dart' as _i52cv103;
 import 'greetings/greeting.dart' as _izw8z7ou;
+import 'history_entry.dart' as _i85vle09;
 import 'item_attributes.dart' as _i43d0yeo;
 import 'item_filter.dart' as _ibf35g9z;
 import 'item_match.dart' as _i989z6nt;
@@ -73,6 +75,7 @@ export 'desk_event.dart';
 export 'desk_summary.dart';
 export 'found_item.dart';
 export 'greetings/greeting.dart';
+export 'history_entry.dart';
 export 'item_attributes.dart';
 export 'item_filter.dart';
 export 'item_match.dart';
@@ -1719,6 +1722,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _izw8z7ou.Greeting) {
       return _izw8z7ou.Greeting.fromJson(data) as T;
     }
+    if (t == _i85vle09.HistoryEntry) {
+      return _i85vle09.HistoryEntry.fromJson(data) as T;
+    }
     if (t == _i43d0yeo.ItemAttributes) {
       return _i43d0yeo.ItemAttributes.fromJson(data) as T;
     }
@@ -1836,6 +1842,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     }
     if (t == _is.getType<_izw8z7ou.Greeting?>()) {
       return (data != null ? _izw8z7ou.Greeting.fromJson(data) : null) as T;
+    }
+    if (t == _is.getType<_i85vle09.HistoryEntry?>()) {
+      return (data != null ? _i85vle09.HistoryEntry.fromJson(data) : null) as T;
     }
     if (t == _is.getType<_i43d0yeo.ItemAttributes?>()) {
       return (data != null ? _i43d0yeo.ItemAttributes.fromJson(data) : null)
@@ -1998,6 +2007,12 @@ class Protocol extends _is.DatabaseSerializationManager {
               .toList()
           as T;
     }
+    if (t == List<_iv8y2aad.HistoryEntry>) {
+      return (data as List)
+              .map((e) => deserialize<_iv8y2aad.HistoryEntry>(e))
+              .toList()
+          as T;
+    }
     if (t == List<_in630fta.ReportAnswer>) {
       return (data as List)
               .map((e) => deserialize<_in630fta.ReportAnswer>(e))
@@ -2050,6 +2065,7 @@ class Protocol extends _is.DatabaseSerializationManager {
       _ip6mi6ty.DeskSummary => 'DeskSummary',
       _i52cv103.FoundItem => 'FoundItem',
       _izw8z7ou.Greeting => 'Greeting',
+      _i85vle09.HistoryEntry => 'HistoryEntry',
       _i43d0yeo.ItemAttributes => 'ItemAttributes',
       _ibf35g9z.ItemFilter => 'ItemFilter',
       _i989z6nt.ItemMatch => 'ItemMatch',
@@ -2112,6 +2128,8 @@ class Protocol extends _is.DatabaseSerializationManager {
         return 'FoundItem';
       case _izw8z7ou.Greeting():
         return 'Greeting';
+      case _i85vle09.HistoryEntry():
+        return 'HistoryEntry';
       case _i43d0yeo.ItemAttributes():
         return 'ItemAttributes';
       case _ibf35g9z.ItemFilter():
@@ -2223,6 +2241,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     }
     if (dataClassName == 'Greeting') {
       return deserialize<_izw8z7ou.Greeting>(data['data']);
+    }
+    if (dataClassName == 'HistoryEntry') {
+      return deserialize<_i85vle09.HistoryEntry>(data['data']);
     }
     if (dataClassName == 'ItemAttributes') {
       return deserialize<_i43d0yeo.ItemAttributes>(data['data']);

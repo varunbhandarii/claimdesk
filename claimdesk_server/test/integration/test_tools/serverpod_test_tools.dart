@@ -22,6 +22,7 @@ import 'package:claimdesk_server/src/generated/desk_summary.dart' as _i1ngti0g;
 import 'package:claimdesk_server/src/generated/found_item.dart' as _iskydu8k;
 import 'package:claimdesk_server/src/generated/greetings/greeting.dart'
     as _izso5nwb;
+import 'package:claimdesk_server/src/generated/history_entry.dart' as _iv8y2aad;
 import 'package:claimdesk_server/src/generated/item_filter.dart' as _id50o94s;
 import 'package:claimdesk_server/src/generated/item_patch.dart' as _isrhr89g;
 import 'package:claimdesk_server/src/generated/lost_report.dart' as _i63i6mgk;
@@ -1116,6 +1117,37 @@ class _ItemEndpoint {
       }
     });
   }
+
+  _ida.Future<List<_iv8y2aad.HistoryEntry>> history(
+    _ist.TestSessionBuilder sessionBuilder,
+    _is.UuidValue itemId,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'item',
+            method: 'history',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'item',
+          methodName: 'history',
+          parameters: _ist.testObjectToJson({'itemId': itemId}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<List<_iv8y2aad.HistoryEntry>>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
 }
 
 class _MatchEndpoint {
@@ -1500,6 +1532,37 @@ class _ReportEndpoint {
   final _is.EndpointDispatch _endpointDispatch;
 
   final _is.SerializationManager _serializationManager;
+
+  _ida.Future<List<_iv8y2aad.HistoryEntry>> history(
+    _ist.TestSessionBuilder sessionBuilder,
+    _is.UuidValue reportId,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'report',
+            method: 'history',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'report',
+          methodName: 'history',
+          parameters: _ist.testObjectToJson({'reportId': reportId}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<List<_iv8y2aad.HistoryEntry>>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
 
   _ida.Future<List<_i63i6mgk.LostReport>> listReports(
     _ist.TestSessionBuilder sessionBuilder,

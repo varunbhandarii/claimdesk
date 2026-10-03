@@ -7,6 +7,7 @@ import '../app/routes.dart';
 import '../data/errors.dart';
 import '../ui/photo_view.dart';
 import '../ui/status.dart';
+import '../ui/history_list.dart';
 import '../ui/attribute_chips.dart';
 import 'edit_item_screen.dart';
 import '../ui/item_form.dart';
@@ -25,7 +26,7 @@ class ItemDetailScreen extends StatefulWidget {
 class _ItemDetailScreenState extends State<ItemDetailScreen> {
   VenueSession? _session;
   FoundItem? _item;
-  List<CaptionRun> _runs = [];
+  List<HistoryEntry> _history = [];
   List<MatchCard> _matches = [];
   ReleaseSummary? _release;
   Object? _error;
@@ -65,7 +66,7 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
     _loading = true;
     try {
       final item = await _session!.client.item.getItem(widget.itemId);
-      final runs = await _session!.client.item.captionRuns(widget.itemId);
+      final history = await _session!.client.item.history(widget.itemId);
       final matches = await _session!.client.match.forItem(widget.itemId);
       final release = await _session!.client.release.releaseRecord(
         widget.itemId,
@@ -73,7 +74,7 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
       if (mounted) {
         setState(() {
           _item = item;
-          _runs = runs.reversed.toList();
+          _history = history;
           _matches = matches;
           _release = release;
           _error = null;
@@ -325,34 +326,7 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
                       ),
                       MatchList(cards: _matches),
                       const SizedBox(height: 24),
-                      Text(
-                        'Item journey',
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                      ListTile(
-                        leading: const Icon(Icons.add_circle_outline),
-                        title: const Text('Logged at the desk'),
-                        subtitle: Text(_date(item.createdAt)),
-                      ),
-                      ListTile(
-                        leading: const Icon(Icons.check_circle_outline),
-                        title: Text(statusLabel(item.status)),
-                        subtitle: Text('Updated ${_date(item.updatedAt)}'),
-                      ),
-                      ExpansionTile(
-                        title: Text('Caption history (${_runs.length})'),
-                        children: [
-                          if (_runs.isEmpty)
-                            const ListTile(title: Text('No caption runs yet')),
-                          for (final run in _runs)
-                            ListTile(
-                              title: Text('${run.provider} · ${run.outcome}'),
-                              subtitle: Text(
-                                '${run.modelId}\n${run.latencyMs} ms · ${run.inputTokens ?? 0} input / ${run.outputTokens ?? 0} output tokens\n${_date(run.createdAt)}${run.errorMessage == null ? '' : '\n${run.errorMessage}'}',
-                              ),
-                            ),
-                        ],
-                      ),
+                      HistoryList(entries: _history),
                       const SizedBox(height: 24),
                       Text(
                         'Private notes · staff only',

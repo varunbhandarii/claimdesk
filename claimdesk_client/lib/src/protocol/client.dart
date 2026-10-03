@@ -20,6 +20,7 @@ import 'package:claimdesk_client/src/protocol/desk_summary.dart' as _i9gv5qze;
 import 'package:claimdesk_client/src/protocol/found_item.dart' as _i8bj3kzd;
 import 'package:claimdesk_client/src/protocol/greetings/greeting.dart'
     as _i8l8ycv0;
+import 'package:claimdesk_client/src/protocol/history_entry.dart' as _ijfu8sb7;
 import 'package:claimdesk_client/src/protocol/item_filter.dart' as _inizcy6n;
 import 'package:claimdesk_client/src/protocol/item_patch.dart' as _i410ys6o;
 import 'package:claimdesk_client/src/protocol/lost_report.dart' as _izbvtt9c;
@@ -458,6 +459,13 @@ class EndpointItem extends _isc.EndpointRef {
         'captionRuns',
         {'itemId': itemId},
       );
+
+  _ida.Future<List<_ijfu8sb7.HistoryEntry>> history(_isc.UuidValue itemId) =>
+      caller.callServerEndpoint<List<_ijfu8sb7.HistoryEntry>>(
+        'item',
+        'history',
+        {'itemId': itemId},
+      );
 }
 
 /// {@category Endpoint}
@@ -571,6 +579,13 @@ class EndpointReport extends _isc.EndpointRef {
 
   @override
   String get name => 'report';
+
+  _ida.Future<List<_ijfu8sb7.HistoryEntry>> history(_isc.UuidValue reportId) =>
+      caller.callServerEndpoint<List<_ijfu8sb7.HistoryEntry>>(
+        'report',
+        'history',
+        {'reportId': reportId},
+      );
 
   _ida.Future<List<_izbvtt9c.LostReport>> listReports(
     _isc.UuidValue venueId,

@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import '../app/venue_session.dart';
 import '../data/errors.dart';
 import '../ui/status.dart';
+import '../ui/history_list.dart';
 import '../ui/categories.dart';
 import '../ui/match_list.dart';
 import '../ui/owner_answers.dart';
@@ -24,6 +25,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
   LostReport? _report;
   List<MatchCard> _matches = [];
   List<ReportAnswer> _answers = [];
+  List<HistoryEntry> _history = [];
   ReleaseSummary? _release;
   bool _rematching = false;
   Object? _error;
@@ -67,6 +69,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
     _loading = true;
     try {
       final report = await _session!.client.report.getReport(widget.reportId);
+      final history = await _session!.client.report.history(widget.reportId);
       final matches = await _session!.client.match.forReport(widget.reportId);
       final confirmed = matches
           .where((c) => c.match.state == MatchState.confirmed)
@@ -81,6 +84,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
       if (mounted) {
         setState(() {
           _report = report;
+          _history = history;
           _matches = matches;
           _answers = answers;
           _release = release;
@@ -301,6 +305,8 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
                       ],
                     ),
                     MatchList(cards: _matches),
+                    const SizedBox(height: 24),
+                    HistoryList(entries: _history),
                     const SizedBox(height: 24),
                     Card(
                       child: Padding(

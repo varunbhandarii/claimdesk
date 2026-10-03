@@ -38,8 +38,9 @@ class DeskScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final data = summary;
-    if (loading && data == null)
+    if (loading && data == null) {
       return const Center(child: CircularProgressIndicator());
+    }
     return RefreshIndicator(
       onRefresh: onRefresh,
       child: LayoutBuilder(

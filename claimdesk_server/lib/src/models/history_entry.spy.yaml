@@ -1,0 +1,11 @@
+class: HistoryEntry
+fields:
+  at: DateTime
+  kind: String
+  action: String
+  summary: String
+  fromState: String?
+  toState: String?
+  actor: String
+  counterpart: String?
+  data: Map<String, String>

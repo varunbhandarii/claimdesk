@@ -3,8 +3,15 @@ import 'package:serverpod_auth_idp_server/core.dart';
 import '../access/venue_guard.dart';
 import '../generated/protocol.dart';
 import '../services/staff_views.dart';
+import '../services/record_history.dart';
 
 class ReportEndpoint extends Endpoint with VenueGuard {
+  Future<List<HistoryEntry>> history(
+    Session session,
+    UuidValue reportId,
+  ) async =>
+      RecordHistory.report(session, await _authorized(session, reportId));
+
   Future<List<LostReport>> listReports(
     Session session,
     UuidValue venueId,

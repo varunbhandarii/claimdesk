@@ -676,6 +676,24 @@ class Endpoints extends _is.EndpointDispatch {
                     params['itemId'],
                   ),
         ),
+        'history': _is.MethodConnector(
+          name: 'history',
+          params: {
+            'itemId': _is.ParameterDescription(
+              name: 'itemId',
+              type: _is.getType<_is.UuidValue>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['item'] as _irwxp2xj.ItemEndpoint).history(
+                session,
+                params['itemId'],
+              ),
+        ),
       },
     );
     connectors['match'] = _is.EndpointConnector(
@@ -919,6 +937,25 @@ class Endpoints extends _is.EndpointDispatch {
       name: 'report',
       endpoint: endpoints['report']!,
       methodConnectors: {
+        'history': _is.MethodConnector(
+          name: 'history',
+          params: {
+            'reportId': _is.ParameterDescription(
+              name: 'reportId',
+              type: _is.getType<_is.UuidValue>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['report'] as _i90z2r7i.ReportEndpoint).history(
+                    session,
+                    params['reportId'],
+                  ),
+        ),
         'listReports': _is.MethodConnector(
           name: 'listReports',
           params: {
