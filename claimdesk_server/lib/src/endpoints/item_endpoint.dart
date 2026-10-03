@@ -13,6 +13,8 @@ import '../policy/retention.dart';
 import '../services/child_records.dart';
 import '../services/upload_tickets.dart';
 import '../services/photo_upload_relay.dart';
+import '../services/item_attention.dart';
+import '../services/staff_views.dart';
 
 class ItemEndpoint extends Endpoint with VenueGuard {
   Future<PhotoUploadTicket> requestPhotoUpload(
@@ -161,8 +163,8 @@ class ItemEndpoint extends Endpoint with VenueGuard {
     throw StateError('Unable to allocate item reference');
   }
 
-  Future<FoundItem> getItem(Session session, UuidValue itemId) =>
-      _authorizedItem(session, itemId);
+  Future<FoundItem> getItem(Session session, UuidValue itemId) async =>
+      StaffViews.item(await _authorizedItem(session, itemId));
 
   Future<List<FoundItem>> listItems(
     Session session,
@@ -171,17 +173,11 @@ class ItemEndpoint extends Endpoint with VenueGuard {
   ) async {
     await requireMembership(session, venueId);
     final result = <FoundItem>[];
+    final now = DateTime.now().toUtc();
     for (var offset = 0; ; offset += 100) {
       final rows = await FoundItem.db.find(
         session,
-        where: (t) =>
-            t.venueId.equals(venueId) &
-            (filter.status == null
-                ? t.status.notInSet({ItemStatus.disposed, ItemStatus.expired})
-                : t.status.equals(filter.status)) &
-            (filter.zoneId == null
-                ? Constant.bool(true)
-                : t.zoneId.equals(filter.zoneId)),
+        where: (t) => ItemAttention.filter(t, venueId, filter, now),
         orderByList: (t) => [t.foundAt.desc(), t.id.desc()],
         limit: 100,
         offset: offset,
@@ -196,7 +192,7 @@ class ItemEndpoint extends Endpoint with VenueGuard {
         ),
       );
       if (result.length >= 100 || rows.length < 100) {
-        return result.take(100).toList();
+        return result.take(100).map(StaffViews.item).toList();
       }
     }
   }

@@ -50,6 +50,12 @@ class VenueSession extends ChangeNotifier {
   List<FoundItem> items = [];
   List<LostReport> reports = [];
   List<MatchCard> inbox = [];
+  DeskSummary? summary;
+  bool summaryLoading = true, summaryRefreshing = false, _summaryAgain = false;
+  Object? summaryError;
+  String? attentionFilter;
+  String? categoryFilter;
+  String searchQuery = '';
   bool inboxLoading = true, inboxRefreshing = false, _inboxAgain = false;
   Object? inboxError;
   ReportStatus? reportStatusFilter;
@@ -75,7 +81,12 @@ class VenueSession extends ChangeNotifier {
   bool _refreshAgain = false;
   Future<void> start() async {
     live.start();
-    await Future.wait([refreshItems(), refreshReports(), refreshInbox()]);
+    await Future.wait([
+      refreshItems(),
+      refreshReports(),
+      refreshInbox(),
+      refreshSummary(),
+    ]);
   }
 
   void _liveChanged() {
@@ -96,6 +107,7 @@ class VenueSession extends ChangeNotifier {
         unawaited(refreshItems());
         unawaited(refreshReports());
         unawaited(refreshInbox());
+        unawaited(refreshSummary());
       },
     );
   }
@@ -112,7 +124,12 @@ class VenueSession extends ChangeNotifier {
     try {
       final result = await client.item.listItems(
         venue.id!,
-        ItemFilter(status: statusFilter, zoneId: zoneFilter),
+        ItemFilter(
+          status: statusFilter,
+          zoneId: zoneFilter,
+          category: categoryFilter,
+          attention: attentionFilter,
+        ),
       );
       final newZones = await client.venue.zones(venue.id!);
       if (_disposed || version != _queryVersion) return;
@@ -144,6 +161,45 @@ class VenueSession extends ChangeNotifier {
 
   String zoneName(UuidValue? id) =>
       zones.where((z) => z.id == id).firstOrNull?.name ?? 'No zone';
+  void presetItems(String? attention, ItemStatus? status) {
+    attentionFilter = attention;
+    statusFilter = status;
+    zoneFilter = null;
+    categoryFilter = null;
+    searchQuery = '';
+    unawaited(refreshItems());
+  }
+
+  Future<void> refreshSummary() async {
+    if (_disposed) return;
+    if (summaryRefreshing) {
+      _summaryAgain = true;
+      return;
+    }
+    summaryRefreshing = true;
+    notifyListeners();
+    try {
+      final result = await client.desk.summary(venue.id!);
+      if (_disposed) return;
+      summary = result;
+      summaryError = null;
+    } catch (e) {
+      if (_disposed) return;
+      summaryError = e;
+      if (e is NotAMemberException) onDenied();
+    } finally {
+      if (!_disposed) {
+        summaryLoading = false;
+        summaryRefreshing = false;
+        notifyListeners();
+        if (_summaryAgain) {
+          _summaryAgain = false;
+          scheduleRefresh();
+        }
+      }
+    }
+  }
+
   Future<void> refreshReports() async {
     if (_disposed) return;
     if (reportsRefreshing) {

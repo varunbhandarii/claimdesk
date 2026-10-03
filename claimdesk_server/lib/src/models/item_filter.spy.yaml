@@ -3,3 +3,4 @@ fields:
   status: ItemStatus?
   zoneId: UuidValue?
   category: String?
+  attention: String?

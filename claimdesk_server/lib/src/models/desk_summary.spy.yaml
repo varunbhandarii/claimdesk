@@ -1,0 +1,16 @@
+class: DeskSummary
+fields:
+  newMatches: int
+  captioningFailed: List<FoundItem>
+  captioningFailedCount: int
+  overdue: List<FoundItem>
+  overdueCount: int
+  expiringSoon: List<FoundItem>
+  expiringSoonCount: int
+  expired: List<FoundItem>
+  expiredCount: int
+  openReports: int
+  recent: List<FoundItem>
+  onShelf: int
+  returnedThisWeek: int
+  generatedAt: DateTime

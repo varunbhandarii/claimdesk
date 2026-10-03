@@ -26,6 +26,7 @@ import 'package:serverpod_auth_idp_server/serverpod_auth_idp_server.dart'
 import '../auth/email_idp_endpoint.dart' as _iuc1hd5t;
 import '../auth/jwt_refresh_endpoint.dart' as _inwq3ztq;
 import '../endpoints/admin_endpoint.dart' as _i5t1w2d2;
+import '../endpoints/desk_endpoint.dart' as _isnuj8i8;
 import '../endpoints/desk_stream_endpoint.dart' as _io3746h0;
 import '../endpoints/item_endpoint.dart' as _irwxp2xj;
 import '../endpoints/match_endpoint.dart' as _iznotijq;
@@ -54,6 +55,12 @@ class Endpoints extends _is.EndpointDispatch {
         ..initialize(
           server,
           'admin',
+          null,
+        ),
+      'desk': _isnuj8i8.DeskEndpoint()
+        ..initialize(
+          server,
+          'desk',
           null,
         ),
       'deskStream': _io3746h0.DeskStreamEndpoint()
@@ -430,6 +437,30 @@ class Endpoints extends _is.EndpointDispatch {
                   .then(
                     (record) => _ii1g677k.Protocol().mapRecordToJson(record),
                   ),
+        ),
+      },
+    );
+    connectors['desk'] = _is.EndpointConnector(
+      name: 'desk',
+      endpoint: endpoints['desk']!,
+      methodConnectors: {
+        'summary': _is.MethodConnector(
+          name: 'summary',
+          params: {
+            'venueId': _is.ParameterDescription(
+              name: 'venueId',
+              type: _is.getType<_is.UuidValue>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['desk'] as _isnuj8i8.DeskEndpoint).summary(
+                session,
+                params['venueId'],
+              ),
         ),
       },
     );

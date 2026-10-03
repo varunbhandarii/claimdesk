@@ -19,12 +19,14 @@ abstract class ItemFilter
     this.status,
     this.zoneId,
     this.category,
+    this.attention,
   });
 
   factory ItemFilter({
     _ibbyonnn.ItemStatus? status,
     _is.UuidValue? zoneId,
     String? category,
+    String? attention,
   }) = _ItemFilterImpl;
 
   factory ItemFilter.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -38,6 +40,7 @@ abstract class ItemFilter
           ? null
           : _is.UuidValueJsonExtension.fromJson(jsonSerialization['zoneId']),
       category: jsonSerialization['category'] as String?,
+      attention: jsonSerialization['attention'] as String?,
     );
   }
 
@@ -47,6 +50,8 @@ abstract class ItemFilter
 
   String? category;
 
+  String? attention;
+
   /// Returns a shallow copy of this [ItemFilter]
   /// with some or all fields replaced by the given arguments.
   @_is.useResult
@@ -54,6 +59,7 @@ abstract class ItemFilter
     _ibbyonnn.ItemStatus? status,
     _is.UuidValue? zoneId,
     String? category,
+    String? attention,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -62,6 +68,7 @@ abstract class ItemFilter
       if (status != null) 'status': status?.toJson(),
       if (zoneId != null) 'zoneId': zoneId?.toJson(),
       if (category != null) 'category': category,
+      if (attention != null) 'attention': attention,
     };
   }
 
@@ -72,6 +79,7 @@ abstract class ItemFilter
       if (status != null) 'status': status?.toJson(),
       if (zoneId != null) 'zoneId': zoneId?.toJson(),
       if (category != null) 'category': category,
+      if (attention != null) 'attention': attention,
     };
   }
 
@@ -88,10 +96,12 @@ class _ItemFilterImpl extends ItemFilter {
     _ibbyonnn.ItemStatus? status,
     _is.UuidValue? zoneId,
     String? category,
+    String? attention,
   }) : super._(
          status: status,
          zoneId: zoneId,
          category: category,
+         attention: attention,
        );
 
   /// Returns a shallow copy of this [ItemFilter]
@@ -102,11 +112,13 @@ class _ItemFilterImpl extends ItemFilter {
     Object? status = _Undefined,
     Object? zoneId = _Undefined,
     Object? category = _Undefined,
+    Object? attention = _Undefined,
   }) {
     return ItemFilter(
       status: status is _ibbyonnn.ItemStatus? ? status : this.status,
       zoneId: zoneId is _is.UuidValue? ? zoneId : this.zoneId,
       category: category is String? ? category : this.category,
+      attention: attention is String? ? attention : this.attention,
     );
   }
 }

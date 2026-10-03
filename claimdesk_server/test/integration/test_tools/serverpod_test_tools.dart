@@ -18,6 +18,7 @@ import 'package:claimdesk_server/src/generated/caption_run.dart' as _iknvw4pb;
 import 'package:claimdesk_server/src/generated/create_item_input.dart'
     as _io3ib2zd;
 import 'package:claimdesk_server/src/generated/desk_event.dart' as _iofnkj91;
+import 'package:claimdesk_server/src/generated/desk_summary.dart' as _i1ngti0g;
 import 'package:claimdesk_server/src/generated/found_item.dart' as _iskydu8k;
 import 'package:claimdesk_server/src/generated/greetings/greeting.dart'
     as _izso5nwb;
@@ -176,6 +177,8 @@ class TestEndpoints {
 
   late final _AdminEndpoint admin;
 
+  late final _DeskEndpoint desk;
+
   late final _DeskStreamEndpoint deskStream;
 
   late final _ItemEndpoint item;
@@ -207,6 +210,10 @@ class _InternalTestEndpoints extends TestEndpoints
       serializationManager,
     );
     admin = _AdminEndpoint(
+      endpoints,
+      serializationManager,
+    );
+    desk = _DeskEndpoint(
       endpoints,
       serializationManager,
     );
@@ -739,6 +746,48 @@ class _AdminEndpoint {
                     })
                   >(record),
             );
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+}
+
+class _DeskEndpoint {
+  _DeskEndpoint(
+    this._endpointDispatch,
+    this._serializationManager,
+  );
+
+  final _is.EndpointDispatch _endpointDispatch;
+
+  final _is.SerializationManager _serializationManager;
+
+  _ida.Future<_i1ngti0g.DeskSummary> summary(
+    _ist.TestSessionBuilder sessionBuilder,
+    _is.UuidValue venueId,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'desk',
+            method: 'summary',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'desk',
+          methodName: 'summary',
+          parameters: _ist.testObjectToJson({'venueId': venueId}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<_i1ngti0g.DeskSummary>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();

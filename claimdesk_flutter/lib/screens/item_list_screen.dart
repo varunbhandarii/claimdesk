@@ -13,6 +13,7 @@ import 'log_item_screen.dart';
 import 'item_detail_screen.dart';
 import 'report_list_screen.dart';
 import 'inbox_screen.dart';
+import 'desk_screen.dart';
 
 class ItemListScreen extends StatefulWidget {
   const ItemListScreen({
@@ -131,6 +132,10 @@ class _ItemListScreenState extends State<ItemListScreen> {
         onDestinationSelected: (value) => setState(() => _tab = value),
         destinations: [
           const NavigationDestination(
+            icon: Icon(Icons.dashboard_outlined),
+            label: 'Desk',
+          ),
+          const NavigationDestination(
             icon: Icon(Icons.inventory_2_outlined),
             label: 'Items',
           ),
@@ -148,16 +153,52 @@ class _ItemListScreenState extends State<ItemListScreen> {
           ),
         ],
       ),
-      floatingActionButton: _tab != 0
+      floatingActionButton: _tab > 1
           ? null
           : FloatingActionButton.extended(
               onPressed: _log,
               icon: const Icon(Icons.add),
               label: const Text('Log item'),
             ),
-      body: _tab == 2
+      body: _tab == 0
+          ? Column(
+              children: [
+                if (session.offline || session.live.reconnecting)
+                  OfflineBanner(
+                    onRetry: () {
+                      session.live.connectivityChanged(true);
+                      session.refreshSummary();
+                    },
+                  ),
+                Expanded(
+                  child: DeskScreen(
+                    venueName: session.venue.name,
+                    summary: session.summary,
+                    loading: session.summaryLoading,
+                    error: session.summaryError,
+                    onRefresh: session.refreshSummary,
+                    matches: session.inbox,
+                    reports: session.reports,
+                    onItems: (attention, status) {
+                      session.presetItems(attention, status);
+                      setState(() => _tab = 1);
+                    },
+                    onInbox: () => setState(() => _tab = 3),
+                    onReports: () {
+                      session.reportStatusFilter = null;
+                      session.reportZoneFilter = null;
+                      session.reportCategoryFilter = null;
+                      session.refreshReports();
+                      setState(() => _tab = 2);
+                    },
+                    onItem: _openItem,
+                  ),
+                ),
+              ],
+            )
+          : _tab == 3
           ? const InboxScreen()
-          : _tab == 1
+          : _tab == 2
           ? const ReportListScreen()
           : Center(
               child: ConstrainedBox(
@@ -228,6 +269,9 @@ class _ItemListScreenState extends State<ItemListScreen> {
                             ItemStatus.unclaimed,
                             ItemStatus.matched,
                             ItemStatus.claimed,
+                            ItemStatus.expired,
+                            ItemStatus.transferred,
+                            ItemStatus.disposed,
                           ])
                             Padding(
                               padding: const EdgeInsets.only(right: 8),
@@ -252,6 +296,22 @@ class _ItemListScreenState extends State<ItemListScreen> {
                         padding: const EdgeInsets.only(bottom: 8),
                         child: Text(
                           'Zone: ${session.zoneName(session.zoneFilter)}',
+                        ),
+                      ),
+                    if (session.attentionFilter != null)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: InputChip(
+                            label: Text(
+                              attentionLabel(session.attentionFilter!),
+                            ),
+                            onDeleted: () {
+                              session.attentionFilter = null;
+                              session.refreshItems();
+                            },
+                          ),
                         ),
                       ),
                     if (session.refreshing && !session.loading)

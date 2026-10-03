@@ -256,6 +256,10 @@ void main() {
         await tick();
         expect(
           (await endpoints.item.getItem(member, item.id!)).embedding,
+          isNull,
+        );
+        expect(
+          (await FoundItem.db.findById(s, item.id!))!.embedding,
           isNotNull,
         );
         final cleared = await endpoints.item.updateItem(

@@ -16,6 +16,7 @@ import 'package:claimdesk_client/src/protocol/caption_run.dart' as _i9gd0od7;
 import 'package:claimdesk_client/src/protocol/create_item_input.dart'
     as _i0l2w05c;
 import 'package:claimdesk_client/src/protocol/desk_event.dart' as _idjit943;
+import 'package:claimdesk_client/src/protocol/desk_summary.dart' as _i9gv5qze;
 import 'package:claimdesk_client/src/protocol/found_item.dart' as _i8bj3kzd;
 import 'package:claimdesk_client/src/protocol/greetings/greeting.dart'
     as _i8l8ycv0;
@@ -332,6 +333,21 @@ class EndpointAdmin extends _isc.EndpointRef {
         'admin',
         'seedDemo',
         {'secret': secret},
+      );
+}
+
+/// {@category Endpoint}
+class EndpointDesk extends _isc.EndpointRef {
+  EndpointDesk(_isc.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'desk';
+
+  _ida.Future<_i9gv5qze.DeskSummary> summary(_isc.UuidValue venueId) =>
+      caller.callServerEndpoint<_i9gv5qze.DeskSummary>(
+        'desk',
+        'summary',
+        {'venueId': venueId},
       );
 }
 
@@ -688,6 +704,7 @@ class Client extends _isc.ServerpodClientShared {
     emailIdp = EndpointEmailIdp(this);
     jwtRefresh = EndpointJwtRefresh(this);
     admin = EndpointAdmin(this);
+    desk = EndpointDesk(this);
     deskStream = EndpointDeskStream(this);
     item = EndpointItem(this);
     match = EndpointMatch(this);
@@ -703,6 +720,8 @@ class Client extends _isc.ServerpodClientShared {
   late final EndpointJwtRefresh jwtRefresh;
 
   late final EndpointAdmin admin;
+
+  late final EndpointDesk desk;
 
   late final EndpointDeskStream deskStream;
 
@@ -725,6 +744,7 @@ class Client extends _isc.ServerpodClientShared {
     'emailIdp': emailIdp,
     'jwtRefresh': jwtRefresh,
     'admin': admin,
+    'desk': desk,
     'deskStream': deskStream,
     'item': item,
     'match': match,

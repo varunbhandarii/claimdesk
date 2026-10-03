@@ -31,6 +31,7 @@ import 'caption_run.dart' as _igo1wxdq;
 import 'create_item_input.dart' as _i6s4pod3;
 import 'custody_event.dart' as _iq6v1376;
 import 'desk_event.dart' as _iz4ruabw;
+import 'desk_summary.dart' as _ip6mi6ty;
 import 'found_item.dart' as _i52cv103;
 import 'greetings/greeting.dart' as _izw8z7ou;
 import 'item_attributes.dart' as _i43d0yeo;
@@ -68,6 +69,7 @@ export 'caption_run.dart';
 export 'create_item_input.dart';
 export 'custody_event.dart';
 export 'desk_event.dart';
+export 'desk_summary.dart';
 export 'found_item.dart';
 export 'greetings/greeting.dart';
 export 'item_attributes.dart';
@@ -154,6 +156,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _iz4ruabw.DeskEvent) {
       return _iz4ruabw.DeskEvent.fromJson(data) as T;
+    }
+    if (t == _ip6mi6ty.DeskSummary) {
+      return _ip6mi6ty.DeskSummary.fromJson(data) as T;
     }
     if (t == _i52cv103.FoundItem) {
       return _i52cv103.FoundItem.fromJson(data) as T;
@@ -269,6 +274,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _isc.getType<_iz4ruabw.DeskEvent?>()) {
       return (data != null ? _iz4ruabw.DeskEvent.fromJson(data) : null) as T;
+    }
+    if (t == _isc.getType<_ip6mi6ty.DeskSummary?>()) {
+      return (data != null ? _ip6mi6ty.DeskSummary.fromJson(data) : null) as T;
     }
     if (t == _isc.getType<_i52cv103.FoundItem?>()) {
       return (data != null ? _i52cv103.FoundItem.fromJson(data) : null) as T;
@@ -391,6 +399,12 @@ class Protocol extends _isc.SerializationManager {
               : null)
           as T;
     }
+    if (t == List<_i52cv103.FoundItem>) {
+      return (data as List)
+              .map((e) => deserialize<_i52cv103.FoundItem>(e))
+              .toList()
+          as T;
+    }
     if (t == Map<String, int>) {
       return (data as Map).map(
             (k, v) => MapEntry(deserialize<String>(k), deserialize<int>(v)),
@@ -479,6 +493,7 @@ class Protocol extends _isc.SerializationManager {
       _i6s4pod3.CreateItemInput => 'CreateItemInput',
       _iq6v1376.CustodyEvent => 'CustodyEvent',
       _iz4ruabw.DeskEvent => 'DeskEvent',
+      _ip6mi6ty.DeskSummary => 'DeskSummary',
       _i52cv103.FoundItem => 'FoundItem',
       _izw8z7ou.Greeting => 'Greeting',
       _i43d0yeo.ItemAttributes => 'ItemAttributes',
@@ -537,6 +552,8 @@ class Protocol extends _isc.SerializationManager {
         return 'CustodyEvent';
       case _iz4ruabw.DeskEvent():
         return 'DeskEvent';
+      case _ip6mi6ty.DeskSummary():
+        return 'DeskSummary';
       case _i52cv103.FoundItem():
         return 'FoundItem';
       case _izw8z7ou.Greeting():
@@ -639,6 +656,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (dataClassName == 'DeskEvent') {
       return deserialize<_iz4ruabw.DeskEvent>(data['data']);
+    }
+    if (dataClassName == 'DeskSummary') {
+      return deserialize<_ip6mi6ty.DeskSummary>(data['data']);
     }
     if (dataClassName == 'FoundItem') {
       return deserialize<_i52cv103.FoundItem>(data['data']);

@@ -23,6 +23,22 @@ class DeskTestClient extends Client {
       'report' => <LostReport>[],
       'venue' => <Zone>[],
       'match' => cards,
+      'desk' => DeskSummary(
+        newMatches: cards.length,
+        captioningFailed: [],
+        captioningFailedCount: 0,
+        overdue: [],
+        overdueCount: 0,
+        expiringSoon: [],
+        expiringSoonCount: 0,
+        expired: [],
+        expiredCount: 0,
+        openReports: 0,
+        recent: [],
+        onShelf: 0,
+        returnedThisWeek: 0,
+        generatedAt: DateTime.now(),
+      ),
       _ => throw StateError('Unexpected endpoint $endpoint'),
     };
     return result as T;
@@ -39,7 +55,7 @@ class DeskTestClient extends Client {
 }
 
 void main() {
-  testWidgets('matching events refresh all three lists once after one second', (
+  testWidgets('matching events refresh lists and desk once after one second', (
     tester,
   ) async {
     final client = DeskTestClient();
@@ -88,7 +104,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 1));
     await tester.pump();
     expect(session.inbox.single.match.id, itemId);
-    for (final endpoint in ['item', 'report', 'match']) {
+    for (final endpoint in ['item', 'report', 'match', 'desk']) {
       expect(client.calls[endpoint], initial[endpoint]! + 1);
     }
     client.cards = [];
