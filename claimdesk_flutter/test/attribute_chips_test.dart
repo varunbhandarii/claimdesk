@@ -5,7 +5,7 @@ import 'fixtures.dart';
 
 void main() {
   testWidgets(
-    'attributes roll up category and show colours, marks and privacy',
+    'observations show description, colours, brand, marks and privacy',
     (tester) async {
       await tester.pumpWidget(
         MaterialApp(
@@ -17,10 +17,12 @@ void main() {
           ),
         ),
       );
-      expect(find.text('Bags'), findsOneWidget);
-      expect(find.text('black'), findsOneWidget);
-      expect(find.text('navy'), findsOneWidget);
-      expect(find.text('• Small red patch'), findsOneWidget);
+      expect(find.text('What the desk sees'), findsOneWidget);
+      expect(find.text('A black backpack'), findsOneWidget);
+      expect(find.text('Black'), findsOneWidget);
+      expect(find.text('Navy'), findsOneWidget);
+      expect(find.text('Test brand'), findsOneWidget);
+      expect(find.text('Small red patch'), findsOneWidget);
       expect(
         find.text('Staff only — this item is never shown publicly.'),
         findsOneWidget,

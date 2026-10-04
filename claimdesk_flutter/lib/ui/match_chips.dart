@@ -1,5 +1,7 @@
 import 'package:claimdesk_client/claimdesk_client.dart';
 import 'package:flutter/material.dart';
+import 'desk_widgets.dart';
+import 'format.dart';
 
 String? foundAfterText(FoundItem item, LostReport report) {
   if (report.lostAt == null) return null;
@@ -8,6 +10,9 @@ String? foundAfterText(FoundItem item, LostReport report) {
   return 'found ${days.abs()} ${days.abs() == 1 ? 'day' : 'days'} ${days < 0 ? 'before' : 'after'} lost';
 }
 
+/// The evidence behind a proposal, one line per signal that has something to
+/// say. Low and missing signals are left out; explicit category or brand
+/// disagreements are shown as differences.
 class MatchChips extends StatelessWidget {
   const MatchChips({
     super.key,
@@ -22,74 +27,52 @@ class MatchChips extends StatelessWidget {
   final String? zoneName;
   @override
   Widget build(BuildContext context) {
-    final chips = <Widget>[];
+    final lines = <Widget>[];
     void add(
       String name,
-      double? value, {
-      String? detail,
+      double? value,
+      String text, {
       bool disagreement = false,
     }) {
       if (value == null || (value < .5 && !(value == 0 && disagreement))) {
         return;
       }
       final differs = value == 0;
-      chips.add(
+      lines.add(
         Tooltip(
           message: '$name: ${value.toStringAsFixed(2)}',
-          child: Chip(
-            label: Text(differs ? '$name differs' : detail ?? name),
-            backgroundColor: differs
-                ? Colors.transparent
-                : Theme.of(context).colorScheme.secondaryContainer,
-            side: differs
-                ? BorderSide(color: Theme.of(context).colorScheme.outline)
-                : BorderSide.none,
-            visualDensity: VisualDensity.compact,
+          child: EvidenceLine(
+            differs ? Evidence.differs : Evidence.agrees,
+            differs ? '${capitalise(name)} differs' : text,
           ),
         ),
       );
     }
 
+    final category = explanation.category;
     add(
       'category',
-      explanation.category,
+      category,
+      category != null && category < 1 ? 'Similar category' : 'Category',
       disagreement: true,
-      detail: item?.attributes == null
-          ? null
-          : 'category: ${item!.attributes!.category}',
     );
-    add(
-      'colour',
-      explanation.colour,
-      detail: item?.attributes == null
-          ? null
-          : 'colour: ${item!.attributes!.colours.join(', ')}',
-    );
-    add(
-      'brand',
-      explanation.brand,
-      disagreement: true,
-      detail: item?.attributes?.brand == null
-          ? null
-          : 'brand: ${item!.attributes!.brand}',
-    );
+    add('colour', explanation.colour, 'Colour');
+    add('brand', explanation.brand, 'Brand', disagreement: true);
+    final zone = explanation.zone;
     add(
       'zone',
-      explanation.zone,
-      detail: zoneName == null ? null : 'zone: $zoneName',
+      zone,
+      zone != null && zone < 1 ? 'Nearby zone' : 'Same zone',
     );
-    add(
-      'time',
-      explanation.time,
-      detail: item != null && report != null
-          ? foundAfterText(item!, report!)
-          : null,
-    );
+    final when = item != null && report != null
+        ? foundAfterText(item!, report!)
+        : null;
+    add('time', explanation.time, when == null ? 'Time' : capitalise(when));
     if ((explanation.keywordCoverage ?? 0) >= .5) {
       for (final word in explanation.matchedKeywords.take(6)) {
-        add('keyword', explanation.keywordCoverage, detail: 'keyword: $word');
+        add('keyword', explanation.keywordCoverage, '“$word”');
       }
     }
-    return Wrap(spacing: 6, runSpacing: 4, children: chips);
+    return Wrap(spacing: 14, runSpacing: 8, children: lines);
   }
 }

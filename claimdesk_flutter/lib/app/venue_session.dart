@@ -295,4 +295,6 @@ class VenueScope extends InheritedNotifier<VenueSession> {
   }) : super(notifier: session);
   static VenueSession of(BuildContext context) =>
       context.dependOnInheritedWidgetOfExactType<VenueScope>()!.notifier!;
+  static VenueSession? maybeOf(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<VenueScope>()?.notifier;
 }

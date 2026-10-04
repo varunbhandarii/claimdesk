@@ -5,7 +5,7 @@ import 'package:claimdesk_flutter/ui/item_card.dart';
 import 'fixtures.dart';
 
 void main() {
-  testWidgets('card shows description, zone, reference, age and staff status', (
+  testWidgets('card shows a short name, zone, age, reference and status', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -19,9 +19,9 @@ void main() {
         ),
       ),
     );
-    expect(find.text('A black backpack'), findsOneWidget);
-    expect(find.text('Pool · ABC123'), findsOneWidget);
-    expect(find.text('Found 2 h ago'), findsOneWidget);
+    expect(find.text('Black backpack'), findsOneWidget);
+    expect(find.text('Pool · 2 h'), findsOneWidget);
+    expect(find.text('ABC123'), findsOneWidget);
     expect(find.text('On shelf'), findsOneWidget);
     expect(find.byIcon(Icons.image_outlined), findsOneWidget);
   });
@@ -45,6 +45,7 @@ void main() {
       find.text('Caption is taking longer. Tap to add details.'),
       findsOneWidget,
     );
+    expect(find.text('Captioning'), findsOneWidget);
   });
   testWidgets('failed caption card provides its own message', (tester) async {
     await tester.pumpWidget(
@@ -55,5 +56,32 @@ void main() {
       ),
     );
     expect(find.text('Caption failed, tap to add details'), findsOneWidget);
+  });
+  testWidgets('grid rows share their tallest card height', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: SizedBox(
+            width: 400,
+            child: CardGrid(
+              itemCount: 3,
+              minCardWidth: 160,
+              itemBuilder: (_, index) => SizedBox(
+                key: ValueKey(index),
+                height: index == 0 ? 120 : 60,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    expect(
+      tester.getSize(find.byKey(const ValueKey(1))).height,
+      tester.getSize(find.byKey(const ValueKey(0))).height,
+    );
+    expect(
+      tester.getTopLeft(find.byKey(const ValueKey(2))).dy,
+      greaterThan(tester.getTopLeft(find.byKey(const ValueKey(0))).dy),
+    );
   });
 }

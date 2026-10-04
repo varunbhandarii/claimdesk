@@ -36,11 +36,12 @@ void main() {
         ),
       );
       expect(find.text('ABC123'), findsOneWidget);
-      expect(find.text('Report REPORT'), findsOneWidget);
+      expect(find.text('REPORT'), findsOneWidget);
+      expect(find.text('“My black bag”'), findsOneWidget);
       expect(find.text('Strong · 0.82'), findsOneWidget);
       expect(find.text('Clear leader'), findsOneWidget);
-      expect(find.text('keyword: wooden handle'), findsOneWidget);
-      expect(find.text('found 1 day after lost'), findsOneWidget);
+      expect(find.text('“wooden handle”'), findsOneWidget);
+      expect(find.text('Found 1 day after lost'), findsOneWidget);
     },
   );
   testWidgets('restricted card hides item description and shows lock', (
@@ -52,6 +53,8 @@ void main() {
       ),
     );
     expect(find.text('Black bag with a patch'), findsNothing);
+    expect(find.text('Black backpack'), findsNothing);
+    expect(find.text('Restricted item'), findsOneWidget);
     expect(find.byIcon(Icons.lock_outline), findsOneWidget);
     expect(tester.takeException(), isNull);
   });

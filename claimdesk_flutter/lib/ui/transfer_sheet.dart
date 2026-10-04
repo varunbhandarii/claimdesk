@@ -1,5 +1,15 @@
 import 'package:claimdesk_client/claimdesk_client.dart';
 import 'package:flutter/material.dart';
+import 'desk_theme.dart';
+import 'desk_widgets.dart';
+import 'format.dart';
+
+const _locations = [
+  ('desk', 'Desk'),
+  ('safe', 'Safe'),
+  ('police', 'Police · leaves the venue'),
+  ('issuer', 'Issuer · leaves the venue'),
+];
 
 class TransferSheet extends StatefulWidget {
   const TransferSheet({super.key});
@@ -20,43 +30,50 @@ class _TransferSheetState extends State<TransferSheet> {
   @override
   Widget build(BuildContext context) {
     final terminal = _location == 'police' || _location == 'issuer';
+    final place = _locations.firstWhere((l) => l.$1 == _location).$2;
     return Padding(
       padding: EdgeInsets.fromLTRB(
-        24,
-        24,
-        24,
+        20,
+        0,
+        20,
         24 + MediaQuery.viewInsetsOf(context).bottom,
       ),
       child: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            Text('Transfer item', style: context.type.headingAt(22)),
+            const SizedBox(height: 4),
             Text(
-              'Transfer item',
-              style: Theme.of(context).textTheme.titleLarge,
+              'Record where the item goes. Every move stays in its history.',
+              style: context.type.body.copyWith(
+                fontSize: 14,
+                color: context.desk.ink2,
+              ),
             ),
+            const SizedBox(height: 18),
             DropdownButtonFormField<String>(
               initialValue: _location,
+              isExpanded: true,
               decoration: const InputDecoration(labelText: 'Location'),
               items: [
-                for (final pair in [
-                  ('desk', 'Desk'),
-                  ('safe', 'Safe'),
-                  ('police', 'Police · leaves the venue'),
-                  ('issuer', 'Issuer · leaves the venue'),
-                ])
+                for (final pair in _locations)
                   DropdownMenuItem(value: pair.$1, child: Text(pair.$2)),
               ],
               onChanged: (value) => setState(() => _location = value!),
             ),
-            if (terminal)
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 12),
+            if (terminal) ...[
+              const SizedBox(height: 12),
+              const NoteStrip(
+                icon: Icons.warning_amber_rounded,
+                tone: DiscTone.warn,
                 child: Text(
                   'This item leaves the venue. Pending matches will be rejected. A reserved item must have its confirmation undone first.',
                 ),
               ),
+            ],
+            const SizedBox(height: 16),
             TextField(
               controller: _reference,
               maxLength: 120,
@@ -64,6 +81,7 @@ class _TransferSheetState extends State<TransferSheet> {
                 labelText: 'Reference (optional)',
               ),
             ),
+            const SizedBox(height: 4),
             TextField(
               controller: _note,
               maxLength: 300,
@@ -71,7 +89,7 @@ class _TransferSheetState extends State<TransferSheet> {
                 labelText: 'Private note (optional)',
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             FilledButton(
               onPressed: () async {
                 final confirmed = await showDialog<bool>(
@@ -83,7 +101,7 @@ class _TransferSheetState extends State<TransferSheet> {
                     content: Text(
                       terminal
                           ? 'The item will be marked Handed over and removed from the shelf.'
-                          : 'Record the move to $_location.',
+                          : 'Record the move to ${place.toLowerCase()}.',
                     ),
                     actions: [
                       TextButton(
@@ -143,31 +161,42 @@ class _DisposeSheetState extends State<DisposeSheet> {
   @override
   Widget build(BuildContext context) => Padding(
     padding: EdgeInsets.fromLTRB(
-      24,
-      24,
-      24,
+      20,
+      0,
+      20,
       24 + MediaQuery.viewInsetsOf(context).bottom,
     ),
     child: SingleChildScrollView(
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(
-            'Dispose expired item',
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
-          if (widget.recommendedAction != null)
-            Text('Recommended: ${widget.recommendedAction}'),
+          Text('Dispose expired item', style: context.type.headingAt(22)),
+          if (widget.recommendedAction != null) ...[
+            const SizedBox(height: 10),
+            NoteStrip(
+              icon: Icons.recommend_outlined,
+              tone: DiscTone.tag,
+              child: Text(
+                'Recommended: ${disposalLabel(widget.recommendedAction!)}',
+              ),
+            ),
+          ],
+          const SizedBox(height: 18),
           DropdownButtonFormField<String>(
             initialValue: _action,
+            isExpanded: true,
             decoration: const InputDecoration(labelText: 'Action'),
             items: [
               for (final action in actions)
-                DropdownMenuItem(value: action, child: Text(action)),
+                DropdownMenuItem(
+                  value: action,
+                  child: Text(capitalise(action)),
+                ),
             ],
             onChanged: (v) => setState(() => _action = v!),
           ),
+          const SizedBox(height: 16),
           TextField(
             controller: _note,
             maxLength: 300,
@@ -175,6 +204,7 @@ class _DisposeSheetState extends State<DisposeSheet> {
               labelText: 'Private note (optional)',
             ),
           ),
+          const SizedBox(height: 12),
           FilledButton(
             onPressed: () async {
               final confirmed = await showDialog<bool>(
@@ -182,7 +212,7 @@ class _DisposeSheetState extends State<DisposeSheet> {
                 builder: (ctx) => AlertDialog(
                   title: const Text('Mark this item disposed?'),
                   content: Text(
-                    'Record $_action and remove the item from the desk.',
+                    'Record “${capitalise(_action)}” and remove the item from the desk.',
                   ),
                   actions: [
                     TextButton(

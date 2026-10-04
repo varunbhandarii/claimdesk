@@ -30,10 +30,10 @@ void main() {
         MaterialApp(
           home: Scaffold(
             body: DeskScreen(
-              venueName: 'Demo desk',
               summary: summary(),
               loading: false,
               error: null,
+              now: DateTime(2026, 10, 3, 12),
               onRefresh: () async {},
               onItems: (a, status) => attention = a,
               onInbox: () {},
@@ -43,23 +43,25 @@ void main() {
           ),
         ),
       );
-      expect(find.text('Demo desk'), findsOneWidget);
+      expect(find.text('Saturday, October 3'.toUpperCase()), findsOneWidget);
+      expect(find.text('Two things need you.'), findsOneWidget);
       expect(find.text('7'), findsOneWidget);
+      expect(find.text('12'), findsOneWidget);
       await tester.scrollUntilVisible(find.text('Overdue hand-offs'), 300);
       await tester.tap(find.text('Overdue hand-offs'));
       expect(attention, 'overdue');
-      expect(find.text('9 total, showing 1'), findsOneWidget);
+      await tester.scrollUntilVisible(find.text('Showing 1 of 9'), 300);
+      expect(find.text('See all 9'), findsOneWidget);
       expect(tester.takeException(), isNull);
     },
   );
-  testWidgets('empty attention sections stay visible with their empty copy', (
+  testWidgets('empty attention groups are listed as all clear', (
     tester,
   ) async {
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
           body: DeskScreen(
-            venueName: 'Empty desk',
             summary: summary(empty: true),
             loading: false,
             error: null,
@@ -72,8 +74,24 @@ void main() {
         ),
       ),
     );
-    expect(find.text('Nothing needs attention'), findsWidgets);
-    expect(find.text('Captioning failed'), findsOneWidget);
+    expect(find.text('Nothing needs you right now.'), findsOneWidget);
+    expect(find.textContaining('No matches waiting'), findsOneWidget);
+    for (final line in [
+      'No overdue police hand-offs',
+      'Nothing waiting for disposal',
+      'Nothing expiring in the next three days',
+      'No failed captions',
+    ]) {
+      await tester.scrollUntilVisible(find.text(line), 200);
+      expect(find.text(line), findsOneWidget);
+    }
+    expect(find.text('Captioning failed'), findsNothing);
     expect(tester.takeException(), isNull);
+  });
+  test('headline counts the groups that need attention', () {
+    expect(deskHeadline(0), 'Nothing needs you right now.');
+    expect(deskHeadline(1), 'One thing needs you.');
+    expect(deskHeadline(2), 'Two things need you.');
+    expect(deskHeadline(5), 'Five things need you.');
   });
 }

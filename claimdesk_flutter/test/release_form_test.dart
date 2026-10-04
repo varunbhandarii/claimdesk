@@ -40,24 +40,24 @@ void main() {
         ),
       );
       FilledButton button() => tester.widget<FilledButton>(
-        find.widgetWithText(FilledButton, 'Returned'),
+        find.widgetWithText(FilledButton, 'Mark as returned'),
       );
       expect(button().onPressed, isNull);
+      expect(find.text('0 of 4 checks done'), findsOneWidget);
       await tester.tap(find.byType(SwitchListTile).first);
       await tester.pump();
       await tester.tap(find.byTooltip('More details'));
       await tester.pump();
-      await tester.tap(find.byType(DropdownButtonFormField<String>));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Passport').last);
-      await tester.pumpAndSettle();
+      await tester.tap(find.text('Passport'));
+      await tester.pump();
       await tester.enterText(
-        find.widgetWithText(TextField, 'Claimant name'),
+        find.byKey(const Key('claimant-name')),
         'Demo Owner',
       );
       await tester.pump();
+      expect(find.text('4 of 4 checks done'), findsOneWidget);
       expect(button().onPressed, isNotNull);
-      await tester.tap(find.widgetWithText(FilledButton, 'Returned'));
+      await tester.tap(find.widgetWithText(FilledButton, 'Mark as returned'));
       await tester.pumpAndSettle();
       expect(sent!.detailsMatched, 1);
       expect(sent!.idTypeSeen, 'passport');
@@ -83,48 +83,34 @@ void main() {
           ),
         ),
       );
-      await tester.tap(find.byType(DropdownButtonFormField<String>));
-      await tester.pumpAndSettle();
+      FilledButton button() => tester.widget<FilledButton>(
+        find.widgetWithText(FilledButton, 'Mark as returned'),
+      );
       expect(find.text('None'), findsNothing);
-      await tester.tap(find.text('Student ID').last);
-      await tester.pumpAndSettle();
+      await tester.tap(find.text('Student ID'));
+      await tester.pump();
       await tester.tap(find.byType(SwitchListTile).first);
       await tester.tap(find.byTooltip('More details'));
       await tester.pump();
       await tester.enterText(
-        find.widgetWithText(TextField, 'Claimant name'),
+        find.byKey(const Key('claimant-name')),
         'Demo Owner',
       );
       await tester.pump();
-      expect(
-        tester
-            .widget<FilledButton>(find.widgetWithText(FilledButton, 'Returned'))
-            .onPressed,
-        isNull,
-      );
+      expect(button().onPressed, isNull);
       await tester.tap(find.byTooltip('More details'));
       await tester.pump();
       await tester.tap(
-        find.widgetWithText(SwitchListTile, 'Collected by someone else'),
+        find.widgetWithText(SwitchListTile, 'Someone else is collecting'),
       );
       await tester.pump();
-      expect(
-        tester
-            .widget<FilledButton>(find.widgetWithText(FilledButton, 'Returned'))
-            .onPressed,
-        isNull,
-      );
+      expect(button().onPressed, isNull);
       await tester.enterText(
-        find.widgetWithText(TextField, 'Authorisation note'),
+        find.byKey(const Key('authorisation-note')),
         'Authorised in person by the owner',
       );
       await tester.pump();
-      expect(
-        tester
-            .widget<FilledButton>(find.widgetWithText(FilledButton, 'Returned'))
-            .onPressed,
-        isNotNull,
-      );
+      expect(button().onPressed, isNotNull);
       expect(find.text('ID number'), findsNothing);
     },
   );

@@ -2,15 +2,19 @@ import 'dart:async';
 import 'package:claimdesk_client/claimdesk_client.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../app/routes.dart';
 import '../app/venue_session.dart';
 import '../data/errors.dart';
-import '../ui/status.dart';
-import '../ui/history_list.dart';
 import '../ui/categories.dart';
+import '../ui/claim_shapes.dart';
+import '../ui/desk_theme.dart';
+import '../ui/desk_widgets.dart';
+import '../ui/format.dart';
+import '../ui/history_list.dart';
 import '../ui/match_list.dart';
 import '../ui/owner_answers.dart';
 import '../ui/release_receipt.dart';
-import '../app/routes.dart';
+import '../ui/status.dart';
 import 'match_detail_screen.dart';
 
 class ReportDetailScreen extends StatefulWidget {
@@ -171,8 +175,6 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
     if (mounted) setState(() => _acting = false);
   }
 
-  String _date(DateTime? date) =>
-      date?.toLocal().toString().split('.').first ?? 'Not set';
   Future<void> _rematch() async {
     setState(() => _rematching = true);
     final job = await runGuarded(
@@ -188,171 +190,280 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
     final s = VenueScope.of(context);
     final r = _report;
     return Scaffold(
-      appBar: AppBar(title: const Text('Lost report')),
+      appBar: AppBar(
+        title: const Text('Lost report'),
+        actions: [
+          if (r != null)
+            IconButton(
+              onPressed: () => _copy(r.refCode),
+              tooltip: 'Copy reference',
+              icon: const Icon(Icons.copy),
+            ),
+        ],
+      ),
       body: r == null
           ? Center(
               child: _error == null
                   ? const CircularProgressIndicator()
-                  : Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(errorMessage(_error!)),
-                        FilledButton(
-                          onPressed: _load,
-                          child: const Text('Retry'),
-                        ),
-                      ],
+                  : RetryMessage(
+                      message: errorMessage(_error!),
+                      onRetry: _load,
                     ),
             )
-          : Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 900),
+          : LayoutBuilder(
+              builder: (context, box) => RefreshIndicator(
+                onRefresh: _load,
                 child: ListView(
-                  padding: const EdgeInsets.all(24),
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            r.refCode,
-                            style: Theme.of(context).textTheme.headlineMedium,
-                          ),
-                        ),
-                        IconButton(
-                          onPressed: () => _copy(r.refCode),
-                          tooltip: 'Copy reference',
-                          icon: const Icon(Icons.copy),
-                        ),
-                      ],
-                    ),
-                    ReportStatusChip(r.status),
-                    if (_release != null) ReleaseReceipt(summary: _release!),
-                    if ({
-                      ReportStatus.possibleMatch,
-                      ReportStatus.readyForPickup,
-                    }.contains(r.status)) ...[
-                      OwnerAnswers(
-                        answers: _answers,
-                        postedAt: _matches
-                            .where((c) => c.match.state == MatchState.confirmed)
-                            .firstOrNull
-                            ?.match
-                            .decidedAt,
-                      ),
-                      for (final confirmed in _matches.where(
-                        (c) => c.match.state == MatchState.confirmed,
-                      ))
-                        TextButton(
-                          onPressed: () => openDeskScreen(
-                            context,
-                            s,
-                            MatchDetailScreen(
-                              matchId: confirmed.match.id!,
-                              reportId: r.id!,
-                            ),
-                          ),
-                          child: const Text('Review confirmed match'),
-                        ),
-                    ],
-                    if (r.lastMatchOutcome == 'match_failed')
-                      const MatchingUnavailable(),
-                    if (_error != null) Text(errorMessage(_error!)),
-                    const SizedBox(height: 16),
-                    Text(
-                      r.rawText,
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                    Wrap(
-                      spacing: 8,
-                      children: [
-                        if (r.categoryHint != null)
-                          Chip(label: Text(categoryLabel(r.categoryHint!))),
-                        for (final colour in r.colourHints)
-                          Chip(label: Text(colour)),
-                        if (r.brandHint != null)
-                          Chip(label: Text(r.brandHint!)),
-                      ],
-                    ),
-                    Text('Where: ${s.zoneName(r.zoneId)}'),
-                    if (r.whereText != null) Text(r.whereText!),
-                    Text(
-                      'Lost: ${_date(r.lostAt)}${r.lostAtFuzzyDays > 0 ? ' · day uncertain (±${r.lostAtFuzzyDays} days)' : ''}',
-                    ),
-                    Text('Filed: ${_date(r.createdAt)}'),
-                    Text('Updated: ${_date(r.updatedAt)}'),
-                    if (r.closedAt != null)
-                      Text('Closed: ${_date(r.closedAt)}'),
-                    const SizedBox(height: 24),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            'Candidates',
-                            style: Theme.of(context).textTheme.titleLarge,
-                          ),
-                        ),
-                        if ({
-                          ReportStatus.received,
-                          ReportStatus.searching,
-                          ReportStatus.possibleMatch,
-                        }.contains(r.status))
-                          TextButton(
-                            onPressed: _rematching ? null : _rematch,
-                            child: Text(
-                              _rematching ? 'Searching…' : 'Search again',
-                            ),
-                          ),
-                      ],
-                    ),
-                    MatchList(cards: _matches),
-                    const SizedBox(height: 24),
-                    HistoryList(entries: _history),
-                    const SizedBox(height: 24),
-                    Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Owner-only details · staff only',
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            const SizedBox(height: 8),
-                            SelectableText(
-                              r.ownerOnlyDetails ?? 'Not provided',
-                            ),
-                            const SizedBox(height: 16),
-                            const Text(
-                              'Contact · staff only',
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            if (r.contactEmail != null)
-                              TextButton(
-                                onPressed: () => _copy(r.contactEmail!),
-                                child: Text(r.contactEmail!),
-                              ),
-                            if (r.ownerName != null)
-                              TextButton(
-                                onPressed: () => _copy(r.ownerName!),
-                                child: Text(r.ownerName!),
-                              ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    if ({
-                      ReportStatus.received,
-                      ReportStatus.searching,
-                    }.contains(r.status))
-                      FilledButton(
-                        onPressed: _acting ? null : _close,
-                        child: Text(_acting ? 'Closing…' : 'Close report'),
-                      ),
-                  ],
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: EdgeInsets.fromLTRB(
+                    box.maxWidth > 752 ? (box.maxWidth - 720) / 2 : 16,
+                    4,
+                    box.maxWidth > 752 ? (box.maxWidth - 720) / 2 : 16,
+                    40,
+                  ),
+                  children: _sections(context, s, r),
                 ),
               ),
             ),
     );
   }
+
+  List<Widget> _sections(BuildContext context, VenueSession s, LostReport r) {
+    final c = context.desk;
+    const gap = SizedBox(height: 22);
+    final confirmed = _matches
+        .where((m) => m.match.state == MatchState.confirmed)
+        .toList();
+    final verifying = {
+      ReportStatus.possibleMatch,
+      ReportStatus.readyForPickup,
+    }.contains(r.status);
+    final lost = r.lostAt == null
+        ? 'Not given'
+        : r.lostAtFuzzyDays > 0
+        ? 'Around ${shortDate(r.lostAt!)} (±${r.lostAtFuzzyDays} days)'
+        : shortDate(r.lostAt!);
+    return [
+      DeskCard(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Container(
+              color: c.ticket,
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 18),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: DeskLabel(
+                          'Lost report',
+                          colour: c.ticketOn.withValues(alpha: .82),
+                        ),
+                      ),
+                      Container(
+                        height: 24,
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: c.ticketOn,
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: Text(
+                          reportStatusLabel(r.status),
+                          style: context.type.strong.copyWith(
+                            fontSize: 12.5,
+                            height: 1,
+                            color: c.ticket,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  SelectableText(
+                    r.refCode,
+                    style: context.type
+                        .codeAt(32)
+                        .copyWith(
+                          color: c.ticketOn,
+                          height: 1.1,
+                        ),
+                  ),
+                ],
+              ),
+            ),
+            const Seam(),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(18, 6, 18, 18),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SelectableText(
+                    '“${r.rawText.trim()}”',
+                    style: context.type.heading.copyWith(
+                      fontSize: 19,
+                      height: 1.35,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 14,
+                    runSpacing: 8,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      if (r.categoryHint != null)
+                        Text(
+                          categoryLabel(r.categoryHint!),
+                          style: context.type.strong.copyWith(
+                            fontSize: 14,
+                            color: c.ink2,
+                          ),
+                        ),
+                      ColourNames(r.colourHints),
+                      if (r.brandHint != null)
+                        Text(
+                          r.brandHint!,
+                          style: TextStyle(fontSize: 14, color: c.ink2),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+      if (r.lastMatchOutcome == 'match_failed') ...[
+        const SizedBox(height: 12),
+        const Align(
+          alignment: Alignment.centerLeft,
+          child: MatchingUnavailable(),
+        ),
+      ],
+      if (_error != null) ...[
+        const SizedBox(height: 12),
+        NoteStrip(
+          icon: Icons.wifi_off,
+          tone: DiscTone.warn,
+          child: Text(errorMessage(_error!)),
+        ),
+      ],
+      gap,
+      KvGrid([
+        ('Where', r.zoneId == null ? 'Not sure' : s.zoneName(r.zoneId)),
+        ('Lost', lost),
+        if (r.whereText != null) ('More precisely', r.whereText!),
+        ('Filed', dateTimeLabel(r.createdAt)),
+        ('Updated', dateTimeLabel(r.updatedAt)),
+        if (r.closedAt != null) ('Closed', dateTimeLabel(r.closedAt!)),
+      ]),
+      if (_release != null) ...[gap, ReleaseReceipt(summary: _release!)],
+      if (verifying) ...[
+        gap,
+        OwnerAnswers(
+          answers: _answers,
+          postedAt: confirmed.firstOrNull?.match.decidedAt,
+          ownerOnlyDetails: r.ownerOnlyDetails,
+          showOwnerOnly: true,
+        ),
+        for (final match in confirmed) ...[
+          const SizedBox(height: 10),
+          FilledButton.icon(
+            onPressed: () => openDeskScreen(
+              context,
+              s,
+              MatchDetailScreen(matchId: match.match.id!, reportId: r.id!),
+            ),
+            icon: const Icon(Icons.compare_arrows, size: 20),
+            label: const Text('Review confirmed match'),
+          ),
+        ],
+      ],
+      gap,
+      SectionTitle(
+        'Candidates',
+        trailing:
+            {
+              ReportStatus.received,
+              ReportStatus.searching,
+              ReportStatus.possibleMatch,
+            }.contains(r.status)
+            ? TextButton.icon(
+                onPressed: _rematching ? null : _rematch,
+                icon: const Icon(Icons.refresh, size: 18),
+                label: Text(_rematching ? 'Searching…' : 'Search again'),
+              )
+            : null,
+      ),
+      const SizedBox(height: 10),
+      MatchList(cards: _matches, showReports: false),
+      gap,
+      HistoryList(entries: _history),
+      gap,
+      DeskCard(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const IconDisc(Icons.lock_outline, size: 30, iconSize: 16),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'Owner and contact',
+                    style: context.type.headingAt(18),
+                  ),
+                ),
+                const DeskLabel('Staff only'),
+              ],
+            ),
+            if (!verifying) ...[
+              const SizedBox(height: 14),
+              const DeskLabel('Only the owner would know'),
+              const SizedBox(height: 4),
+              SelectableText(r.ownerOnlyDetails ?? 'Not provided'),
+            ],
+            const SizedBox(height: 14),
+            const DeskLabel('Contact'),
+            const SizedBox(height: 4),
+            if (r.contactEmail == null && r.ownerName == null)
+              Text(
+                'Contact details have been removed.',
+                style: TextStyle(color: c.ink3),
+              ),
+            if (r.ownerName != null)
+              _copyRow(context, Icons.person_outline, r.ownerName!),
+            if (r.contactEmail != null)
+              _copyRow(context, Icons.mail_outline, r.contactEmail!),
+          ],
+        ),
+      ),
+      if ({
+        ReportStatus.received,
+        ReportStatus.searching,
+      }.contains(r.status)) ...[
+        gap,
+        OutlinedButton(
+          onPressed: _acting ? null : _close,
+          child: Text(_acting ? 'Closing…' : 'Close report'),
+        ),
+      ],
+    ];
+  }
+
+  Widget _copyRow(BuildContext context, IconData icon, String text) => Row(
+    children: [
+      Icon(icon, size: 18, color: context.desk.ink2),
+      const SizedBox(width: 8),
+      Expanded(child: SelectableText(text)),
+      IconButton(
+        tooltip: 'Copy',
+        onPressed: () => _copy(text),
+        icon: const Icon(Icons.copy, size: 18),
+      ),
+    ],
+  );
 }

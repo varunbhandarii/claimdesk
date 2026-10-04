@@ -41,7 +41,7 @@ void main() {
     );
     expect(find.text('What was inside?'), findsOneWidget);
     expect(find.text('A fictional blue notebook'), findsOneWidget);
-    expect(find.textContaining('Answered 2026'), findsOneWidget);
+    expect(find.textContaining('Answered '), findsOneWidget);
     expect(find.textContaining('Not answered yet'), findsNothing);
   });
   testWidgets('Pickup actions appear only before a permanent release', (
@@ -64,12 +64,12 @@ void main() {
       );
       for (final label in [
         'Mark ready for pickup',
-        'Release item',
+        'Return to owner',
         'Undo confirmation',
       ]) {
         expect(find.text(label), released ? findsNothing : findsOneWidget);
       }
-      if (released) expect(find.textContaining('Released on'), findsOneWidget);
+      if (released) expect(find.textContaining('Returned on'), findsOneWidget);
     }
   });
 }

@@ -2,22 +2,28 @@ import 'dart:async';
 import 'package:claimdesk_client/claimdesk_client.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../app/venue_session.dart';
 import '../app/routes.dart';
+import '../app/venue_session.dart';
 import '../data/errors.dart';
-import '../ui/photo_view.dart';
-import '../ui/status.dart';
+import '../ui/action_tile.dart';
+import '../ui/attribute_chips.dart';
+import '../ui/claim_shapes.dart';
+import '../ui/desk_theme.dart';
+import '../ui/desk_widgets.dart';
+import '../ui/format.dart';
 import '../ui/history_list.dart';
 import '../ui/item_badges.dart';
-import '../ui/transfer_sheet.dart';
-import '../ui/tag_button.dart';
-import '../ui/attribute_chips.dart';
-import 'edit_item_screen.dart';
 import '../ui/item_form.dart';
 import '../ui/match_list.dart';
+import '../ui/photo_view.dart';
+import '../ui/pills.dart';
 import '../ui/release_receipt.dart';
-import 'release_screen.dart';
+import '../ui/status.dart';
+import '../ui/tag_button.dart';
+import '../ui/transfer_sheet.dart';
+import 'edit_item_screen.dart';
 import 'match_detail_screen.dart';
+import 'release_screen.dart';
 
 class ItemDetailScreen extends StatefulWidget {
   const ItemDetailScreen({super.key, required this.itemId});
@@ -138,11 +144,11 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
     if (mounted) setState(() => _acting = false);
   }
 
-  String _date(DateTime date) => date.toLocal().toString().split('.').first;
   String? get _recommendation => _history
       .where((e) => e.action == 'expired')
       .firstOrNull
       ?.data['recommendedAction'];
+
   Future<void> _transfer() async {
     final input = await showModalBottomSheet<TransferInput>(
       context: context,
@@ -173,239 +179,443 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
     if (mounted) setState(() => _acting = false);
   }
 
+  Future<void> _edit(FoundItem item) async {
+    final edited = await openDeskScreen<FoundItem>(
+      context,
+      _session!,
+      EditItemScreen(item: item),
+    );
+    if (edited != null && mounted) setState(() => _item = edited);
+  }
+
+  Future<void> _return(FoundItem item) async {
+    final session = _session!;
+    final reserved = _matches
+        .where((c) => c.match.state == MatchState.confirmed)
+        .firstOrNull;
+    List<ReportAnswer> answers = const [];
+    if (reserved != null) {
+      setState(() => _acting = true);
+      final loaded = await runGuarded(
+        context,
+        () => session.client.match.answers(reserved.match.id!),
+        onDenied: session.onDenied,
+      );
+      if (mounted) setState(() => _acting = false);
+      if (loaded == null || !mounted) return;
+      answers = loaded;
+    }
+    final released = await openDeskScreen<ReleaseSummary>(
+      context,
+      session,
+      ReleaseScreen(
+        item: item,
+        matchId: reserved?.match.id,
+        reportRefCode: reserved?.report.refCode,
+        answers: answers,
+        photo: item.photoPath == null
+            ? null
+            : PhotoView(
+                urls: session.photos,
+                itemId: item.id!,
+                thumb: true,
+                revision: item.thumbPath,
+                onDenied: session.onDenied,
+              ),
+      ),
+    );
+    if (released != null) await _load();
+  }
+
+  Future<void> _copy(String code) async {
+    await Clipboard.setData(ClipboardData(text: code));
+    if (mounted) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Copied $code.')));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final session = VenueScope.of(context);
     final item = _item;
+    if (item == null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Found item')),
+        body: Center(
+          child: _error == null
+              ? const CircularProgressIndicator()
+              : RetryMessage(message: errorMessage(_error!), onRetry: _load),
+        ),
+      );
+    }
     return Scaffold(
-      appBar: AppBar(title: const Text('Found item')),
-      body: item == null
-          ? Center(
-              child: _error == null
-                  ? const CircularProgressIndicator()
-                  : Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(errorMessage(_error!)),
-                        FilledButton(
-                          onPressed: _load,
-                          child: const Text('Retry'),
-                        ),
-                      ],
-                    ),
-            )
-          : Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 900),
-                child: RefreshIndicator(
-                  onRefresh: _load,
-                  child: ListView(
-                    padding: const EdgeInsets.all(24),
-                    children: [
-                      SizedBox(
-                        height: 320,
-                        child: GestureDetector(
-                          onTap: () => openDeskScreen(
-                            context,
-                            session,
-                            Scaffold(
-                              appBar: AppBar(title: Text(item.refCode)),
-                              body: InteractiveViewer(
-                                child: Center(
-                                  child: PhotoView(
-                                    urls: session.photos,
-                                    itemId: item.id!,
-                                    revision: item.updatedAt,
-                                    onDenied: session.onDenied,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(16),
-                            child: PhotoView(
-                              urls: session.photos,
-                              itemId: item.id!,
-                              revision: item.updatedAt,
-                              onDenied: session.onDenied,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      Wrap(
-                        spacing: 16,
-                        crossAxisAlignment: WrapCrossAlignment.center,
-                        children: [
-                          TagButton(
-                            link: () => session.client.item.tagLink(item.id!),
-                          ),
-                          SelectableText(
-                            item.refCode,
-                            style: Theme.of(context).textTheme.headlineMedium
-                                ?.copyWith(fontFamily: 'monospace'),
-                          ),
-                          IconButton(
-                            tooltip: 'Copy reference',
-                            onPressed: () => Clipboard.setData(
-                              ClipboardData(text: item.refCode),
-                            ),
-                            icon: const Icon(Icons.copy),
-                          ),
-                          StatusChip(item.status),
-                        ],
-                      ),
-                      Text(
-                        '${session.zoneName(item.zoneId)} · Found ${_date(item.foundAt)}',
-                      ),
-                      const SizedBox(height: 16),
-                      Text('Storage bin: ${item.storageBin ?? 'Not set'}'),
-                      Text('Value: ${valueBandLabel(item.valueBand)}'),
-                      if (item.holdUntil != null)
-                        Text('Hold until: ${_date(item.holdUntil!)}'),
-                      if (item.handoffDueAt != null)
-                        Text(
-                          'Hand-off due: ${_date(item.handoffDueAt!)}',
-                          style: TextStyle(
-                            color: item.handoffDueAt!.isBefore(DateTime.now())
-                                ? Theme.of(context).colorScheme.error
-                                : null,
+      body: LayoutBuilder(
+        builder: (context, box) {
+          final framed = box.maxWidth > 760;
+          return RefreshIndicator(
+            onRefresh: _load,
+            child: ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: framed
+                  ? EdgeInsets.fromLTRB(
+                      (box.maxWidth - 720) / 2,
+                      16,
+                      (box.maxWidth - 720) / 2,
+                      40,
+                    )
+                  : const EdgeInsets.only(bottom: 40),
+              children: [
+                _top(context, item, framed),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: framed ? 0 : 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: _body(context, item),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _top(BuildContext context, FoundItem item, bool framed) {
+    final c = context.desk;
+    final session = _session!;
+    final heroHeight = framed ? 360.0 : 300.0;
+    Widget round(Widget child) => Material(
+      color: c.surface.withValues(alpha: .94),
+      shape: const CircleBorder(),
+      clipBehavior: Clip.antiAlias,
+      child: child,
+    );
+    final photo = item.photoPath == null
+        ? null
+        : PhotoView(
+            urls: session.photos,
+            itemId: item.id!,
+            revision: item.updatedAt,
+            onDenied: session.onDenied,
+            cover: true,
+          );
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(framed ? 20 : 0),
+              child: SizedBox(
+                height: heroHeight,
+                child: GestureDetector(
+                  onTap: photo == null
+                      ? null
+                      : () => openFullPhoto(context, session, item),
+                  child: Semantics(
+                    label: photo == null ? null : 'Open full photo',
+                    button: photo != null,
+                    child:
+                        photo ??
+                        ColoredBox(
+                          color: c.surface2,
+                          child: Icon(
+                            Icons.image_outlined,
+                            size: 48,
+                            color: c.ink3,
+                            semanticLabel: 'No photo',
                           ),
                         ),
-                      const SizedBox(height: 16),
-                      Wrap(
-                        spacing: 12,
-                        children: [
-                          if ({
-                            ItemStatus.unclaimed,
-                            ItemStatus.matched,
-                            ItemStatus.expired,
-                          }.contains(item.status))
-                            OutlinedButton.icon(
-                              onPressed: _acting ? null : _transfer,
-                              icon: const Icon(Icons.move_to_inbox_outlined),
-                              label: const Text('Transfer'),
-                            ),
-                          if (item.status == ItemStatus.expired)
-                            OutlinedButton.icon(
-                              onPressed: _acting ? null : _disposeItem,
-                              icon: const Icon(Icons.delete_outline),
-                              label: const Text('Dispose'),
-                            ),
-                          if (item.status != ItemStatus.claimed)
-                            FilledButton.icon(
-                              onPressed: _acting
-                                  ? null
-                                  : () async {
-                                      final edited =
-                                          await openDeskScreen<FoundItem>(
-                                            context,
-                                            session,
-                                            EditItemScreen(item: item),
-                                          );
-                                      if (edited != null && mounted) {
-                                        setState(() => _item = edited);
-                                      }
-                                    },
-                              icon: const Icon(Icons.edit_outlined),
-                              label: const Text('Edit details'),
-                            ),
-                          if (item.status != ItemStatus.claimed)
-                            OutlinedButton.icon(
-                              onPressed:
-                                  !_acting &&
-                                      item.status == ItemStatus.unclaimed
-                                  ? _recaption
-                                  : null,
-                              icon: const Icon(Icons.auto_awesome_outlined),
-                              label: const Text('Recaption'),
-                            ),
-                        ],
-                      ),
-                      const Divider(height: 40),
-                      LocationLine(events: _custody),
-                      ItemBadges(item: item),
-                      if (item.status == ItemStatus.expired &&
-                          _recommendation != null)
-                        Text('Recommended action: $_recommendation'),
-                      if (_release != null)
-                        ReleaseReceipt(summary: _release!, showSignature: true),
-                      if (item.status == ItemStatus.unclaimed)
-                        FilledButton(
-                          onPressed: () async {
-                            final released =
-                                await openDeskScreen<ReleaseSummary>(
-                                  context,
-                                  session,
-                                  ReleaseScreen(item: item),
-                                );
-                            if (released != null) await _load();
-                          },
-                          child: const Text('Release to walk-in'),
-                        ),
-                      if (item.status == ItemStatus.matched)
-                        for (final reserved in _matches.where(
-                          (c) => c.match.state == MatchState.confirmed,
-                        ))
-                          TextButton(
-                            onPressed: () => openDeskScreen(
-                              context,
-                              session,
-                              MatchDetailScreen(
-                                matchId: reserved.match.id!,
-                                reportId: reserved.report.id!,
-                              ),
-                            ),
-                            child: Text(
-                              'Reserved for report ${reserved.report.refCode}',
-                            ),
-                          ),
-                      if (item.attributes != null)
-                        AttributeChips(
-                          attributes: item.attributes!,
-                          restricted: item.restricted,
-                        ),
-                      if (item.captionText != null)
-                        Container(
-                          margin: const EdgeInsets.only(top: 20),
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.surfaceContainer,
-                            border: Border(
-                              left: BorderSide(
-                                color: Theme.of(context).colorScheme.primary,
-                                width: 4,
-                              ),
-                            ),
-                          ),
-                          child: SelectableText(item.captionText!),
-                        ),
-                      const SizedBox(height: 24),
-                      Text(
-                        'Matches',
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                      MatchList(cards: _matches),
-                      const SizedBox(height: 24),
-                      HistoryList(entries: _history),
-                      const SizedBox(height: 24),
-                      Text(
-                        'Private notes · staff only',
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(item.privateNotes ?? 'No private notes'),
-                      if (item.finderName != null)
-                        Text('Finder: ${item.finderName}'),
-                      const SizedBox(height: 32),
-                    ],
                   ),
                 ),
               ),
             ),
+            const SizedBox(height: 37),
+          ],
+        ),
+        Positioned(
+          left: 12,
+          right: 12,
+          top: 12,
+          child: SafeArea(
+            bottom: false,
+            child: Row(
+              children: [
+                round(
+                  IconButton(
+                    tooltip: 'Back',
+                    onPressed: () => Navigator.maybePop(context),
+                    icon: const Icon(Icons.arrow_back),
+                  ),
+                ),
+                const Spacer(),
+                round(_moreMenu(item)),
+              ],
+            ),
+          ),
+        ),
+        Positioned(
+          left: framed ? 0 : 16,
+          right: framed ? 0 : 16,
+          top: heroHeight - 19,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              RefTag(item.refCode, large: true),
+              const Spacer(),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 0),
+                child: OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size(44, 40),
+                    padding: const EdgeInsets.symmetric(horizontal: 13),
+                    textStyle: context.type.strong.copyWith(fontSize: 13.5),
+                  ),
+                  onPressed: () => _copy(item.refCode),
+                  icon: const Icon(Icons.copy, size: 16),
+                  label: const Text('Copy'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
+  }
+
+  Widget _moreMenu(FoundItem item) => PopupMenuButton<String>(
+    tooltip: 'More actions',
+    icon: const Icon(Icons.more_vert),
+    enabled: !_acting,
+    onSelected: (value) => switch (value) {
+      'recaption' => _recaption(),
+      'dispose' => _disposeItem(),
+      'transfer' => _transfer(),
+      'edit' => _edit(item),
+      _ => null,
+    },
+    itemBuilder: (_) => [
+      if (item.status != ItemStatus.claimed)
+        const PopupMenuItem(
+          value: 'edit',
+          child: ListTile(
+            leading: Icon(Icons.edit_outlined),
+            title: Text('Edit details'),
+          ),
+        ),
+      PopupMenuItem(
+        value: 'recaption',
+        enabled: item.status == ItemStatus.unclaimed && item.photoPath != null,
+        child: const ListTile(
+          leading: Icon(Icons.auto_awesome_outlined),
+          title: Text('Recaption'),
+        ),
+      ),
+      if (_canTransfer(item))
+        const PopupMenuItem(
+          value: 'transfer',
+          child: ListTile(
+            leading: Icon(Icons.swap_horiz),
+            title: Text('Transfer'),
+          ),
+        ),
+      if (item.status == ItemStatus.expired)
+        const PopupMenuItem(
+          value: 'dispose',
+          child: ListTile(
+            leading: Icon(Icons.delete_outline),
+            title: Text('Dispose'),
+          ),
+        ),
+    ],
+  );
+
+  bool _canTransfer(FoundItem item) => {
+    ItemStatus.unclaimed,
+    ItemStatus.matched,
+    ItemStatus.expired,
+  }.contains(item.status);
+
+  List<Widget> _body(BuildContext context, FoundItem item) {
+    final c = context.desk;
+    final session = _session!;
+    final reserved = _matches
+        .where((m) => m.match.state == MatchState.confirmed)
+        .firstOrNull;
+    final pending = _matches
+        .where((m) => m.match.state == MatchState.pending)
+        .firstOrNull;
+    final notices = itemNotices(item);
+    const gap = SizedBox(height: 22);
+    Widget? primary;
+    if (item.status == ItemStatus.unclaimed ||
+        (item.status == ItemStatus.matched && reserved != null)) {
+      primary = FilledButton.icon(
+        style: bigButtonStyle(context),
+        onPressed: _acting ? null : () => _return(item),
+        icon: const Icon(Icons.check, size: 20),
+        label: const Text('Return to owner'),
+      );
+    } else if (item.status == ItemStatus.matched && pending != null) {
+      primary = FilledButton.icon(
+        style: bigButtonStyle(context),
+        onPressed: () => openDeskScreen(
+          context,
+          session,
+          MatchDetailScreen(
+            matchId: pending.match.id!,
+            reportId: pending.report.id!,
+          ),
+        ),
+        icon: const Icon(Icons.compare_arrows, size: 20),
+        label: const Text('Review proposed match'),
+      );
+    } else if (item.status == ItemStatus.expired) {
+      primary = FilledButton.icon(
+        style: bigButtonStyle(context),
+        onPressed: _acting ? null : _disposeItem,
+        icon: const Icon(Icons.delete_outline, size: 20),
+        label: const Text('Dispose'),
+      );
+    }
+    final tiles = <Widget>[
+      TagButton(link: () => session.client.item.tagLink(item.id!), tile: true),
+      if (_canTransfer(item))
+        ActionTile(
+          icon: Icons.swap_horiz,
+          label: 'Transfer',
+          onPressed: _acting ? null : _transfer,
+        ),
+      if (item.status != ItemStatus.claimed)
+        ActionTile(
+          icon: Icons.edit_outlined,
+          label: 'Edit',
+          onPressed: _acting ? null : () => _edit(item),
+        ),
+    ];
+    return [
+      Text(itemTitle(item), style: context.type.headingAt(30, height: 1.1)),
+      const SizedBox(height: 6),
+      Text(
+        itemSubtitle(item.attributes),
+        style: context.type.body.copyWith(fontSize: 14.5, color: c.ink2),
+      ),
+      const SizedBox(height: 10),
+      Wrap(
+        spacing: 6,
+        runSpacing: 6,
+        children: [
+          StatusChip(item.status),
+          for (final (text, tone) in notices) StatusPill(text, tone: tone),
+          if (item.restricted)
+            const StatusPill('Staff only', icon: Icons.lock_outline),
+        ],
+      ),
+      gap,
+      if (_acting) ...[
+        const LinearProgressIndicator(minHeight: 2),
+        const SizedBox(height: 10),
+      ],
+      ?primary,
+      if (primary != null) const SizedBox(height: 10),
+      Row(
+        children: [
+          for (var i = 0; i < tiles.length; i++) ...[
+            if (i > 0) const SizedBox(width: 8),
+            Expanded(child: tiles[i]),
+          ],
+        ],
+      ),
+      gap,
+      KvGrid([
+        ('Found', dateTimeLabel(item.foundAt)),
+        ('Zone', session.zoneName(item.zoneId)),
+        ('Storage bin', item.storageBin ?? 'Not set'),
+        ('Value', valueBandLabel(item.valueBand)),
+        if (item.holdUntil != null) ('Hold until', shortDate(item.holdUntil!)),
+        if (item.handoffDueAt != null)
+          ('Hand to police by', shortDate(item.handoffDueAt!)),
+      ]),
+      const SizedBox(height: 12),
+      LocationLine(events: _custody),
+      if (item.status == ItemStatus.expired && _recommendation != null) ...[
+        const SizedBox(height: 12),
+        NoteStrip(
+          icon: Icons.recommend_outlined,
+          tone: DiscTone.tag,
+          child: Text('Recommended: ${disposalLabel(_recommendation!)}'),
+        ),
+      ],
+      if (_release != null) ...[
+        gap,
+        ReleaseReceipt(summary: _release!, showSignature: true),
+      ],
+      gap,
+      if (item.attributes != null)
+        AttributeChips(
+          attributes: item.attributes!,
+          restricted: item.restricted,
+        )
+      else ...[
+        const SectionTitle('What the desk sees'),
+        const SizedBox(height: 10),
+        if (item.captionText != null)
+          SelectableText(item.captionText!)
+        else
+          Text(
+            item.status == ItemStatus.captioning
+                ? 'Describing the photo. This usually takes under 15 seconds.'
+                : 'No details yet. Edit the item to add them.',
+            style: TextStyle(color: c.ink2),
+          ),
+      ],
+      gap,
+      DeskCard(
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const IconDisc(Icons.lock_outline, size: 32, iconSize: 17),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const DeskLabel('Private notes · staff only'),
+                  const SizedBox(height: 4),
+                  Text(
+                    item.privateNotes ?? 'No private notes',
+                    style: TextStyle(
+                      color: item.privateNotes == null ? c.ink3 : c.ink,
+                    ),
+                  ),
+                  if (item.finderName != null) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      'Finder: ${item.finderName}',
+                      style: context.type.small.copyWith(color: c.ink2),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+      gap,
+      SectionTitle(
+        'Possible owners',
+        trailing: TitleNote(
+          '${_matches.length} ${_matches.length == 1 ? 'report' : 'reports'}',
+        ),
+      ),
+      const SizedBox(height: 10),
+      MatchList(cards: _matches),
+      gap,
+      HistoryList(entries: _history),
+    ];
   }
 }

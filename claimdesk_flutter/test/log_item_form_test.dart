@@ -45,42 +45,39 @@ void main() {
         isNull,
       );
       expect(form.valueBand, ValueBand.under20);
-      await tester.tap(find.byType(DropdownButtonFormField<UuidValue>));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Pool').last);
-      await tester.pumpAndSettle();
+      await tester.tap(find.text('Pool'));
+      await tester.pump();
       expect(form.zoneId, venueId);
       expect(
         tester.widget<FilledButton>(find.byKey(const Key('save'))).onPressed,
         isNotNull,
       );
-      await tester.ensureVisible(find.text('black'));
-      await tester.tap(find.text('black'));
+      await tester.ensureVisible(find.text('Black'));
+      await tester.tap(find.text('Black'));
       await tester.pump();
       expect(form.colours, contains('black'));
-      await tester.tap(find.text('black'));
+      await tester.tap(find.text('Black'));
       await tester.pump();
       expect(form.colours, isEmpty);
-      for (final colour in ['black', 'white', 'red']) {
+      for (final colour in ['Black', 'White', 'Red']) {
         await tester.ensureVisible(find.text(colour));
         await tester.tap(find.text(colour));
         await tester.pump();
       }
-      expect(
-        tester
-            .widget<FilterChip>(find.widgetWithText(FilterChip, 'blue'))
-            .onSelected,
-        isNull,
-      );
-      await tester.ensureVisible(find.text('red'));
-      await tester.tap(find.text('red'));
+      expect(form.colours, {'black', 'white', 'red'});
+      ColourSwatchButton swatch(String label) =>
+          tester.widget<ColourSwatchButton>(
+            find.widgetWithText(ColourSwatchButton, label),
+          );
+      expect(swatch('Blue').onPressed, isNull);
+      await tester.ensureVisible(find.text('Red'));
+      await tester.tap(find.text('Red'));
       await tester.pump();
-      expect(
-        tester
-            .widget<FilterChip>(find.widgetWithText(FilterChip, 'blue'))
-            .onSelected,
-        isNotNull,
-      );
+      expect(swatch('Blue').onPressed, isNotNull);
+      await tester.ensureVisible(find.text('\$100–499'));
+      await tester.tap(find.text('\$100–499'));
+      await tester.pump();
+      expect(form.valueBand, ValueBand.from100to499);
       await tester.pumpWidget(const SizedBox());
       form.dispose();
     },

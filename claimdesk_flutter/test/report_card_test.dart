@@ -30,10 +30,13 @@ void main() {
       ),
     );
     expect(find.text('ABC234'), findsOneWidget);
-    expect(find.text('Pool · Filed 3 h ago'), findsOneWidget);
+    expect(
+      find.text('Umbrellas & rain gear · Pool · filed 3 h ago'),
+      findsOneWidget,
+    );
     expect(find.text('Received'), findsOneWidget);
-    expect(find.text('Umbrellas & rain gear'), findsOneWidget);
-    expect(find.text('black'), findsOneWidget);
+    expect(find.text('My black folding umbrella'), findsOneWidget);
+    expect(find.bySemanticsLabel('Black'), findsOneWidget);
     expect(find.text('private@example.test'), findsNothing);
     expect(find.text('private-token'), findsNothing);
     expect(find.text('inside-only-mark'), findsNothing);

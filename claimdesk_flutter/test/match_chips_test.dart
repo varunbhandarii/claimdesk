@@ -1,3 +1,4 @@
+import 'package:claimdesk_flutter/ui/desk_widgets.dart';
 import 'package:claimdesk_flutter/ui/match_chips.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -23,12 +24,16 @@ void main() {
           ),
         ),
       );
-      expect(find.text('category differs'), findsOneWidget);
-      expect(find.text('brand differs'), findsOneWidget);
-      expect(find.byType(Chip), findsNWidgets(2));
+      expect(find.text('Category differs'), findsOneWidget);
+      expect(find.text('Brand differs'), findsOneWidget);
+      expect(find.byType(EvidenceLine), findsNWidgets(2));
       expect(
-        tester.widget<Chip>(find.widgetWithText(Chip, 'category differs')).side,
-        isNot(BorderSide.none),
+        tester
+            .widget<EvidenceLine>(
+              find.widgetWithText(EvidenceLine, 'Category differs'),
+            )
+            .kind,
+        Evidence.differs,
       );
     },
   );
@@ -43,8 +48,10 @@ void main() {
           home: Scaffold(body: MatchChips(explanation: explanation)),
         ),
       );
-      expect(find.text('keyword: mark 5'), findsOneWidget);
-      expect(find.text('keyword: mark 6'), findsNothing);
+      expect(find.text('“mark 5”'), findsOneWidget);
+      expect(find.text('“mark 6”'), findsNothing);
+      expect(find.text('Category'), findsOneWidget);
+      expect(find.text('Colour'), findsOneWidget);
       expect(
         find.byWidgetPredicate(
           (w) => w is Tooltip && w.message == 'keyword: 0.80',

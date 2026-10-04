@@ -2,6 +2,8 @@ import 'package:claimdesk_client/claimdesk_client.dart';
 import 'package:flutter/material.dart';
 import '../app/venue_session.dart';
 import '../data/errors.dart';
+import 'desk_theme.dart';
+import 'format.dart';
 
 Future<String?> askDismissReason(
   BuildContext context, {
@@ -20,7 +22,10 @@ Future<String?> askDismissReason(
           autofocus: true,
           maxLength: 300,
           maxLines: 3,
-          decoration: const InputDecoration(labelText: 'Reason'),
+          decoration: const InputDecoration(
+            labelText: 'Reason',
+            helperText: 'Staff only. Saved in the match history.',
+          ),
           validator: (value) =>
               value == null || value.trim().isEmpty ? 'Give a reason.' : null,
         ),
@@ -47,6 +52,8 @@ Future<String?> askDismissReason(
   return result;
 }
 
+/// Decision buttons for a proposal. The bar layout offers every next step;
+/// the inbox layout offers Dismiss and a way into the full review.
 class MatchActions extends StatefulWidget {
   const MatchActions({
     super.key,
@@ -55,12 +62,17 @@ class MatchActions extends StatefulWidget {
     this.reportStatus,
     this.onRelease,
     this.releasedAt,
+    this.onReview,
   });
   final ItemMatch match;
   final VoidCallback? onChanged;
   final ReportStatus? reportStatus;
   final VoidCallback? onRelease;
   final DateTime? releasedAt;
+
+  /// When set, a pending proposal offers "Review match" instead of
+  /// confirming directly.
+  final VoidCallback? onReview;
   @override
   State<MatchActions> createState() => _MatchActionsState();
 }
@@ -118,54 +130,104 @@ class _MatchActionsState extends State<MatchActions> {
   }
 
   @override
-  Widget build(BuildContext context) => Wrap(
-    spacing: 8,
-    runSpacing: 8,
-    children: [
-      if (widget.releasedAt != null ||
-          widget.reportStatus == ReportStatus.returned)
-        Text(
-          'Released${widget.releasedAt == null ? '' : ' on ${widget.releasedAt!.toLocal().toString().split('.').first}'}',
-        ),
-      if (widget.match.state == MatchState.confirmed &&
-          widget.releasedAt == null &&
-          widget.reportStatus != ReportStatus.returned) ...[
-        if (widget.reportStatus == ReportStatus.possibleMatch)
-          FilledButton(
-            onPressed: _busy ? null : _ready,
-            child: const Text('Mark ready for pickup'),
-          ),
-        if (widget.onRelease != null)
-          FilledButton(
-            onPressed: _busy ? null : widget.onRelease,
-            child: const Text('Release item'),
-          ),
+  Widget build(BuildContext context) {
+    final c = context.desk;
+    final match = widget.match;
+    final released =
+        widget.releasedAt != null ||
+        widget.reportStatus == ReportStatus.returned;
+    final note = context.type.body.copyWith(fontSize: 14, color: c.ink2);
+    Widget pair(Widget secondary, Widget primary) => Row(
+      children: [
+        Expanded(child: secondary),
+        const SizedBox(width: 10),
+        Expanded(flex: 2, child: primary),
       ],
-      if (widget.match.state == MatchState.pending)
-        FilledButton(
-          onPressed: _busy ? null : () => _act(true),
-          child: const Text('Confirm'),
+    );
+    final List<Widget> rows;
+    if (released) {
+      rows = [
+        Row(
+          children: [
+            Icon(Icons.check_circle_outline, color: c.ok, size: 20),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Returned${widget.releasedAt == null ? '' : ' on ${dateTimeLabel(widget.releasedAt!, midSentence: true)}'}',
+                style: note,
+              ),
+            ),
+          ],
         ),
-      if ({
-            MatchState.pending,
-            MatchState.confirmed,
-          }.contains(widget.match.state) &&
-          widget.releasedAt == null &&
-          widget.reportStatus != ReportStatus.returned)
-        OutlinedButton(
-          onPressed: _busy ? null : () => _act(false),
-          child: Text(
-            widget.match.state == MatchState.confirmed
-                ? 'Undo confirmation'
-                : 'Dismiss',
+      ];
+    } else if (match.state == MatchState.pending) {
+      final dismiss = OutlinedButton(
+        onPressed: _busy ? null : () => _act(false),
+        child: const Text('Dismiss'),
+      );
+      rows = [
+        widget.onReview != null
+            ? pair(
+                dismiss,
+                FilledButton(
+                  onPressed: _busy ? null : widget.onReview,
+                  child: const Text('Review match'),
+                ),
+              )
+            : pair(
+                dismiss,
+                FilledButton.icon(
+                  onPressed: _busy ? null : () => _act(true),
+                  icon: const Icon(Icons.check, size: 20),
+                  label: const Text('Confirm match'),
+                ),
+              ),
+      ];
+    } else if (match.state == MatchState.confirmed) {
+      final undo = OutlinedButton(
+        onPressed: _busy ? null : () => _act(false),
+        child: const Text('Undo confirmation'),
+      );
+      rows = [
+        if (widget.reportStatus == ReportStatus.possibleMatch) ...[
+          OutlinedButton.icon(
+            onPressed: _busy ? null : _ready,
+            icon: const Icon(Icons.inventory_2_outlined, size: 20),
+            label: const Text('Mark ready for pickup'),
           ),
+          const SizedBox(height: 10),
+        ],
+        widget.onRelease == null
+            ? undo
+            : pair(
+                undo,
+                FilledButton.icon(
+                  onPressed: _busy ? null : widget.onRelease,
+                  icon: const Icon(Icons.check, size: 20),
+                  label: const Text('Return to owner'),
+                ),
+              ),
+      ];
+    } else {
+      rows = [
+        Text(
+          match.state == MatchState.rejected
+              ? 'This proposal was dismissed.'
+              : 'A newer proposal replaced this one.',
+          style: note,
         ),
-      if (_busy)
-        const SizedBox(
-          width: 24,
-          height: 24,
-          child: CircularProgressIndicator(strokeWidth: 2),
-        ),
-    ],
-  );
+      ];
+    }
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (_busy) ...[
+          const LinearProgressIndicator(minHeight: 2),
+          const SizedBox(height: 10),
+        ],
+        ...rows,
+      ],
+    );
+  }
 }

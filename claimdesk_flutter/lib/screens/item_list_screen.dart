@@ -3,22 +3,24 @@ import 'package:claimdesk_client/claimdesk_client.dart';
 import 'package:flutter/material.dart';
 import '../app/routes.dart';
 import '../app/venue_session.dart';
-import '../data/errors.dart';
-import '../ui/status.dart';
-import '../ui/item_card.dart';
-import '../ui/photo_view.dart';
-import '../ui/offline_banner.dart';
-import '../ui/empty_state.dart';
-import '../ui/item_search_field.dart';
-import '../ui/categories.dart';
-import '../ui/export_sheet.dart';
 import '../data/app_entry.dart';
-import 'log_item_screen.dart';
-import 'item_detail_screen.dart';
-import 'report_list_screen.dart';
-import 'inbox_screen.dart';
+import '../data/errors.dart';
+import '../ui/brand.dart';
+import '../ui/desk_theme.dart';
+import '../ui/desk_widgets.dart';
+import '../ui/export_sheet.dart';
+import '../ui/offline_banner.dart';
+import '../ui/photo_view.dart';
 import 'desk_screen.dart';
+import 'inbox_screen.dart';
+import 'item_detail_screen.dart';
+import 'items_tab.dart';
+import 'log_item_screen.dart';
+import 'match_detail_screen.dart';
+import 'report_list_screen.dart';
 
+/// Signed-in shell: Desk, Items, Reports and Inbox. Phones get a header and a
+/// bottom bar; wide windows get a side rail.
 class ItemListScreen extends StatefulWidget {
   const ItemListScreen({
     super.key,
@@ -32,6 +34,7 @@ class ItemListScreen extends StatefulWidget {
 }
 
 class _ItemListScreenState extends State<ItemListScreen> {
+  static const wideFrom = 1000.0;
   Timer? _clock;
   int _tab = 0;
   VenueSession? _session;
@@ -39,6 +42,7 @@ class _ItemListScreenState extends State<ItemListScreen> {
   Object? _lastError;
   String? _entry = itemEntry(Uri.base);
   bool _openingEntry = false;
+  final _searchFocus = FocusNode();
   @override
   void initState() {
     super.initState();
@@ -149,369 +153,468 @@ class _ItemListScreenState extends State<ItemListScreen> {
     if (mounted) await _session!.refreshItems();
   }
 
+  void _search() {
+    setState(() => _tab = 1);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _searchFocus.requestFocus();
+    });
+  }
+
+  void _menu(String value) {
+    if (value == 'out') {
+      widget.onSignOut();
+    } else if (value == 'export') {
+      _export();
+    } else {
+      widget.onChangeVenue();
+    }
+  }
+
   @override
   void dispose() {
     _clock?.cancel();
+    _searchFocus.dispose();
     _session?.removeListener(_changed);
     super.dispose();
+  }
+
+  Widget? _thumb(VenueSession session, FoundItem item) => item.photoPath == null
+      ? null
+      : PhotoView(
+          urls: session.photos,
+          itemId: item.id!,
+          thumb: true,
+          revision: item.thumbPath,
+          onDenied: session.onDenied,
+        );
+
+  Widget _content(VenueSession session, bool wide) => switch (_tab) {
+    0 => DeskScreen(
+      summary: session.summary,
+      loading: session.summaryLoading,
+      error: session.summaryError,
+      onRefresh: session.refreshSummary,
+      matches: session.inbox,
+      photoFor: (item) => _thumb(session, item),
+      zoneName: session.zoneName,
+      onItems: (attention, status) {
+        session.presetItems(attention, status);
+        setState(() => _tab = 1);
+      },
+      onInbox: () => setState(() => _tab = 3),
+      onMatch: (card) => openDeskScreen(
+        context,
+        session,
+        MatchDetailScreen(matchId: card.match.id!, reportId: card.report.id!),
+      ),
+      onReports: () {
+        session.reportStatusFilter = null;
+        session.reportZoneFilter = null;
+        session.reportCategoryFilter = null;
+        session.refreshReports();
+        setState(() => _tab = 2);
+      },
+      onItem: _openItem,
+      onExport: canExport(session.membership) ? _export : null,
+    ),
+    1 => ItemsTab(
+      onOpenItem: _openItem,
+      onLog: _log,
+      searchFocus: _searchFocus,
+      wide: wide,
+    ),
+    2 => ReportListScreen(wide: wide),
+    _ => InboxScreen(wide: wide),
+  };
+
+  void _retry(VenueSession session) {
+    session.live.connectivityChanged(true);
+    switch (_tab) {
+      case 0:
+        session.refreshSummary();
+      case 1:
+        session.refreshItems();
+      case 2:
+        session.refreshReports();
+      default:
+        session.refreshInbox();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final session = VenueScope.of(context);
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('ClaimDesk'),
-        actions: [
-          PopupMenuButton<String>(
-            tooltip: 'Desk options',
-            onSelected: (value) {
-              if (value == 'out') {
-                widget.onSignOut();
-              } else if (value == 'export') {
-                _export();
-              } else {
-                widget.onChangeVenue();
-              }
-            },
-            itemBuilder: (_) => [
-              if (canExport(session.membership))
-                const PopupMenuItem(value: 'export', child: Text('Export CSV')),
-              const PopupMenuItem(value: 'venue', child: Text('Change venue')),
-              const PopupMenuItem(value: 'out', child: Text('Sign out')),
+    return LayoutBuilder(
+      builder: (context, box) {
+        final wide = box.maxWidth >= wideFrom;
+        final offline = session.offline || session.live.reconnecting;
+        final body = Column(
+          children: [
+            if (offline) OfflineBanner(onRetry: () => _retry(session)),
+            Expanded(child: _content(session, wide)),
+          ],
+        );
+        if (wide) {
+          return Scaffold(
+            body: Row(
+              children: [
+                _DeskRail(
+                  session: session,
+                  tab: _tab,
+                  onTab: (tab) => setState(() => _tab = tab),
+                  onLog: _log,
+                  onMenu: _menu,
+                ),
+                Expanded(child: body),
+              ],
+            ),
+          );
+        }
+        return Scaffold(
+          body: SafeArea(
+            bottom: false,
+            child: Column(
+              children: [
+                _PhoneHeader(
+                  session: session,
+                  onSearch: _search,
+                  onMenu: _menu,
+                ),
+                Expanded(child: body),
+              ],
+            ),
+          ),
+          floatingActionButton: _tab > 1
+              ? null
+              : FloatingActionButton.extended(
+                  onPressed: _log,
+                  icon: const Icon(Icons.photo_camera_outlined),
+                  label: const Text('Log item'),
+                ),
+          bottomNavigationBar: NavigationBar(
+            selectedIndex: _tab,
+            onDestinationSelected: (value) => setState(() => _tab = value),
+            destinations: [
+              const NavigationDestination(
+                icon: Icon(Icons.space_dashboard_outlined),
+                selectedIcon: Icon(Icons.space_dashboard),
+                label: 'Desk',
+              ),
+              const NavigationDestination(
+                icon: Icon(Icons.sell_outlined),
+                selectedIcon: Icon(Icons.sell),
+                label: 'Items',
+              ),
+              const NavigationDestination(
+                icon: Icon(Icons.confirmation_number_outlined),
+                selectedIcon: Icon(Icons.confirmation_number),
+                label: 'Reports',
+              ),
+              NavigationDestination(
+                icon: Badge(
+                  isLabelVisible: session.inbox.isNotEmpty,
+                  label: Text('${session.inbox.length}'),
+                  child: const Icon(Icons.inbox_outlined),
+                ),
+                selectedIcon: Badge(
+                  isLabelVisible: session.inbox.isNotEmpty,
+                  label: Text('${session.inbox.length}'),
+                  child: const Icon(Icons.inbox),
+                ),
+                label: 'Inbox',
+              ),
             ],
           ),
-        ],
+        );
+      },
+    );
+  }
+}
+
+String _roleLabel(StaffMembership membership) =>
+    membership.role == StaffRole.supervisor ? 'Supervisor' : 'Staff';
+
+List<PopupMenuEntry<String>> _menuItems(
+  VenueSession session, {
+  bool venue = true,
+}) => [
+  if (canExport(session.membership))
+    const PopupMenuItem(
+      value: 'export',
+      child: ListTile(
+        leading: Icon(Icons.file_download_outlined),
+        title: Text('Export CSV'),
       ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _tab,
-        onDestinationSelected: (value) => setState(() => _tab = value),
-        destinations: [
-          const NavigationDestination(
-            icon: Icon(Icons.dashboard_outlined),
-            label: 'Desk',
-          ),
-          const NavigationDestination(
-            icon: Icon(Icons.inventory_2_outlined),
-            label: 'Items',
-          ),
-          const NavigationDestination(
-            icon: Icon(Icons.description_outlined),
-            label: 'Reports',
-          ),
-          NavigationDestination(
-            icon: Badge(
-              isLabelVisible: session.inbox.isNotEmpty,
-              label: Text('${session.inbox.length}'),
-              child: const Icon(Icons.inbox_outlined),
-            ),
-            label: 'Inbox',
-          ),
-        ],
+    ),
+  if (venue)
+    const PopupMenuItem(
+      value: 'venue',
+      child: ListTile(
+        leading: Icon(Icons.swap_horiz),
+        title: Text('Change venue'),
       ),
-      floatingActionButton: _tab > 1
-          ? null
-          : FloatingActionButton.extended(
-              onPressed: _log,
-              icon: const Icon(Icons.add),
-              label: const Text('Log item'),
+    ),
+  const PopupMenuItem(
+    value: 'out',
+    child: ListTile(leading: Icon(Icons.logout), title: Text('Sign out')),
+  ),
+];
+
+class _PhoneHeader extends StatelessWidget {
+  const _PhoneHeader({
+    required this.session,
+    required this.onSearch,
+    required this.onMenu,
+  });
+  final VenueSession session;
+  final VoidCallback onSearch;
+  final ValueChanged<String> onMenu;
+  @override
+  Widget build(BuildContext context) {
+    final c = context.desk;
+    return SizedBox(
+      height: 60,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 0, 8, 0),
+        child: Row(
+          children: [
+            const ClaimDeskMark(width: 34),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    session.venue.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: context.type.headingAt(16.5, height: 1.15),
+                  ),
+                  Text(
+                    '${session.membership.displayName} · ${_roleLabel(session.membership)}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: context.type.body.copyWith(
+                      fontSize: 12,
+                      color: c.ink3,
+                    ),
+                  ),
+                ],
+              ),
             ),
-      body: _tab == 0
-          ? Column(
-              children: [
-                if (session.offline || session.live.reconnecting)
-                  OfflineBanner(
-                    onRetry: () {
-                      session.live.connectivityChanged(true);
-                      session.refreshSummary();
-                    },
-                  ),
-                Expanded(
-                  child: DeskScreen(
-                    venueName: session.venue.name,
-                    summary: session.summary,
-                    loading: session.summaryLoading,
-                    error: session.summaryError,
-                    onRefresh: session.refreshSummary,
-                    matches: session.inbox,
-                    reports: session.reports,
-                    onItems: (attention, status) {
-                      session.presetItems(attention, status);
-                      setState(() => _tab = 1);
-                    },
-                    onInbox: () => setState(() => _tab = 3),
-                    onReports: () {
-                      session.reportStatusFilter = null;
-                      session.reportZoneFilter = null;
-                      session.reportCategoryFilter = null;
-                      session.refreshReports();
-                      setState(() => _tab = 2);
-                    },
-                    onItem: _openItem,
-                  ),
+            IconButton(
+              tooltip: 'Search items',
+              onPressed: onSearch,
+              icon: const Icon(Icons.search),
+            ),
+            PopupMenuButton<String>(
+              tooltip: 'Desk options',
+              onSelected: onMenu,
+              itemBuilder: (_) => _menuItems(session),
+              child: Padding(
+                padding: const EdgeInsets.all(4),
+                child: Avatar(session.membership.displayName),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _DeskRail extends StatelessWidget {
+  const _DeskRail({
+    required this.session,
+    required this.tab,
+    required this.onTab,
+    required this.onLog,
+    required this.onMenu,
+  });
+  final VenueSession session;
+  final int tab;
+  final ValueChanged<int> onTab;
+  final VoidCallback onLog;
+  final ValueChanged<String> onMenu;
+  @override
+  Widget build(BuildContext context) {
+    final c = context.desk;
+    final summary = session.summary;
+    Widget count(int? value) => value == null
+        ? const SizedBox.shrink()
+        : Text(
+            '$value',
+            style: context.type.mono.copyWith(fontSize: 12.5, color: c.ink3),
+          );
+    final destinations = [
+      (Icons.space_dashboard_outlined, 'Desk', const SizedBox.shrink()),
+      (Icons.sell_outlined, 'Items', count(summary?.onShelf)),
+      (
+        Icons.confirmation_number_outlined,
+        'Reports',
+        count(summary?.openReports),
+      ),
+      (
+        Icons.inbox_outlined,
+        'Inbox',
+        session.inbox.isEmpty
+            ? const SizedBox.shrink()
+            : Badge(
+                label: Text('${session.inbox.length}'),
+                padding: const EdgeInsets.symmetric(horizontal: 6),
+              ),
+      ),
+    ];
+    return Container(
+      width: 256,
+      decoration: BoxDecoration(
+        color: c.surface,
+        border: Border(right: BorderSide(color: c.line)),
+      ),
+      padding: const EdgeInsets.fromLTRB(14, 20, 14, 14),
+      child: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Padding(
+              padding: EdgeInsets.fromLTRB(8, 4, 8, 14),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: DeskWordmark(size: 21),
+              ),
+            ),
+            Tooltip(
+              message: 'Change venue',
+              child: Material(
+                color: c.paper,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: BorderSide(color: c.line, width: 1.5),
                 ),
-              ],
-            )
-          : _tab == 3
-          ? const InboxScreen()
-          : _tab == 2
-          ? const ReportListScreen()
-          : Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 1040),
-                child: Column(
-                  children: [
-                    if (session.offline || session.live.reconnecting)
-                      OfflineBanner(
-                        onRetry: () {
-                          session.live.connectivityChanged(true);
-                          session.refreshItems();
-                        },
-                      ),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(24, 20, 24, 12),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  session.venue.name,
-                                  style: Theme.of(
-                                    context,
-                                  ).textTheme.headlineMedium,
+                clipBehavior: Clip.antiAlias,
+                child: InkWell(
+                  onTap: () => onMenu('venue'),
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(12, 10, 8, 10),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                session.venue.name,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: context.type.strong.copyWith(
+                                  fontSize: 14,
                                 ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  '${session.membership.role == StaffRole.supervisor ? 'Supervisor' : 'Staff'} · ${session.items.length} items in this view',
-                                ),
-                              ],
-                            ),
-                          ),
-                          PopupMenuButton<String>(
-                            tooltip: 'Filter by zone',
-                            onSelected: (id) {
-                              session.zoneFilter = id.isEmpty
-                                  ? null
-                                  : UuidValue.fromString(id);
-                              session.refreshItems();
-                            },
-                            icon: const Icon(Icons.filter_alt_outlined),
-                            itemBuilder: (_) => [
-                              const PopupMenuItem(
-                                value: '',
-                                child: Text('All zones'),
                               ),
-                              for (final zone in session.zones)
-                                PopupMenuItem(
-                                  value: zone.id.toString(),
-                                  child: Text(zone.name),
+                              Text(
+                                'Change venue',
+                                style: context.type.body.copyWith(
+                                  fontSize: 12,
+                                  color: c.ink3,
                                 ),
+                              ),
                             ],
                           ),
-                          PopupMenuButton<String>(
-                            tooltip: 'Filter by category',
-                            icon: const Icon(Icons.category_outlined),
-                            onSelected: (value) {
-                              session.categoryFilter = value.isEmpty
-                                  ? null
-                                  : value;
-                              session.refreshItems();
-                            },
-                            itemBuilder: (_) => [
-                              const PopupMenuItem(
-                                value: '',
-                                child: Text('All categories'),
-                              ),
-                              for (final entry in categories.entries)
-                                PopupMenuItem(
-                                  value: entry.value,
-                                  child: Text(entry.value),
-                                ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: ItemSearchField(
-                        query: session.searchQuery,
-                        onQuery: session.search,
-                        results: session.items.length,
-                      ),
-                    ),
-                    if (session.categoryFilter != null)
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 24),
-                          child: InputChip(
-                            label: Text(session.categoryFilter!),
-                            onDeleted: () {
-                              session.categoryFilter = null;
-                              session.refreshItems();
-                            },
-                          ),
                         ),
-                      ),
-                    SizedBox(
-                      height: 60,
-                      child: ListView(
-                        scrollDirection: Axis.horizontal,
-                        padding: const EdgeInsets.symmetric(horizontal: 24),
-                        children: [
-                          for (final status in [
-                            null,
-                            ItemStatus.captioning,
-                            ItemStatus.unclaimed,
-                            ItemStatus.matched,
-                            ItemStatus.claimed,
-                            ItemStatus.expired,
-                            ItemStatus.transferred,
-                            ItemStatus.disposed,
-                          ])
-                            Padding(
-                              padding: const EdgeInsets.only(right: 8),
-                              child: FilterChip(
-                                label: Text(
-                                  status == null
-                                      ? 'All open'
-                                      : statusLabel(status),
-                                ),
-                                selected: session.statusFilter == status,
-                                onSelected: (_) {
-                                  session.statusFilter = status;
-                                  session.refreshItems();
-                                },
-                              ),
-                            ),
-                        ],
-                      ),
+                        Icon(Icons.unfold_more, size: 18, color: c.ink2),
+                      ],
                     ),
-                    if (session.zoneFilter != null)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: Text(
-                          'Zone: ${session.zoneName(session.zoneFilter)}',
-                        ),
-                      ),
-                    if (session.attentionFilter != null)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24),
-                        child: Align(
-                          alignment: Alignment.centerLeft,
-                          child: InputChip(
-                            label: Text(
-                              attentionLabel(session.attentionFilter!),
-                            ),
-                            onDeleted: () {
-                              session.attentionFilter = null;
-                              session.refreshItems();
-                            },
-                          ),
-                        ),
-                      ),
-                    if (session.refreshing && !session.loading)
-                      const LinearProgressIndicator(minHeight: 2),
-                    Expanded(
-                      child: session.loading
-                          ? ListView(
-                              children: List.generate(
-                                4,
-                                (_) => const Card(
-                                  child: SizedBox(
-                                    height: 110,
-                                    child: Center(
-                                      child: LinearProgressIndicator(),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            )
-                          : RefreshIndicator(
-                              onRefresh: session.refreshItems,
-                              child:
-                                  session.error != null && session.items.isEmpty
-                                  ? ListView(
-                                      physics:
-                                          const AlwaysScrollableScrollPhysics(),
-                                      children: [
-                                        Padding(
-                                          padding: const EdgeInsets.all(32),
-                                          child: Column(
-                                            children: [
-                                              Text(
-                                                errorMessage(session.error!),
-                                              ),
-                                              const SizedBox(height: 16),
-                                              FilledButton(
-                                                onPressed: session.refreshItems,
-                                                child: const Text('Retry'),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    )
-                                  : session.items.isEmpty
-                                  ? ListView(
-                                      physics:
-                                          const AlwaysScrollableScrollPhysics(),
-                                      children: [EmptyState(onLog: _log)],
-                                    )
-                                  : ListView.builder(
-                                      padding: const EdgeInsets.fromLTRB(
-                                        16,
-                                        0,
-                                        16,
-                                        100,
-                                      ),
-                                      physics:
-                                          const AlwaysScrollableScrollPhysics(),
-                                      itemCount: session.items.length,
-                                      itemBuilder: (context, index) {
-                                        final item = session.items[index];
-                                        return AnimatedSwitcher(
-                                          duration: const Duration(
-                                            milliseconds: 250,
-                                          ),
-                                          child: ItemCard(
-                                            key: ValueKey(
-                                              '${item.id}/${item.updatedAt}',
-                                            ),
-                                            item: item,
-                                            zoneName: session.zoneName(
-                                              item.zoneId,
-                                            ),
-                                            captionFailed:
-                                                session.failedItems.contains(
-                                                  item.id,
-                                                ) ||
-                                                (item.photoPath != null &&
-                                                    item.attributes?.modelId ==
-                                                        'template'),
-                                            photo: item.photoPath == null
-                                                ? null
-                                                : PhotoView(
-                                                    urls: session.photos,
-                                                    itemId: item.id!,
-                                                    thumb: true,
-                                                    revision: item.thumbPath,
-                                                    onDenied: session.onDenied,
-                                                  ),
-                                            onTap: () => _openItem(item.id!),
-                                          ),
-                                        );
-                                      },
-                                    ),
-                            ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ),
+            const SizedBox(height: 14),
+            FilledButton.icon(
+              style: tagButtonStyle(context),
+              onPressed: onLog,
+              icon: const Icon(Icons.photo_camera_outlined, size: 20),
+              label: const Text('Log item'),
+            ),
+            const SizedBox(height: 14),
+            for (var i = 0; i < destinations.length; i++)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 2),
+                child: Semantics(
+                  selected: tab == i,
+                  button: true,
+                  child: Material(
+                    color: tab == i ? c.tag50 : const Color(0x00000000),
+                    borderRadius: BorderRadius.circular(12),
+                    clipBehavior: Clip.antiAlias,
+                    child: InkWell(
+                      onTap: () => onTab(i),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 11,
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(destinations[i].$1, size: 20, color: c.ink),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                destinations[i].$2,
+                                style: context.type.strong.copyWith(
+                                  fontSize: 15,
+                                ),
+                              ),
+                            ),
+                            destinations[i].$3,
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            const Spacer(),
+            Container(
+              padding: const EdgeInsets.fromLTRB(6, 12, 0, 0),
+              decoration: BoxDecoration(
+                border: Border(top: BorderSide(color: c.line)),
+              ),
+              child: Row(
+                children: [
+                  Avatar(session.membership.displayName),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          session.membership.displayName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: context.type.strong.copyWith(fontSize: 14),
+                        ),
+                        Text(
+                          _roleLabel(session.membership),
+                          style: context.type.body.copyWith(
+                            fontSize: 12,
+                            color: c.ink3,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  PopupMenuButton<String>(
+                    tooltip: 'Desk options',
+                    icon: const Icon(Icons.more_vert),
+                    onSelected: onMenu,
+                    itemBuilder: (_) => _menuItems(session),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

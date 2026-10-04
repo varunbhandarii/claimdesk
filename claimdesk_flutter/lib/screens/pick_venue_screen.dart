@@ -7,6 +7,9 @@ import '../app/venue_session.dart';
 import '../client.dart';
 import '../data/errors.dart';
 import '../data/venue_choice.dart';
+import '../ui/brand.dart';
+import '../ui/desk_theme.dart';
+import '../ui/desk_widgets.dart';
 import 'item_list_screen.dart';
 
 class PickVenueScreen extends StatefulWidget {
@@ -137,54 +140,94 @@ class _PickVenueScreenState extends State<PickVenueScreen> {
         child: ItemListScreen(onSignOut: _signOut, onChangeVenue: _denied),
       );
     }
+    final c = context.desk;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Your venues'),
+        title: const DeskWordmark(size: 19),
         actions: [
-          TextButton(onPressed: _signOut, child: const Text('Sign out')),
+          TextButton.icon(
+            onPressed: _signOut,
+            icon: const Icon(Icons.logout, size: 18),
+            label: const Text('Sign out'),
+          ),
+          const SizedBox(width: 8),
         ],
       ),
       body: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 720),
+          constraints: const BoxConstraints(maxWidth: 560),
           child: _loading
               ? const CircularProgressIndicator()
               : _error != null
-              ? Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(errorMessage(_error!)),
-                    const SizedBox(height: 16),
-                    FilledButton(
-                      onPressed: () => _load(),
-                      child: const Text('Retry'),
-                    ),
-                  ],
-                )
+              ? RetryMessage(message: errorMessage(_error!), onRetry: _load)
               : _venues!.isEmpty
-              ? const Padding(
-                  padding: EdgeInsets.all(24),
-                  child: Text('This account is not assigned to a venue'),
+              ? Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const IconDisc(Icons.storefront_outlined, size: 48),
+                      const SizedBox(height: 16),
+                      Text(
+                        'This account is not assigned to a venue',
+                        textAlign: TextAlign.center,
+                        style: context.type.headingAt(21),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Ask your supervisor to add you to their desk.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: c.ink2),
+                      ),
+                    ],
+                  ),
                 )
               : ListView(
-                  padding: const EdgeInsets.all(24),
+                  padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
                   children: [
                     Text(
                       'Choose your desk',
-                      style: Theme.of(context).textTheme.headlineMedium,
+                      style: context.type.displayAt(32),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'You can switch venues any time from the desk menu.',
+                      style: TextStyle(color: c.ink2),
                     ),
                     const SizedBox(height: 24),
                     for (final choice in _venues!)
-                      Card(
-                        child: ListTile(
-                          title: Text(choice.$2.name),
-                          subtitle: Text(
-                            choice.$1.role == StaffRole.supervisor
-                                ? 'Supervisor'
-                                : 'Staff',
-                          ),
-                          trailing: const Icon(Icons.arrow_forward),
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: DeskCard(
                           onTap: () => _choose(choice),
+                          padding: const EdgeInsets.fromLTRB(16, 14, 12, 14),
+                          child: Row(
+                            children: [
+                              const ClaimDeskMark(width: 38),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      choice.$2.name,
+                                      style: context.type.headingAt(18),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      choice.$1.role == StaffRole.supervisor
+                                          ? 'Supervisor'
+                                          : 'Staff',
+                                      style: context.type.small.copyWith(
+                                        color: c.ink3,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Icon(Icons.arrow_forward, color: c.ink2),
+                            ],
+                          ),
                         ),
                       ),
                   ],

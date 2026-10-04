@@ -31,10 +31,12 @@ void main() {
             ),
           ),
         );
-        expect(find.text('Claimant: Demo Collector'), findsOneWidget);
-        expect(find.text('ID type seen: Passport'), findsOneWidget);
-        expect(find.text('Released by: Demo Staff'), findsOneWidget);
-        expect(find.text('Authorisation: Approved in person'), findsOneWidget);
+        expect(find.text('Demo Collector'), findsOneWidget);
+        expect(find.text('Passport'), findsOneWidget);
+        expect(find.text('Demo Staff'), findsOneWidget);
+        expect(find.text('Approved in person'), findsOneWidget);
+        expect(find.text('REPORT1'), findsOneWidget);
+        expect(find.text('Returned'), findsOneWidget);
         expect(
           find.text('View signature'),
           signature ? findsOneWidget : findsNothing,

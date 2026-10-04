@@ -34,7 +34,7 @@ void main() {
     await tester.tap(find.text('Show details'));
     await tester.pumpAndSettle();
     expect(find.text('Passport'), findsOneWidget);
-    await tester.tap(find.text('Show all (4)'));
+    await tester.tap(find.text('Show all 4'));
     await tester.pumpAndSettle();
     expect(find.text('Entry 0'), findsOneWidget);
     expect(tester.takeException(), isNull);
