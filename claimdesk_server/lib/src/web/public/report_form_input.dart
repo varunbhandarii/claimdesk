@@ -1,6 +1,8 @@
 import 'package:timezone/data/latest.dart' as tz_data;
 import 'package:timezone/timezone.dart' as tz;
 import '../../policy/taxonomy.dart';
+import 'public_lang.dart';
+import 'public_strings.dart';
 
 class ReportFormInput {
   ReportFormInput({
@@ -40,45 +42,48 @@ class ReportFormInput {
     required Iterable<String> zones,
     required DateTime now,
     required String timezone,
+    PublicLang lang = PublicLang.en,
   }) {
+    final t = PublicStrings.of(lang);
     final errors = <String, String>{};
     String field(String key, int max) {
       final value = (form[key] ?? '')
           .replaceAll(RegExp(r'[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]'), '')
           .trim();
-      if (value.length > max) errors[key] = 'Use at most $max characters.';
+      if (value.length > max) {
+        errors[key] = PublicStrings.fill(t['errMax']!, {'max': max});
+      }
       return value.length > max ? value.substring(0, max) : value;
     }
 
     final text = field('rawText', 400);
     if (text.length < 20 ||
         text.split(RegExp(r'\s+')).where((w) => w.isNotEmpty).length < 3) {
-      errors['rawText'] =
-          'Describe your item in at least 20 characters and three words.';
+      errors['rawText'] = t['errDescribe']!;
     }
     final category = field('categoryHint', 60);
     if (category.isNotEmpty && !Taxonomy.groups.containsKey(category)) {
-      errors['categoryHint'] = 'Choose a category from the list.';
+      errors['categoryHint'] = t['errCategory']!;
     }
     final colours = [
       for (final c in Taxonomy.colours)
         if (form['colour_$c'] == 'on') c,
     ];
-    if (colours.length > 3) errors['colours'] = 'Choose at most three colours.';
+    if (colours.length > 3) errors['colours'] = t['errColours']!;
     final brand = field('brandHint', 60),
         zone = field('zoneId', 40),
         where = field('whereText', 120);
     if (zone.isNotEmpty && !zones.contains(zone)) {
-      errors['zoneId'] = 'Choose a zone at this venue.';
+      errors['zoneId'] = t['errZone']!;
     }
     final details = field('ownerOnlyDetails', 300),
         name = field('ownerName', 80);
     final email = field('contactEmail', 254).toLowerCase();
     if (!RegExp(r'^[^\s@<>]+@[^\s@<>]+\.[a-zA-Z]{2,}$').hasMatch(email)) {
-      errors['contactEmail'] = 'Enter a valid email address.';
+      errors['contactEmail'] = t['errEmail']!;
     }
     if (form['consent'] != 'on') {
-      errors['consent'] = 'Allow the desk to contact you about this report.';
+      errors['consent'] = t['errConsent']!;
     }
     final unsure = form['unsureDay'] == 'on';
     var lostAt = now.toUtc();
@@ -86,7 +91,7 @@ class ReportFormInput {
       final date = field('lostDate', 10);
       final match = RegExp(r'^(\d{4})-(\d{2})-(\d{2})$').firstMatch(date);
       if (match == null) {
-        errors['lostDate'] = 'Choose a date, or select not sure of the day.';
+        errors['lostDate'] = t['errDateMissing']!;
       } else {
         final y = int.parse(match[1]!),
             m = int.parse(match[2]!),
@@ -99,8 +104,7 @@ class ReportFormInput {
             calendar.day != d ||
             calendar.isAfter(today) ||
             calendar.isBefore(today.subtract(const Duration(days: 90)))) {
-          errors['lostDate'] =
-              'Choose a real date within the last 90 days, not in the future.';
+          errors['lostDate'] = t['errDateRange']!;
         } else {
           lostAt = tz.TZDateTime(location(timezone), y, m, d, 12).toUtc();
         }

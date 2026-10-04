@@ -92,6 +92,45 @@ void main() {
           await (await call(null, suffix: '?edit=1')).readAsString(),
           contains('replacement proof'),
         );
+        final spanish = await (await call(
+          null,
+          suffix: '?lang=es',
+        )).readAsString();
+        expect(spanish, contains('Respuestas recibidas.'));
+        expect(spanish, contains('¿De qué material es el mango'));
+        expect(spanish, contains('href="?edit=1&amp;lang=es"'));
+        final spanishBad = await call({
+          'lang': 'es',
+          'answer1': 'corto',
+          'answer2': 'Recepción poco después de las doce',
+        });
+        expect(spanishBad.statusCode, 422);
+        final spanishBadHtml = await spanishBad.readAsString();
+        expect(
+          spanishBadHtml,
+          contains('Use de 10 a 300 caracteres en esta respuesta.'),
+        );
+        expect(spanishBadHtml, contains('<html lang="es">'));
+        expect(
+          spanishBadHtml,
+          contains('href="&#x2F;t&#x2F;${report.publicToken}?lang=en"'),
+        );
+        final spanishSent = await call({
+          'lang': 'es',
+          'answer1': 'Mango de madera con la punta astillada',
+          'answer2': 'Recepción poco después de las doce',
+        });
+        expect(spanishSent.statusCode, 303);
+        expect(
+          spanishSent.headers['location']!.single,
+          '/t/${report.publicToken}?answered=1&lang=es',
+        );
+        final saved = await ReportAnswer.db.find(s);
+        expect(saved, hasLength(2));
+        expect(
+          saved.map((a) => a.question),
+          everyElement(isNot(contains('¿'))),
+        );
         await LostReport.db.updateRow(
           s,
           report.copyWith(status: ReportStatus.returned),
@@ -104,6 +143,16 @@ void main() {
           409,
         );
         expect(await ReportAnswer.db.count(s), 2);
+        final refusal = await call({
+          'lang': 'es',
+          'answer1': 'Some valid owner evidence',
+          'answer2': 'Reception just after twelve',
+        });
+        expect(refusal.statusCode, 409);
+        expect(
+          await refusal.readAsString(),
+          contains('El mostrador no está pidiendo respuestas'),
+        );
         expect((await call(null, suffix: '/answer')).statusCode, 405);
       },
     );

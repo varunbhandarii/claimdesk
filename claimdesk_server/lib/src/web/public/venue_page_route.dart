@@ -3,6 +3,7 @@ import 'package:timezone/timezone.dart' as tz;
 import '../../generated/protocol.dart';
 import '../../policy/item_titles.dart';
 import '../../policy/taxonomy.dart';
+import 'public_lang.dart';
 import 'public_page.dart';
 import 'public_views.dart';
 import 'report_form_input.dart';
@@ -21,6 +22,7 @@ Future<List<Map<String, String>>> recentlyHandedIn(
   Venue venue, {
   DateTime? now,
   int limit = 6,
+  PublicLang lang = PublicLang.en,
 }) async {
   final at = (now ?? DateTime.now()).toUtc();
   final rows = await FoundItem.db.find(
@@ -56,11 +58,17 @@ Future<List<Map<String, String>>> recentlyHandedIn(
   return [
     for (final item in shown)
       {
-        'title': ItemTitles.title(item.attributes),
+        'title': lang == PublicLang.es
+            ? ItemTitles.spanishTitle(item.attributes)
+            : ItemTitles.title(item.attributes),
         'colour': item.attributes!.colours.firstOrNull ?? 'none',
         'where': [
           ?zones[item.zoneId],
-          shortDay(tz.TZDateTime.from(item.foundAt, location), now: today),
+          shortDay(
+            tz.TZDateTime.from(item.foundAt, location),
+            now: today,
+            lang: lang,
+          ),
         ].join(' · '),
       },
   ];
@@ -69,13 +77,14 @@ Future<List<Map<String, String>>> recentlyHandedIn(
 class VenuePageRoute extends PublicRoute {
   @override
   Future<Result> handleCall(Session session, Request request) async {
+    final locale = PublicLocale.of(request);
     final venue = await publicVenue(session, request);
-    if (venue == null) return PublicPage.notFound();
-    final recent = await recentlyHandedIn(session, venue);
+    if (venue == null) return PublicPage.notFound(locale: locale);
+    final recent = await recentlyHandedIn(session, venue, lang: locale.lang);
     return PublicPage.html('venue', {
-      ...VenueView.of(venue),
+      ...VenueView.of(venue, lang: locale.lang),
       'recent': recent,
       'hasRecent': recent.isNotEmpty,
-    });
+    }, locale: locale);
   }
 }

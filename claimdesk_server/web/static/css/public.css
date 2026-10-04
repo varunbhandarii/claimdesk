@@ -58,6 +58,9 @@ main { flex: 1; padding-bottom: 28px; }
 .venue-name { font: 700 18px/1.15 var(--display); letter-spacing: -0.02em; }
 .site-foot { margin-top: auto; padding: 20px; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 8px; font-size: 12.5px; color: var(--ink-3); }
 .powered { display: flex; align-items: center; gap: 8px; }
+.lang-nav { margin-left: auto; flex: none; }
+.lang-switch { display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border: 1px solid var(--line-strong); border-radius: 999px; background: var(--surface); font: 600 14px/1.2 var(--sans); text-decoration: none; }
+.lang-switch:hover { background: var(--surface-2); }
 
 /* Buttons */
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 52px; padding: 0 20px; border: 1.5px solid var(--ink); border-radius: 12px; background: var(--ink); color: #fff; font: 600 16px/1.2 var(--sans); text-align: center; text-decoration: none; cursor: pointer; }
@@ -86,6 +89,7 @@ main { flex: 1; padding-bottom: 28px; }
 .recent { padding: 28px 20px 4px; display: flex; flex-direction: column; gap: 10px; }
 .section-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; }
 .section-head h2 { font-size: 23px; }
+.section-head .note { flex: none; white-space: nowrap; }
 .recent-list { list-style: none; margin: 0; padding: 0; }
 .recent-list li { display: flex; align-items: center; gap: 12px; padding: 13px 0; border-bottom: 1px solid var(--line); }
 .recent-title { flex: 1; font-weight: 600; }
@@ -204,8 +208,8 @@ input::placeholder, textarea::placeholder { color: var(--ink-3); }
 .stamp { position: absolute; right: 16px; top: -6px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; width: 118px; height: 118px; border: 3px solid var(--ok); border-radius: 50%; color: var(--ok); font: 800 15px/1 var(--mono); letter-spacing: 0.12em; transform: rotate(-12deg); box-shadow: inset 0 0 0 5px var(--surface), inset 0 0 0 7px var(--ok); }
 .stamp-date { font-size: 11.5px; font-weight: 700; letter-spacing: 0.06em; }
 .receipt-title { font: 600 11.5px/1.25 var(--sans); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); }
-.receipt { display: grid; grid-template-columns: 104px minmax(0, 1fr); gap: 10px 12px; margin: 0; font-size: 14.5px; }
-.receipt dt { padding-top: 2px; font: 600 11.5px/1.4 var(--sans); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); }
+.receipt { display: grid; grid-template-columns: minmax(104px, min-content) minmax(0, 1fr); gap: 10px 12px; margin: 0; font-size: 14.5px; }
+.receipt dt { padding-top: 2px; overflow-wrap: normal; font: 600 11.5px/1.4 var(--sans); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); }
 .receipt dd { margin: 0; }
 .again { padding: 22px 20px 0; display: flex; flex-direction: column; gap: 10px; }
 .notice { display: flex; align-items: flex-start; gap: 12px; margin: 16px 20px 0; padding: 14px 16px; border-radius: 14px; background: var(--surface-2); font-size: 14px; }
@@ -230,7 +234,7 @@ input::placeholder, textarea::placeholder { color: var(--ink-3); }
 
 @media print {
   html { background: #fff; }
-  .site-foot, .skip, .btn, .back, .honeypot { display: none !important; }
+  .site-foot, .skip, .btn, .back, .honeypot, .lang-nav { display: none !important; }
   .frame { max-width: none; }
   .card, .part, .ticket { break-inside: avoid; }
 }

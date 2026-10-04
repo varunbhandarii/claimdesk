@@ -2,7 +2,9 @@ import 'dart:collection';
 import 'dart:io';
 import 'package:serverpod/serverpod.dart';
 import '../../services/public_codes.dart';
+import '../public/public_lang.dart';
 import '../public/public_page.dart';
+import '../public/public_strings.dart';
 
 String clientAddress(Request request, {required bool trustProxy}) {
   final forwarded = request.headers['x-forwarded-for']?.firstOrNull
@@ -75,11 +77,19 @@ Middleware rateLimit({
     );
     final retry = limiter.retryAfter(key, (now ?? DateTime.now)());
     if (retry == null) return next(request);
+    final locale = PublicLocale.of(request);
     final response = await PublicPage.html(
       'rate_limited',
-      {'retryAfter': retry},
+      {
+        'retryAfter': retry,
+        'rateBody': PublicStrings.fill(
+          PublicStrings.of(locale.lang)['rateBody']!,
+          {'seconds': retry},
+        ),
+      },
       status: 429,
       noStore: true,
+      locale: locale,
     );
     return response.copyWith(
       headers: response.headers.transform((h) => h['Retry-After'] = ['$retry']),

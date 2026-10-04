@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:claimdesk_server/src/generated/protocol.dart';
+import 'package:claimdesk_server/src/web/public/public_lang.dart';
 import 'package:claimdesk_server/src/web/public/venue_page_route.dart';
 import 'package:serverpod/serverpod.dart';
 import 'package:test/test.dart';
@@ -110,9 +111,38 @@ void main() {
         expect(rows.first['colour'], 'black');
         expect(rows.first['where'], startsWith('Pool deck · '));
 
+        final spanish = await recentlyHandedIn(
+          s,
+          venue,
+          lang: PublicLang.es,
+        );
+        expect(spanish.map((r) => r['title']), [
+          'Paraguas negro',
+          'Peluche beige',
+        ]);
+        expect(
+          spanish.map((r) => r['colour']),
+          rows.map((r) => r['colour']),
+        );
+        expect(spanish.first['where'], startsWith('Pool deck · '));
+
         await templates.loadAll(Directory('web/templates'));
         final router = RelicRouter()
           ..get('/v/:slug', (req) => VenuePageRoute().handleCall(s, req));
+        final spanishHtml =
+            await (await router(
+                      RequestInternal.create(
+                        Method.get,
+                        Uri.parse('http://localhost/v/test-desk?lang=es'),
+                        Object(),
+                      ),
+                    )
+                    as Response)
+                .readAsString();
+        expect(spanishHtml, contains('Entregados recientemente'));
+        expect(spanishHtml, contains('Paraguas negro'));
+        expect(spanishHtml, isNot(contains('Black umbrella')));
+        expect(spanishHtml, isNot(contains('Billetera café')));
         final response =
             await router(
                   RequestInternal.create(

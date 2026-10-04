@@ -1,6 +1,8 @@
 import 'package:serverpod/serverpod.dart';
 import '../../generated/protocol.dart';
 import '../../policy/verification_questions.dart';
+import 'public_lang.dart';
+import 'public_strings.dart';
 import 'public_views.dart';
 
 class TicketContext {
@@ -11,7 +13,10 @@ class TicketContext {
     Map<String, String> fields = const {},
     Map<String, String> errors = const {},
     bool editing = false,
+    PublicLocale locale = PublicLocale.english,
   }) async {
+    final lang = locale.lang;
+    final view = TicketView(report, venue, lang: lang);
     final active = {
       ReportStatus.possibleMatch,
       ReportStatus.readyForPickup,
@@ -53,26 +58,31 @@ class TicketContext {
           )
         : null;
     return {
-      ...TicketView(report, venue).toMap(),
+      ...view.toMap(),
       'answered': answers.length == 2,
       'photo': photo,
       'photoPath': '/t/${report.publicToken}/photo',
       'receipt': receipt == null
           ? null
           : {
-              'returnedAt': TicketView(report, venue).date(receipt.releasedAt),
-              'idTypeSeen': TicketView.idTypeLabel(receipt.idTypeSeen),
+              'returnedAt': view.date(receipt.releasedAt),
+              'idTypeSeen': TicketView.idTypeLabel(
+                receipt.idTypeSeen,
+                lang: lang,
+              ),
             },
-      'stampDate': TicketView(
-        report,
-        venue,
-      ).stampDate(receipt?.releasedAt ?? report.updatedAt),
+      'stampDate': view.stampDate(receipt?.releasedAt ?? report.updatedAt),
       'ownerEcho':
           report.status == ReportStatus.possibleMatch &&
               answers.length == 2 &&
               !editing
           ? answers
-                .map((a) => {'question': a.question, 'answer': a.answer})
+                .map(
+                  (a) => {
+                    'question': PublicStrings.question(a.question, lang),
+                    'answer': a.answer,
+                  },
+                )
                 .toList()
           : <Map<String, String>>[],
       'answerForm':
@@ -81,11 +91,12 @@ class TicketContext {
       'answerAction': '/t/${report.publicToken}/answer',
       'changeAnswers':
           match != null && answers.length == 2 && !editing && errors.isEmpty,
+      'editHref': locale.link('?edit=1'),
       'questions': [
         for (var i = 0; i < 2; i++)
           {
             'field': 'answer${i + 1}',
-            'question': questions[i],
+            'question': PublicStrings.question(questions[i], lang),
             'value':
                 fields['answer${i + 1}'] ??
                 (editing &&

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:claimdesk_server/src/generated/protocol.dart';
+import 'package:claimdesk_server/src/web/public/public_lang.dart';
 import 'package:claimdesk_server/src/web/public/public_views.dart';
 import 'package:serverpod/serverpod.dart';
 import 'package:test/test.dart';
@@ -80,5 +81,82 @@ void main() {
     expect(closed.steps.map((s) => s['label']), ['Received', 'Closed']);
     expect(closed.steps.last['current'], true);
     expect(closed.toMap()['compact'], false);
+  });
+  test('Spanish tickets use Spanish dates, steps and sentences', () {
+    final venue = Venue(
+      name: 'Desk',
+      slug: 'desk',
+      timezone: 'America/New_York',
+    );
+    LostReport report(ReportStatus status) => LostReport(
+      venueId: UuidValue.fromString(const Uuid().v4()),
+      refCode: 'ABC234',
+      publicToken: 'token',
+      rawText: 'text',
+      colourHints: [],
+      status: status,
+      createdAt: DateTime.utc(2026, 9, 30, 16),
+      updatedAt: DateTime.utc(2026, 10, 4, 1),
+      closedAt: DateTime.utc(2026, 11, 29, 17),
+    );
+    final ready = TicketView(
+      report(ReportStatus.readyForPickup),
+      venue,
+      lang: PublicLang.es,
+    );
+    expect(
+      ready.date(DateTime.utc(2026, 9, 30, 16)),
+      '30 sept 2026, 12:00 p. m. EDT',
+    );
+    expect(
+      ready.date(DateTime.utc(2026, 10, 4, 1)),
+      '3 oct 2026, 9:00 p. m. EDT',
+    );
+    expect(
+      ready.date(DateTime.utc(2026, 10, 4, 13, 5)),
+      '4 oct 2026, 9:05 a. m. EDT',
+    );
+    expect(ready.stampDate(DateTime.utc(2026, 10, 4, 18)), '04 OCT 2026');
+    expect(ready.steps.map((s) => s['label']), [
+      'Recibido',
+      'Buscando',
+      'Posible coincidencia',
+      'Listo para recoger',
+      'Devuelto',
+    ]);
+    final map = ready.toMap();
+    expect(map['stepText'], 'Paso 4 de 5');
+    expect(map['statusLabel'], 'Listo para recoger');
+    expect(map['deskHours'], 'Pregunte el horario en el mostrador.');
+    expect(
+      map['filedLine'],
+      'Enviado el 30 sept 2026, 12:00 p. m. EDT · actualizado el 3 oct 2026, 9:00 p. m. EDT',
+    );
+    expect(ready.sentence, startsWith('Su objeto está listo.'));
+    expect(
+      TicketView(
+        report(ReportStatus.closed),
+        venue,
+        lang: PublicLang.es,
+      ).sentence,
+      'Este reporte se cerró el 29 nov 2026, 12:00 p. m. EST sin una coincidencia. '
+      'Haga un nuevo reporte si todavía le falta el objeto.',
+    );
+    expect(
+      TicketView.idTypeLabel('drivers_licence', lang: PublicLang.es),
+      'Licencia de conducir',
+    );
+    // The status interface stays English.
+    expect(
+      ready.toJson()['sentence'],
+      'Your item is ready. Bring photo ID to the desk.',
+    );
+    expect(
+      TicketView(
+        report(ReportStatus.readyForPickup),
+        venue,
+      ).toMap()['stepText'],
+      'Step 4 of 5',
+    );
   });
 }

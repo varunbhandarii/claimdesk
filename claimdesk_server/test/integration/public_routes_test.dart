@@ -34,16 +34,20 @@ void main() {
         (req) => TicketJsonRoute().handleCall(s, req),
       );
     });
-    Future<Response> call(String path, {Map<String, String>? form}) async =>
+    Future<Response> call(
+      String path, {
+      Map<String, String>? form,
+      String? language,
+    }) async =>
         await router(
               RequestInternal.create(
                 form == null ? Method.get : Method.post,
                 Uri.parse('http://localhost$path'),
                 Object(),
-                headers: Headers.build(
-                  (h) =>
-                      h['Content-Type'] = ['application/x-www-form-urlencoded'],
-                ),
+                headers: Headers.build((h) {
+                  h['Content-Type'] = ['application/x-www-form-urlencoded'];
+                  if (language != null) h['Accept-Language'] = [language];
+                }),
                 body: form == null
                     ? Body.empty()
                     : Body.fromString(Uri(queryParameters: form).query),
@@ -123,6 +127,90 @@ void main() {
         expect(bot.statusCode, 303);
         expect((await call(bot.headers['location']!.single)).statusCode, 404);
         expect(await LostReport.db.count(s), 0);
+      },
+    );
+    test(
+      'Spanish follows the visitor through the form, redirect and ticket',
+      () async {
+        final venue = await call('/v/test-desk?lang=es');
+        expect(venue.headers['content-language'], ['es']);
+        expect(venue.headers['vary'], ['Accept-Language']);
+        final venueHtml = await venue.readAsString();
+        expect(venueHtml, contains('<html lang="es">'));
+        expect(venueHtml, contains('¿Perdió algo?'));
+        expect(
+          venueHtml,
+          contains('href="&#x2F;v&#x2F;test-desk&#x2F;lost?lang=es"'),
+        );
+        expect(venueHtml, contains('href="?lang=en" lang="en"'));
+
+        final browser = await call('/v/test-desk/lost', language: 'es-US,es');
+        final formHtml = await browser.readAsString();
+        expect(formHtml, contains('Reportar un objeto perdido'));
+        expect(
+          formHtml,
+          contains('<input type="hidden" name="lang" value="es">'),
+        );
+        final english = await (await call(
+          '/v/test-desk/lost',
+          language: 'en-US',
+        )).readAsString();
+        expect(english, contains('Report a lost item'));
+        expect(english, isNot(contains('name="lang"')));
+        expect(english, contains('>Español</a>'));
+
+        final bad = await call(
+          '/v/test-desk/lost',
+          form: {'lang': 'es', 'rawText': 'corto', 'contactEmail': 'mal'},
+        );
+        expect(bad.statusCode, 422);
+        final badHtml = await bad.readAsString();
+        expect(badHtml, contains('Escriba un correo electrónico válido.'));
+        expect(badHtml, contains('Revise estos campos'));
+
+        final sent = await call(
+          '/v/test-desk/lost',
+          form: {
+            'lang': 'es',
+            'rawText': 'Mi paraguas negro plegable con mango de madera',
+            'unsureDay': 'on',
+            'contactEmail': 'owner@example.test',
+            'consent': 'on',
+          },
+        );
+        expect(sent.statusCode, 303);
+        final location = sent.headers['location']!.single;
+        expect(location, endsWith('?lang=es'));
+        final ticketHtml = await (await call(location)).readAsString();
+        expect(ticketHtml, contains('Su comprobante'));
+        expect(ticketHtml, contains('Recibido'));
+        expect(ticketHtml, contains('href="&#x2F;v&#x2F;test-desk?lang=es"'));
+        expect(ticketHtml, isNot(contains('Mi paraguas negro')));
+        final data =
+            jsonDecode(
+                  await (await call(
+                    '${Uri.parse(location).path}/status.json',
+                  )).readAsString(),
+                )
+                as Map;
+        expect(data['sentence'], startsWith('We have your report.'));
+        final report = await LostReport.db.findFirstRow(s);
+        expect(
+          report!.rawText,
+          'Mi paraguas negro plegable con mango de madera',
+        );
+
+        final missing = await call('/v/unknown-desk?lang=es');
+        expect(missing.statusCode, 404);
+        expect(await missing.readAsString(), contains('Aquí no hay'));
+        final bot = await call(
+          '/v/test-desk/lost',
+          form: {'lang': 'es', 'website': 'spam'},
+        );
+        expect(bot.headers['location']!.single, endsWith('?lang=es'));
+        final decoy = await call(bot.headers['location']!.single);
+        expect(decoy.statusCode, 404);
+        expect(await decoy.readAsString(), contains('Aquí no hay'));
       },
     );
   });

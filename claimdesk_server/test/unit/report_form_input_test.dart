@@ -1,3 +1,4 @@
+import 'package:claimdesk_server/src/web/public/public_lang.dart';
 import 'package:claimdesk_server/src/web/public/report_form_input.dart';
 import 'package:test/test.dart';
 
@@ -82,5 +83,31 @@ void main() {
       isTrue,
     );
     expect(parse({...form, 'lostDate': '2026-07-02'}).errors, isEmpty);
+  });
+  test('errors are written in the page language', () {
+    final result = ReportFormInput.parse(
+      {
+        ...form,
+        'rawText': 'uno',
+        'contactEmail': 'mal',
+        'consent': '',
+        'brandHint': 'x' * 61,
+        'lostDate': '2026-10-01',
+      },
+      zones: ['zone'],
+      now: DateTime.utc(2026, 9, 30, 18),
+      timezone: 'America/New_York',
+      lang: PublicLang.es,
+    );
+    expect(result.errors, {
+      'rawText':
+          'Describa su objeto con al menos 20 caracteres y tres palabras.',
+      'contactEmail': 'Escriba un correo electrónico válido.',
+      'consent':
+          'Permita que el mostrador se comunique con usted sobre este reporte.',
+      'brandHint': 'Use como máximo 60 caracteres.',
+      'lostDate':
+          'Elija una fecha real de los últimos 90 días, que no sea futura.',
+    });
   });
 }

@@ -1,20 +1,20 @@
 <section class="hero">
-<h1>Lost something?</h1>
-<p class="lede">Tell the desk what you lost. You get a private ticket link to follow it. No account needed.</p>
-<a class="btn btn-big" href="/v/{{slug}}/lost">Report a lost item<svg class="ico" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9.5 6l6 6-6 6"/></svg></a>
-<p class="note center">Takes about two minutes.</p>
+<h1>{{t.lostSomething}}</h1>
+<p class="lede">{{t.venueLede}}</p>
+<a class="btn btn-big" href="{{formHref}}">{{t.reportLostItem}}<svg class="ico" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9.5 6l6 6-6 6"/></svg></a>
+<p class="note center">{{t.takesTwoMinutes}}</p>
 </section>
-<section class="card info" aria-label="Desk information">
-<div class="info-row"><span class="disc"><svg class="ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg></span><div><h2 class="info-title">Desk hours</h2><p class="preserve">{{deskHours}}</p></div></div>
+<section class="card info" aria-label="{{t.deskInformation}}">
+<div class="info-row"><span class="disc"><svg class="ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg></span><div><h2 class="info-title">{{t.deskHours}}</h2><p class="preserve">{{deskHours}}</p></div></div>
 <hr class="rule">
-<div class="info-row"><span class="disc"><svg class="ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3.5" y="5.5" width="17" height="13" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M6.2 15.8c.6-1.4 1.6-2 2.8-2s2.2.6 2.8 2M14.5 10h3.5M14.5 13h2.5"/></svg></span><div><h2 class="info-title">Picking up an item</h2><p class="preserve">{{pickupInstructions}}</p></div></div>
+<div class="info-row"><span class="disc"><svg class="ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3.5" y="5.5" width="17" height="13" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M6.2 15.8c.6-1.4 1.6-2 2.8-2s2.2.6 2.8 2M14.5 10h3.5M14.5 13h2.5"/></svg></span><div><h2 class="info-title">{{t.pickingUp}}</h2><p class="preserve">{{pickupInstructions}}</p></div></div>
 </section>
 <section class="card info">
-<div class="info-row"><span class="disc disc-tag"><svg class="ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M7.5 12.5V6.8a1.3 1.3 0 0 1 2.6 0V11M10.1 10.5V5.3a1.3 1.3 0 0 1 2.6 0v5.2M12.7 10.5V6.3a1.3 1.3 0 0 1 2.6 0v5.5M15.3 11.3V8.8a1.3 1.3 0 0 1 2.6 0v5.4a6.3 6.3 0 0 1-6.3 6.3h-.4a5.7 5.7 0 0 1-4.6-2.4l-2.3-3.3a1.3 1.3 0 0 1 2-1.6l1.2 1.4"/></svg></span><div><h2 class="info-title">Found something?</h2><p>Hand it to the desk so it can get home.</p></div></div>
+<div class="info-row"><span class="disc disc-tag"><svg class="ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M7.5 12.5V6.8a1.3 1.3 0 0 1 2.6 0V11M10.1 10.5V5.3a1.3 1.3 0 0 1 2.6 0v5.2M12.7 10.5V6.3a1.3 1.3 0 0 1 2.6 0v5.5M15.3 11.3V8.8a1.3 1.3 0 0 1 2.6 0v5.4a6.3 6.3 0 0 1-6.3 6.3h-.4a5.7 5.7 0 0 1-4.6-2.4l-2.3-3.3a1.3 1.3 0 0 1 2-1.6l1.2 1.4"/></svg></span><div><h2 class="info-title">{{t.foundSomething}}</h2><p>{{t.handItIn}}</p></div></div>
 </section>
 {{#hasRecent}}<section class="recent" aria-labelledby="recent-heading">
-<div class="section-head"><h2 id="recent-heading">Recently handed in</h2><span class="note">Last 14 days</span></div>
+<div class="section-head"><h2 id="recent-heading">{{t.recentlyHandedIn}}</h2><span class="note">{{t.lastFourteenDays}}</span></div>
 <ul class="recent-list">{{#recent}}<li><span class="dot sw-{{colour}}"></span><span class="recent-title">{{title}}</span><span class="note">{{where}}</span></li>{{/recent}}</ul>
-<p class="note">Wallets, cards, IDs and other valuables are never listed here. Ask at the desk.</p>
-<p><a class="link-strong" href="/v/{{slug}}/lost">See yours? Report it so the desk can check.</a></p>
+<p class="note">{{t.valuablesNever}}</p>
+<p><a class="link-strong" href="{{formHref}}">{{t.seeYours}}</a></p>
 </section>{{/hasRecent}}
