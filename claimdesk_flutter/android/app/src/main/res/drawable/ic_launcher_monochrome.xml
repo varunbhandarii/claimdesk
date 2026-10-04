@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ClaimDesk mark on the 108 dp adaptive-icon canvas, inside the 66 dp safe zone. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <group
+        android:scaleX="0.84375"
+        android:scaleY="0.84375"
+        android:translateX="27"
+        android:translateY="37.125">
+        <path
+            android:fillColor="#FF000000"
+            android:fillType="evenOdd"
+            android:pathData="M0 6A6 6 0 0 1 6 0H26L36 20L26 40H6A6 6 0 0 1 0 34Z M13.6 20A3.6 3.6 0 1 0 6.4 20A3.6 3.6 0 1 0 13.6 20Z" />
+        <path
+            android:fillColor="#FF000000"
+            android:pathData="M30.5 0H58A6 6 0 0 1 64 6V34A6 6 0 0 1 58 40H30.5L40.5 20Z" />
+    </group>
+</vector>

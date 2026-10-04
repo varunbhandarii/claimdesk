@@ -1,12 +1,12 @@
 {
-    "name": "claimdesk_flutter",
-    "short_name": "claimdesk_flutter",
+    "name": "ClaimDesk",
+    "short_name": "ClaimDesk",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
-    "orientation": "portrait-primary",
+    "background_color": "#F2F1ED",
+    "theme_color": "#F2F1ED",
+    "description": "Lost-and-found desk for venue staff: log found items, match lost reports and return them to their owners.",
+    "orientation": "any",
     "prefer_related_applications": false,
     "icons": [
         {
