@@ -90,7 +90,7 @@ class DeskScreen extends StatelessWidget {
                         contentPadding: EdgeInsets.zero,
                         dense: true,
                         title: Text(
-                          '${item.refCode} · ${item.captionText ?? item.attributes?.description ?? "Found item"}',
+                          '${item.refCode} · ${item.attributes?.description ?? item.captionText?.split('\n').first ?? "Found item"}',
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
