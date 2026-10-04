@@ -12,12 +12,13 @@ void main() {
   );
   final transport = HttpClient();
   Future<({int status, Map<String, List<String>> headers, String body})>
-  request(String path, {Map<String, String>? form}) async {
+  request(String path, {Map<String, String>? form, String? language}) async {
     final req = await transport.openUrl(
       form == null ? 'GET' : 'POST',
       base.resolve(path),
     );
     req.followRedirects = false;
+    if (language != null) req.headers.set('accept-language', language);
     if (form != null) {
       req.headers.contentType = ContentType(
         'application',
@@ -60,7 +61,7 @@ void main() {
     () async {
       final venue = await request('/v/hawrys-demo');
       expect(venue.status, 200);
-      expect(venue.body, contains('/v/hawrys-demo/lost'));
+      expect(venue.body, contains('&#x2F;v&#x2F;hawrys-demo&#x2F;lost'));
       expect((await request('/v/unknown-venue')).status, 404);
       expect((await request('/v/hawrys-demo/lost')).status, 200);
       final nonce = DateTime.now().microsecondsSinceEpoch;
@@ -127,6 +128,25 @@ void main() {
     },
     skip: !enabled,
   );
+  test('Spanish pages and the bilingual poster over HTTP', () async {
+    final venue = await request('/v/hawrys-demo?lang=es');
+    expect(venue.status, 200);
+    expect(venue.headers['content-language'], ['es']);
+    expect(venue.body, contains('<html lang="es">'));
+    expect(venue.body, contains('¿Perdió algo?'));
+    final browser = await request(
+      '/v/hawrys-demo/lost',
+      language: 'es-US,es;q=0.9,en;q=0.8',
+    );
+    expect(browser.body, contains('Reportar un objeto perdido'));
+    expect(browser.headers['vary'], contains('Accept-Language'));
+    final poster = await request('/v/hawrys-demo/poster');
+    expect(poster.status, 200);
+    expect(poster.body, contains('<svg'));
+    expect(poster.body, contains('Lost something?'));
+    expect(poster.body, contains('¿Perdió algo?'));
+    expect((await request('/v/unknown-venue/poster')).status, 404);
+  }, skip: !enabled);
   test('eleventh POST is limited with Retry-After', () async {
     // Previous flow uses four POSTs; continue until this address's window fills.
     var blocked = false;

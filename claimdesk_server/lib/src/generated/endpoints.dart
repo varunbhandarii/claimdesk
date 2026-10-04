@@ -1284,6 +1284,25 @@ class Endpoints extends _is.EndpointDispatch {
                 params['venueId'],
               ),
         ),
+        'posterLink': _is.MethodConnector(
+          name: 'posterLink',
+          params: {
+            'venueId': _is.ParameterDescription(
+              name: 'venueId',
+              type: _is.getType<_is.UuidValue>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['venue'] as _im3sz6ep.VenueEndpoint).posterLink(
+                    session,
+                    params['venueId'],
+                  ),
+        ),
       },
     );
     connectors['greeting'] = _is.EndpointConnector(

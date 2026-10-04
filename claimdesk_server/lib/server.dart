@@ -18,6 +18,7 @@ import 'src/web/routes/root.dart';
 import 'src/services/photo_upload_relay.dart';
 import 'src/web/public/venue_page_route.dart';
 import 'src/web/public/lost_form_route.dart';
+import 'src/web/public/poster_route.dart';
 import 'src/web/public/ticket_route.dart';
 import 'src/web/public/ticket_answer_route.dart';
 import 'src/web/public/ticket_photo_route.dart';
@@ -82,6 +83,7 @@ void run(List<String> args) async {
     LostFormRoute(salt: ipHashSalt, trustProxy: trustProxy),
     '/v/:slug/lost',
   );
+  pod.webServer.addRoute(PosterRoute(), '/v/:slug/poster');
   pod.webServer.addRoute(TicketRoute(), '/t/:token');
   pod.webServer.addRoute(TicketAnswerRoute(), '/t/:token/answer');
   pod.webServer.addRoute(TicketPhotoRoute(), '/t/:token/photo');

@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>{{name}} · {{en.deskEyebrow}}</title>
+<link rel="icon" type="image/svg+xml" href="{{favicon}}">
+<link rel="stylesheet" href="{{css}}">
+</head>
+<body>
+<main class="poster">
+<header class="poster-head"><svg class="mark" width="58" height="36.25" viewBox="0 0 64 40" aria-hidden="true" focusable="false"><path fill="#F0A13E" fill-rule="evenodd" d="M0 6A6 6 0 0 1 6 0H26L36 20L26 40H6A6 6 0 0 1 0 34Z M13.6 20A3.6 3.6 0 1 0 6.4 20A3.6 3.6 0 1 0 13.6 20Z"/><path fill="#2346B8" d="M30.5 0H58A6 6 0 0 1 64 6V34A6 6 0 0 1 58 40H30.5L40.5 20Z"/></svg><div><p class="eyebrow">{{en.deskEyebrow}} · <span lang="es">{{es.deskEyebrow}}</span></p><p class="venue">{{name}}</p></div></header>
+<h1>{{en.lostSomething}}</h1>
+<p class="headline-es" lang="es">{{es.lostSomething}}</p>
+<section class="poster-tag" aria-label="{{en.posterScan}}">
+<span class="poster-eyelet" aria-hidden="true"></span>
+<div class="poster-tag-body">
+<div class="qr" role="img" aria-label="{{en.posterQrAlt}}">{{{qr}}}</div>
+<div class="poster-copy"><p class="scan">{{en.posterScan}}</p><p>{{en.posterLink}}</p><p class="scan scan-es" lang="es">{{es.posterScan}}</p><p lang="es">{{es.posterLink}}</p></div>
+</div>
+</section>
+<footer class="poster-foot">
+<div class="poster-facts"><div><p class="label">{{en.posterOrType}} · <span lang="es">{{es.posterOrType}}</span></p><p class="url"><span>{{urlHost}}</span><wbr><span>{{urlPath}}</span></p></div><div><p class="label">{{en.deskHours}} · <span lang="es">{{es.deskHours}}</span></p>{{#deskHours}}<p class="hours">{{deskHours}}</p>{{/deskHours}}{{^deskHours}}<p>{{en.defaultHours}}</p><p lang="es">{{es.defaultHours}}</p>{{/deskHours}}</div></div>
+<div class="poster-line"><div><p class="found">{{en.posterFound}}</p><p class="found found-es" lang="es">{{es.posterFound}}</p></div><p class="powered"><svg class="mark" width="26" height="16.25" viewBox="0 0 64 40" aria-hidden="true" focusable="false"><path fill="#F0A13E" fill-rule="evenodd" d="M0 6A6 6 0 0 1 6 0H26L36 20L26 40H6A6 6 0 0 1 0 34Z M13.6 20A3.6 3.6 0 1 0 6.4 20A3.6 3.6 0 1 0 13.6 20Z"/><path fill="#2346B8" d="M30.5 0H58A6 6 0 0 1 64 6V34A6 6 0 0 1 58 40H30.5L40.5 20Z"/></svg><span>ClaimDesk</span></p></div>
+</footer>
+</main>
+</body>
+</html>

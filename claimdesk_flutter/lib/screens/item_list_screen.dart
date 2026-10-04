@@ -8,6 +8,7 @@ import '../data/errors.dart';
 import '../ui/brand.dart';
 import '../ui/desk_theme.dart';
 import '../ui/desk_widgets.dart';
+import '../ui/desk_menu.dart';
 import '../ui/export_sheet.dart';
 import '../ui/offline_banner.dart';
 import '../ui/photo_view.dart';
@@ -165,6 +166,11 @@ class _ItemListScreenState extends State<ItemListScreen> {
       widget.onSignOut();
     } else if (value == 'export') {
       _export();
+    } else if (value == 'poster') {
+      showPosterDialog(
+        context,
+        () => _session!.client.venue.posterLink(_session!.venue.id!),
+      );
     } else {
       widget.onChangeVenue();
     }
@@ -334,32 +340,6 @@ class _ItemListScreenState extends State<ItemListScreen> {
 String _roleLabel(StaffMembership membership) =>
     membership.role == StaffRole.supervisor ? 'Supervisor' : 'Staff';
 
-List<PopupMenuEntry<String>> _menuItems(
-  VenueSession session, {
-  bool venue = true,
-}) => [
-  if (canExport(session.membership))
-    const PopupMenuItem(
-      value: 'export',
-      child: ListTile(
-        leading: Icon(Icons.file_download_outlined),
-        title: Text('Export CSV'),
-      ),
-    ),
-  if (venue)
-    const PopupMenuItem(
-      value: 'venue',
-      child: ListTile(
-        leading: Icon(Icons.swap_horiz),
-        title: Text('Change venue'),
-      ),
-    ),
-  const PopupMenuItem(
-    value: 'out',
-    child: ListTile(leading: Icon(Icons.logout), title: Text('Sign out')),
-  ),
-];
-
 class _PhoneHeader extends StatelessWidget {
   const _PhoneHeader({
     required this.session,
@@ -372,10 +352,10 @@ class _PhoneHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.desk;
-    return SizedBox(
-      height: 60,
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: 60),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 0, 8, 0),
+        padding: const EdgeInsets.fromLTRB(16, 4, 8, 4),
         child: Row(
           children: [
             const ClaimDeskMark(width: 34),
@@ -411,9 +391,9 @@ class _PhoneHeader extends StatelessWidget {
             PopupMenuButton<String>(
               tooltip: 'Desk options',
               onSelected: onMenu,
-              itemBuilder: (_) => _menuItems(session),
+              itemBuilder: (_) => deskMenuItems(session.membership),
               child: Padding(
-                padding: const EdgeInsets.all(4),
+                padding: const EdgeInsets.all(6),
                 child: Avatar(session.membership.displayName),
               ),
             ),
@@ -607,7 +587,7 @@ class _DeskRail extends StatelessWidget {
                     tooltip: 'Desk options',
                     icon: const Icon(Icons.more_vert),
                     onSelected: onMenu,
-                    itemBuilder: (_) => _menuItems(session),
+                    itemBuilder: (_) => deskMenuItems(session.membership),
                   ),
                 ],
               ),

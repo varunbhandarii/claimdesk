@@ -3,6 +3,7 @@ import 'package:serverpod_auth_idp_server/core.dart';
 
 import '../access/venue_guard.dart';
 import '../generated/protocol.dart';
+import '../services/signed_links.dart';
 
 class VenueEndpoint extends Endpoint with VenueGuard {
   Future<List<StaffMembership>> myMemberships(Session session) async {
@@ -29,5 +30,16 @@ class VenueEndpoint extends Endpoint with VenueGuard {
       where: (t) => t.venueId.equals(venueId),
       orderBy: (t) => t.sortOrder,
     );
+  }
+
+  /// The address of the venue's printable poster, for supervisors. The app
+  /// knows only the API host, and on Cloud the web host differs.
+  Future<String> posterLink(Session session, UuidValue venueId) async {
+    await requireMembership(session, venueId, supervisor: true);
+    final venue = await Venue.db.findById(session, venueId);
+    if (venue == null) {
+      throw NotAMemberException(message: 'Venue unavailable', venueId: venueId);
+    }
+    return SignedLinks.webUrl(session, '/v/${venue.slug}/poster').toString();
   }
 }

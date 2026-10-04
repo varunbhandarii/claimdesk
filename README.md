@@ -23,9 +23,12 @@ logging. The sliding-window limits are per process: 10 POSTs and 60 GETs per
 address in ten minutes. Forwarded addresses are trusted only in production behind
 the Cloud proxy; direct deployments must adjust that trust boundary.
 
-The printable demo poster is at `/web/poster/hawrys-demo.html`. Its QR points to
-the Cloud venue page. Regenerate the committed SVG with `dart run tool/make_qr.dart`
-from the server package. To run the optional local HTTP checks with the server up:
+Public pages read in English and Spanish: add `?lang=es` to any link, or let the
+browser's language choose; the choice travels with links and forms, and no cookie
+is set. Every venue has a printable bilingual poster at `/v/<slug>/poster` (the
+demo's is `/v/hawrys-demo/poster`) that prints at 100% on A4 or Letter; its QR code
+points to the venue page, and supervisors open it from the app's menu. To run the
+optional local HTTP checks with the server up:
 
 ```powershell
 $env:RUN_PUBLIC_HTTP = 'true'

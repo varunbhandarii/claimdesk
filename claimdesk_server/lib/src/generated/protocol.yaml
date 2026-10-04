@@ -60,5 +60,6 @@ venue:
   - myMemberships:
   - getVenue:
   - zones:
+  - posterLink:
 greeting:
   - hello:

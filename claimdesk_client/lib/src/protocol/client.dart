@@ -746,6 +746,15 @@ class EndpointVenue extends _isc.EndpointRef {
         'zones',
         {'venueId': venueId},
       );
+
+  /// The address of the venue's printable poster, for supervisors. The app
+  /// knows only the API host, and on Cloud the web host differs.
+  _ida.Future<String> posterLink(_isc.UuidValue venueId) =>
+      caller.callServerEndpoint<String>(
+        'venue',
+        'posterLink',
+        {'venueId': venueId},
+      );
 }
 
 /// This is an example endpoint that returns a greeting message through
