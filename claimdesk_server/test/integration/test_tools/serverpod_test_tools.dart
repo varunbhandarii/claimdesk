@@ -990,6 +990,43 @@ class _ItemEndpoint {
     });
   }
 
+  _ida.Future<List<_iskydu8k.FoundItem>> searchItems(
+    _ist.TestSessionBuilder sessionBuilder,
+    _is.UuidValue venueId,
+    String query,
+    _id50o94s.ItemFilter filter,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'item',
+            method: 'searchItems',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'item',
+          methodName: 'searchItems',
+          parameters: _ist.testObjectToJson({
+            'venueId': venueId,
+            'query': query,
+            'filter': filter,
+          }),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<List<_iskydu8k.FoundItem>>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
   _ida.Future<String?> photoUrl(
     _ist.TestSessionBuilder sessionBuilder,
     _is.UuidValue itemId, {

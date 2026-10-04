@@ -9,6 +9,8 @@ import '../ui/item_card.dart';
 import '../ui/photo_view.dart';
 import '../ui/offline_banner.dart';
 import '../ui/empty_state.dart';
+import '../ui/item_search_field.dart';
+import '../ui/categories.dart';
 import 'log_item_screen.dart';
 import 'item_detail_screen.dart';
 import 'report_list_screen.dart';
@@ -254,9 +256,52 @@ class _ItemListScreenState extends State<ItemListScreen> {
                                 ),
                             ],
                           ),
+                          PopupMenuButton<String>(
+                            tooltip: 'Filter by category',
+                            icon: const Icon(Icons.category_outlined),
+                            onSelected: (value) {
+                              session.categoryFilter = value.isEmpty
+                                  ? null
+                                  : value;
+                              session.refreshItems();
+                            },
+                            itemBuilder: (_) => [
+                              const PopupMenuItem(
+                                value: '',
+                                child: Text('All categories'),
+                              ),
+                              for (final entry in categories.entries)
+                                PopupMenuItem(
+                                  value: entry.value,
+                                  child: Text(entry.value),
+                                ),
+                            ],
+                          ),
                         ],
                       ),
                     ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: ItemSearchField(
+                        query: session.searchQuery,
+                        onQuery: session.search,
+                        results: session.items.length,
+                      ),
+                    ),
+                    if (session.categoryFilter != null)
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          child: InputChip(
+                            label: Text(session.categoryFilter!),
+                            onDeleted: () {
+                              session.categoryFilter = null;
+                              session.refreshItems();
+                            },
+                          ),
+                        ),
+                      ),
                     SizedBox(
                       height: 60,
                       child: ListView(

@@ -425,6 +425,20 @@ class EndpointItem extends _isc.EndpointRef {
     },
   );
 
+  _ida.Future<List<_i8bj3kzd.FoundItem>> searchItems(
+    _isc.UuidValue venueId,
+    String query,
+    _inizcy6n.ItemFilter filter,
+  ) => caller.callServerEndpoint<List<_i8bj3kzd.FoundItem>>(
+    'item',
+    'searchItems',
+    {
+      'venueId': venueId,
+      'query': query,
+      'filter': filter,
+    },
+  );
+
   _ida.Future<String?> photoUrl(
     _isc.UuidValue itemId, {
     required bool thumb,

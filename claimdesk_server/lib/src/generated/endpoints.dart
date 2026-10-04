@@ -592,6 +592,37 @@ class Endpoints extends _is.EndpointDispatch {
                     params['filter'],
                   ),
         ),
+        'searchItems': _is.MethodConnector(
+          name: 'searchItems',
+          params: {
+            'venueId': _is.ParameterDescription(
+              name: 'venueId',
+              type: _is.getType<_is.UuidValue>(),
+              nullable: false,
+            ),
+            'query': _is.ParameterDescription(
+              name: 'query',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'filter': _is.ParameterDescription(
+              name: 'filter',
+              type: _is.getType<_id50o94s.ItemFilter>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['item'] as _irwxp2xj.ItemEndpoint).searchItems(
+                    session,
+                    params['venueId'],
+                    params['query'],
+                    params['filter'],
+                  ),
+        ),
         'photoUrl': _is.MethodConnector(
           name: 'photoUrl',
           params: {

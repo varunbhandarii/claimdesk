@@ -1,9 +1,9 @@
-import 'dart:math';
 import 'package:serverpod/serverpod.dart';
 import '../ai/text_template.dart';
 import '../generated/protocol.dart';
 import '../policy/taxonomy.dart';
 import 'apply_profile.dart';
+import 'lexical_search.dart';
 
 typedef MatchWindow = ({DateTime start, DateTime end});
 
@@ -207,13 +207,7 @@ class CandidateQuery {
     ];
   }
 
-  Future<
-    ({
-      Map<UuidValue, ({double coverage, List<String> matched})> rows,
-      int total,
-    })
-  >
-  _lexical(
+  Future<LexicalResult> _lexical(
     Session s, {
     required String table,
     required String document,
@@ -222,43 +216,17 @@ class CandidateQuery {
     required UuidValue venueId,
     required MatchWindow window,
     DateTime? earliestCreated,
-  }) async {
-    // Identifiers are private constants at the two call sites; all values are bound.
-    final result = await s.db.unsafeQuery(
-      '''
-      WITH q AS (SELECT tsvector_to_array(to_tsvector('english', @text)) AS qlex),
-      scored AS (SELECT f."id",
-        (SELECT count(*) FROM unnest(tsvector_to_array(to_tsvector('english', $document))) l
-          WHERE l = ANY(q.qlex))::float / greatest(cardinality(q.qlex), 1) AS coverage,
-        (SELECT array_agg(l) FROM unnest(tsvector_to_array(to_tsvector('english', $document))) l
-          WHERE l = ANY(q.qlex)) AS matched
-        FROM "$table" f, q WHERE f."venueId" = @venue::uuid AND $filter),
-      tops AS (SELECT * FROM scored WHERE coverage > 0 ORDER BY coverage DESC, "id" LIMIT 25)
-      SELECT "id", coverage, matched, cardinality(q.qlex) FROM tops, q
-      UNION ALL SELECT NULL::uuid, 0::float, NULL::text[], cardinality(q.qlex) FROM q
-      ''',
-      parameters: QueryParameters.named({
-        'text': text,
-        'venue': venueId.toString(),
-        'lo': window.start,
-        'hi': window.end,
-        'created': ?earliestCreated,
-      }),
-    );
-    final rows = <UuidValue, ({double coverage, List<String> matched})>{};
-    var total = 0;
-    for (final row in result) {
-      total = (row[3] as num).toInt();
-      if (row[0] != null) {
-        final id = row[0] is UuidValue
-            ? row[0] as UuidValue
-            : UuidValue.fromString(row[0].toString());
-        rows[id] = (
-          coverage: (row[1] as num).toDouble(),
-          matched: (row[2] as List?)?.cast<String>() ?? [],
-        );
-      }
-    }
-    return (rows: rows, total: max(0, total));
-  }
+  }) => LexicalSearch.query(
+    s,
+    table: table,
+    document: document,
+    filter: filter,
+    text: text,
+    venueId: venueId,
+    parameters: {
+      'lo': window.start,
+      'hi': window.end,
+      'created': ?earliestCreated,
+    },
+  );
 }

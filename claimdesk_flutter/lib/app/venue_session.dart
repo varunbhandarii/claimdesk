@@ -122,15 +122,15 @@ class VenueSession extends ChangeNotifier {
     final version = ++_queryVersion;
     notifyListeners();
     try {
-      final result = await client.item.listItems(
-        venue.id!,
-        ItemFilter(
-          status: statusFilter,
-          zoneId: zoneFilter,
-          category: categoryFilter,
-          attention: attentionFilter,
-        ),
+      final filter = ItemFilter(
+        status: statusFilter,
+        zoneId: zoneFilter,
+        category: categoryFilter,
+        attention: attentionFilter,
       );
+      final result = searchQuery.isEmpty
+          ? await client.item.listItems(venue.id!, filter)
+          : await client.item.searchItems(venue.id!, searchQuery, filter);
       final newZones = await client.venue.zones(venue.id!);
       if (_disposed || version != _queryVersion) return;
       items = result;
@@ -157,6 +157,12 @@ class VenueSession extends ChangeNotifier {
         }
       }
     }
+  }
+
+  void search(String query) {
+    searchQuery = query;
+    _queryVersion++;
+    unawaited(refreshItems());
   }
 
   String zoneName(UuidValue? id) =>

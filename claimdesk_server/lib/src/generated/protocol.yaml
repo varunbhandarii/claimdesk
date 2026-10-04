@@ -24,6 +24,7 @@ item:
   - createItem:
   - getItem:
   - listItems:
+  - searchItems:
   - photoUrl:
   - updateItem:
   - recaption:

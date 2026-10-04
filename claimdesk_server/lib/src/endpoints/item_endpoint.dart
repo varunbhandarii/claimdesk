@@ -17,6 +17,7 @@ import '../services/item_attention.dart';
 import '../services/record_history.dart';
 import '../policy/custody.dart';
 import '../db/transactions.dart';
+import '../services/item_search.dart';
 import '../services/staff_views.dart';
 
 class ItemEndpoint extends Endpoint with VenueGuard {
@@ -198,6 +199,21 @@ class ItemEndpoint extends Endpoint with VenueGuard {
         return result.take(100).map(StaffViews.item).toList();
       }
     }
+  }
+
+  Future<List<FoundItem>> searchItems(
+    Session session,
+    UuidValue venueId,
+    String query,
+    ItemFilter filter,
+  ) async {
+    await requireMembership(session, venueId);
+    final clean = query.replaceAll(RegExp(r'[\x00-\x1f\x7f]'), ' ').trim();
+    if (clean.isEmpty) return listItems(session, venueId, filter);
+    if (clean.length < 2 || clean.length > 80) {
+      throw ArgumentError('Search needs 2 to 80 characters');
+    }
+    return ItemSearch.find(session, venueId, clean, filter);
   }
 
   Future<String?> photoUrl(
