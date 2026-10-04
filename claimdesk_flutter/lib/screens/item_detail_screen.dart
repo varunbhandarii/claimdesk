@@ -8,6 +8,8 @@ import '../data/errors.dart';
 import '../ui/photo_view.dart';
 import '../ui/status.dart';
 import '../ui/history_list.dart';
+import '../ui/item_badges.dart';
+import '../ui/transfer_sheet.dart';
 import '../ui/attribute_chips.dart';
 import 'edit_item_screen.dart';
 import '../ui/item_form.dart';
@@ -27,6 +29,7 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
   VenueSession? _session;
   FoundItem? _item;
   List<HistoryEntry> _history = [];
+  List<CustodyEvent> _custody = [];
   List<MatchCard> _matches = [];
   ReleaseSummary? _release;
   Object? _error;
@@ -67,6 +70,7 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
     try {
       final item = await _session!.client.item.getItem(widget.itemId);
       final history = await _session!.client.item.history(widget.itemId);
+      final custody = await _session!.client.item.custody(widget.itemId);
       final matches = await _session!.client.match.forItem(widget.itemId);
       final release = await _session!.client.release.releaseRecord(
         widget.itemId,
@@ -75,6 +79,7 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
         setState(() {
           _item = item;
           _history = history;
+          _custody = custody;
           _matches = matches;
           _release = release;
           _error = null;
@@ -133,6 +138,40 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
   }
 
   String _date(DateTime date) => date.toLocal().toString().split('.').first;
+  String? get _recommendation => _history
+      .where((e) => e.action == 'expired')
+      .firstOrNull
+      ?.data['recommendedAction'];
+  Future<void> _transfer() async {
+    final input = await showModalBottomSheet<TransferInput>(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => const TransferSheet(),
+    );
+    if (input == null || !mounted) return;
+    setState(() => _acting = true);
+    await runGuarded(context, () async {
+      await _session!.client.item.transfer(widget.itemId, input);
+      await _load();
+    }, onDenied: _session!.onDenied);
+    if (mounted) setState(() => _acting = false);
+  }
+
+  Future<void> _disposeItem() async {
+    final input = await showModalBottomSheet<DisposeInput>(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => DisposeSheet(recommendedAction: _recommendation),
+    );
+    if (input == null || !mounted) return;
+    setState(() => _acting = true);
+    await runGuarded(context, () async {
+      await _session!.client.item.dispose(widget.itemId, input);
+      await _load();
+    }, onDenied: _session!.onDenied);
+    if (mounted) setState(() => _acting = false);
+  }
+
   @override
   Widget build(BuildContext context) {
     final session = VenueScope.of(context);
@@ -234,6 +273,22 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
                       Wrap(
                         spacing: 12,
                         children: [
+                          if ({
+                            ItemStatus.unclaimed,
+                            ItemStatus.matched,
+                            ItemStatus.expired,
+                          }.contains(item.status))
+                            OutlinedButton.icon(
+                              onPressed: _acting ? null : _transfer,
+                              icon: const Icon(Icons.move_to_inbox_outlined),
+                              label: const Text('Transfer'),
+                            ),
+                          if (item.status == ItemStatus.expired)
+                            OutlinedButton.icon(
+                              onPressed: _acting ? null : _disposeItem,
+                              icon: const Icon(Icons.delete_outline),
+                              label: const Text('Dispose'),
+                            ),
                           if (item.status != ItemStatus.claimed)
                             FilledButton.icon(
                               onPressed: _acting
@@ -265,6 +320,11 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
                         ],
                       ),
                       const Divider(height: 40),
+                      LocationLine(events: _custody),
+                      ItemBadges(item: item),
+                      if (item.status == ItemStatus.expired &&
+                          _recommendation != null)
+                        Text('Recommended action: $_recommendation'),
                       if (_release != null)
                         ReleaseReceipt(summary: _release!, showSignature: true),
                       if (item.status == ItemStatus.unclaimed)

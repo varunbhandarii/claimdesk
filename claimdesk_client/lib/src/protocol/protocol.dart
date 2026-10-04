@@ -12,6 +12,7 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:claimdesk_client/src/protocol/caption_run.dart' as _i9gd0od7;
+import 'package:claimdesk_client/src/protocol/custody_event.dart' as _izpl5u8o;
 import 'package:claimdesk_client/src/protocol/found_item.dart' as _i8bj3kzd;
 import 'package:claimdesk_client/src/protocol/history_entry.dart' as _ijfu8sb7;
 import 'package:claimdesk_client/src/protocol/lost_report.dart' as _izbvtt9c;
@@ -33,6 +34,7 @@ import 'create_item_input.dart' as _i6s4pod3;
 import 'custody_event.dart' as _iq6v1376;
 import 'desk_event.dart' as _iz4ruabw;
 import 'desk_summary.dart' as _ip6mi6ty;
+import 'dispose_input.dart' as _iyfw2vy3;
 import 'found_item.dart' as _i52cv103;
 import 'greetings/greeting.dart' as _izw8z7ou;
 import 'history_entry.dart' as _i85vle09;
@@ -58,6 +60,7 @@ import 'report_status.dart' as _i8pcsu0p;
 import 'retention_policy.dart' as _ic8ul1lq;
 import 'staff_membership.dart' as _isosyfem;
 import 'staff_role.dart' as _i120pgjk;
+import 'transfer_input.dart' as _ibjdv4jl;
 import 'value_band.dart' as _iphilgki;
 import 'venue.dart' as _in4rmfby;
 import 'work_item.dart' as _ik77na07;
@@ -72,6 +75,7 @@ export 'create_item_input.dart';
 export 'custody_event.dart';
 export 'desk_event.dart';
 export 'desk_summary.dart';
+export 'dispose_input.dart';
 export 'found_item.dart';
 export 'greetings/greeting.dart';
 export 'history_entry.dart';
@@ -97,6 +101,7 @@ export 'report_status.dart';
 export 'retention_policy.dart';
 export 'staff_membership.dart';
 export 'staff_role.dart';
+export 'transfer_input.dart';
 export 'value_band.dart';
 export 'venue.dart';
 export 'work_item.dart';
@@ -162,6 +167,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _ip6mi6ty.DeskSummary) {
       return _ip6mi6ty.DeskSummary.fromJson(data) as T;
+    }
+    if (t == _iyfw2vy3.DisposeInput) {
+      return _iyfw2vy3.DisposeInput.fromJson(data) as T;
     }
     if (t == _i52cv103.FoundItem) {
       return _i52cv103.FoundItem.fromJson(data) as T;
@@ -238,6 +246,9 @@ class Protocol extends _isc.SerializationManager {
     if (t == _i120pgjk.StaffRole) {
       return _i120pgjk.StaffRole.fromJson(data) as T;
     }
+    if (t == _ibjdv4jl.TransferInput) {
+      return _ibjdv4jl.TransferInput.fromJson(data) as T;
+    }
     if (t == _iphilgki.ValueBand) {
       return _iphilgki.ValueBand.fromJson(data) as T;
     }
@@ -283,6 +294,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _isc.getType<_ip6mi6ty.DeskSummary?>()) {
       return (data != null ? _ip6mi6ty.DeskSummary.fromJson(data) : null) as T;
+    }
+    if (t == _isc.getType<_iyfw2vy3.DisposeInput?>()) {
+      return (data != null ? _iyfw2vy3.DisposeInput.fromJson(data) : null) as T;
     }
     if (t == _isc.getType<_i52cv103.FoundItem?>()) {
       return (data != null ? _i52cv103.FoundItem.fromJson(data) : null) as T;
@@ -375,6 +389,10 @@ class Protocol extends _isc.SerializationManager {
     if (t == _isc.getType<_i120pgjk.StaffRole?>()) {
       return (data != null ? _i120pgjk.StaffRole.fromJson(data) : null) as T;
     }
+    if (t == _isc.getType<_ibjdv4jl.TransferInput?>()) {
+      return (data != null ? _ibjdv4jl.TransferInput.fromJson(data) : null)
+          as T;
+    }
     if (t == _isc.getType<_iphilgki.ValueBand?>()) {
       return (data != null ? _iphilgki.ValueBand.fromJson(data) : null) as T;
     }
@@ -462,6 +480,12 @@ class Protocol extends _isc.SerializationManager {
               .toList()
           as T;
     }
+    if (t == List<_izpl5u8o.CustodyEvent>) {
+      return (data as List)
+              .map((e) => deserialize<_izpl5u8o.CustodyEvent>(e))
+              .toList()
+          as T;
+    }
     if (t == List<_ib1z5a5v.ReportAnswer>) {
       return (data as List)
               .map((e) => deserialize<_ib1z5a5v.ReportAnswer>(e))
@@ -509,6 +533,7 @@ class Protocol extends _isc.SerializationManager {
       _iq6v1376.CustodyEvent => 'CustodyEvent',
       _iz4ruabw.DeskEvent => 'DeskEvent',
       _ip6mi6ty.DeskSummary => 'DeskSummary',
+      _iyfw2vy3.DisposeInput => 'DisposeInput',
       _i52cv103.FoundItem => 'FoundItem',
       _izw8z7ou.Greeting => 'Greeting',
       _i85vle09.HistoryEntry => 'HistoryEntry',
@@ -534,6 +559,7 @@ class Protocol extends _isc.SerializationManager {
       _ic8ul1lq.RetentionPolicy => 'RetentionPolicy',
       _isosyfem.StaffMembership => 'StaffMembership',
       _i120pgjk.StaffRole => 'StaffRole',
+      _ibjdv4jl.TransferInput => 'TransferInput',
       _iphilgki.ValueBand => 'ValueBand',
       _in4rmfby.Venue => 'Venue',
       _ik77na07.WorkItem => 'WorkItem',
@@ -570,6 +596,8 @@ class Protocol extends _isc.SerializationManager {
         return 'DeskEvent';
       case _ip6mi6ty.DeskSummary():
         return 'DeskSummary';
+      case _iyfw2vy3.DisposeInput():
+        return 'DisposeInput';
       case _i52cv103.FoundItem():
         return 'FoundItem';
       case _izw8z7ou.Greeting():
@@ -620,6 +648,8 @@ class Protocol extends _isc.SerializationManager {
         return 'StaffMembership';
       case _i120pgjk.StaffRole():
         return 'StaffRole';
+      case _ibjdv4jl.TransferInput():
+        return 'TransferInput';
       case _iphilgki.ValueBand():
         return 'ValueBand';
       case _in4rmfby.Venue():
@@ -677,6 +707,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (dataClassName == 'DeskSummary') {
       return deserialize<_ip6mi6ty.DeskSummary>(data['data']);
+    }
+    if (dataClassName == 'DisposeInput') {
+      return deserialize<_iyfw2vy3.DisposeInput>(data['data']);
     }
     if (dataClassName == 'FoundItem') {
       return deserialize<_i52cv103.FoundItem>(data['data']);
@@ -752,6 +785,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (dataClassName == 'StaffRole') {
       return deserialize<_i120pgjk.StaffRole>(data['data']);
+    }
+    if (dataClassName == 'TransferInput') {
+      return deserialize<_ibjdv4jl.TransferInput>(data['data']);
     }
     if (dataClassName == 'ValueBand') {
       return deserialize<_iphilgki.ValueBand>(data['data']);

@@ -17,8 +17,10 @@ import 'dart:typed_data' as _idt;
 import 'package:claimdesk_server/src/generated/caption_run.dart' as _iknvw4pb;
 import 'package:claimdesk_server/src/generated/create_item_input.dart'
     as _io3ib2zd;
+import 'package:claimdesk_server/src/generated/custody_event.dart' as _ie8uz96n;
 import 'package:claimdesk_server/src/generated/desk_event.dart' as _iofnkj91;
 import 'package:claimdesk_server/src/generated/desk_summary.dart' as _i1ngti0g;
+import 'package:claimdesk_server/src/generated/dispose_input.dart' as _iki68uh5;
 import 'package:claimdesk_server/src/generated/found_item.dart' as _iskydu8k;
 import 'package:claimdesk_server/src/generated/greetings/greeting.dart'
     as _izso5nwb;
@@ -37,6 +39,8 @@ import 'package:claimdesk_server/src/generated/report_answer.dart' as _in630fta;
 import 'package:claimdesk_server/src/generated/report_filter.dart' as _icei7w9h;
 import 'package:claimdesk_server/src/generated/staff_membership.dart'
     as _iugziyav;
+import 'package:claimdesk_server/src/generated/transfer_input.dart'
+    as _il05od49;
 import 'package:claimdesk_server/src/generated/venue.dart' as _izri1swu;
 import 'package:claimdesk_server/src/generated/work_item.dart' as _idm342zh;
 import 'package:claimdesk_server/src/generated/zone.dart' as _irlgv1kd;
@@ -1142,6 +1146,107 @@ class _ItemEndpoint {
                   _localCallContext.arguments,
                 )
                 as _ida.Future<List<_iv8y2aad.HistoryEntry>>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _ida.Future<List<_ie8uz96n.CustodyEvent>> custody(
+    _ist.TestSessionBuilder sessionBuilder,
+    _is.UuidValue itemId,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'item',
+            method: 'custody',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'item',
+          methodName: 'custody',
+          parameters: _ist.testObjectToJson({'itemId': itemId}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<List<_ie8uz96n.CustodyEvent>>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _ida.Future<_iskydu8k.FoundItem> transfer(
+    _ist.TestSessionBuilder sessionBuilder,
+    _is.UuidValue itemId,
+    _il05od49.TransferInput input,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'item',
+            method: 'transfer',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'item',
+          methodName: 'transfer',
+          parameters: _ist.testObjectToJson({
+            'itemId': itemId,
+            'input': input,
+          }),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<_iskydu8k.FoundItem>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _ida.Future<_iskydu8k.FoundItem> dispose(
+    _ist.TestSessionBuilder sessionBuilder,
+    _is.UuidValue itemId,
+    _iki68uh5.DisposeInput input,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'item',
+            method: 'dispose',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'item',
+          methodName: 'dispose',
+          parameters: _ist.testObjectToJson({
+            'itemId': itemId,
+            'input': input,
+          }),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<_iskydu8k.FoundItem>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();

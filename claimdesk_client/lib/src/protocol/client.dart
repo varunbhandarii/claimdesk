@@ -15,8 +15,10 @@ import 'dart:typed_data' as _idt;
 import 'package:claimdesk_client/src/protocol/caption_run.dart' as _i9gd0od7;
 import 'package:claimdesk_client/src/protocol/create_item_input.dart'
     as _i0l2w05c;
+import 'package:claimdesk_client/src/protocol/custody_event.dart' as _izpl5u8o;
 import 'package:claimdesk_client/src/protocol/desk_event.dart' as _idjit943;
 import 'package:claimdesk_client/src/protocol/desk_summary.dart' as _i9gv5qze;
+import 'package:claimdesk_client/src/protocol/dispose_input.dart' as _ib6ouw9u;
 import 'package:claimdesk_client/src/protocol/found_item.dart' as _i8bj3kzd;
 import 'package:claimdesk_client/src/protocol/greetings/greeting.dart'
     as _i8l8ycv0;
@@ -34,6 +36,7 @@ import 'package:claimdesk_client/src/protocol/report_answer.dart' as _ib1z5a5v;
 import 'package:claimdesk_client/src/protocol/report_filter.dart' as _ii8h5ytv;
 import 'package:claimdesk_client/src/protocol/staff_membership.dart'
     as _ing7mbhm;
+import 'package:claimdesk_client/src/protocol/transfer_input.dart' as _ibppwrw0;
 import 'package:claimdesk_client/src/protocol/venue.dart' as _i53htkm0;
 import 'package:claimdesk_client/src/protocol/work_item.dart' as _i5t1jx4h;
 import 'package:claimdesk_client/src/protocol/zone.dart' as _inmoeruh;
@@ -466,6 +469,37 @@ class EndpointItem extends _isc.EndpointRef {
         'history',
         {'itemId': itemId},
       );
+
+  _ida.Future<List<_izpl5u8o.CustodyEvent>> custody(_isc.UuidValue itemId) =>
+      caller.callServerEndpoint<List<_izpl5u8o.CustodyEvent>>(
+        'item',
+        'custody',
+        {'itemId': itemId},
+      );
+
+  _ida.Future<_i8bj3kzd.FoundItem> transfer(
+    _isc.UuidValue itemId,
+    _ibppwrw0.TransferInput input,
+  ) => caller.callServerEndpoint<_i8bj3kzd.FoundItem>(
+    'item',
+    'transfer',
+    {
+      'itemId': itemId,
+      'input': input,
+    },
+  );
+
+  _ida.Future<_i8bj3kzd.FoundItem> dispose(
+    _isc.UuidValue itemId,
+    _ib6ouw9u.DisposeInput input,
+  ) => caller.callServerEndpoint<_i8bj3kzd.FoundItem>(
+    'item',
+    'dispose',
+    {
+      'itemId': itemId,
+      'input': input,
+    },
+  );
 }
 
 /// {@category Endpoint}

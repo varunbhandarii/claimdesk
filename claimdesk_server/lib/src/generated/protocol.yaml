@@ -29,6 +29,9 @@ item:
   - recaption:
   - captionRuns:
   - history:
+  - custody:
+  - transfer:
+  - dispose:
 match:
   - answers:
   - inbox:

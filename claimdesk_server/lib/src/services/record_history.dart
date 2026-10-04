@@ -222,8 +222,9 @@ class RecordHistory {
       ...(isItem ? ['reportRefCode', 'reportRef'] : ['itemRefCode', 'itemRef']),
     ]) {
       final value = data[key];
-      if (value != null && RegExp(r'^[A-Z0-9]{6}$').hasMatch(value))
+      if (value != null && RegExp(r'^[A-Z0-9]{6}$').hasMatch(value)) {
         return value;
+      }
     }
     return null;
   }

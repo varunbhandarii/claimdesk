@@ -2,6 +2,7 @@ import 'package:claimdesk_client/claimdesk_client.dart';
 import 'package:flutter/material.dart';
 import 'categories.dart';
 import 'status.dart';
+import 'item_badges.dart';
 
 String timeAgo(DateTime found, {DateTime? now}) {
   final age = (now ?? DateTime.now()).difference(found);
@@ -100,6 +101,7 @@ class ItemCard extends StatelessWidget {
                             ? 'Caption failed, tap to add details'
                             : 'Caption is taking longer. Tap to add details.',
                       ),
+                    ItemBadges(item: item, now: now),
                   ],
                 ),
               ),

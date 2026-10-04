@@ -1,0 +1,5 @@
+class: TransferInput
+fields:
+  toLocation: String
+  reference: String?
+  note: String?

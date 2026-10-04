@@ -1,0 +1,4 @@
+class: DisposeInput
+fields:
+  action: String
+  note: String?

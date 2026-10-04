@@ -15,6 +15,8 @@ import '../services/upload_tickets.dart';
 import '../services/photo_upload_relay.dart';
 import '../services/item_attention.dart';
 import '../services/record_history.dart';
+import '../policy/custody.dart';
+import '../db/transactions.dart';
 import '../services/staff_views.dart';
 
 class ItemEndpoint extends Endpoint with VenueGuard {
@@ -370,6 +372,206 @@ class ItemEndpoint extends Endpoint with VenueGuard {
 
   Future<List<HistoryEntry>> history(Session session, UuidValue itemId) async =>
       RecordHistory.item(session, await _authorizedItem(session, itemId));
+
+  Future<List<CustodyEvent>> custody(Session session, UuidValue itemId) async {
+    final item = await _authorizedItem(session, itemId);
+    return CustodyEvent.db.find(
+      session,
+      where: (t) => t.venueId.equals(item.venueId) & t.itemId.equals(itemId),
+      orderByList: (t) => [t.at.desc(), t.id.desc()],
+    );
+  }
+
+  Future<FoundItem> transfer(
+    Session session,
+    UuidValue itemId,
+    TransferInput input,
+  ) async {
+    await _authorizedItem(session, itemId);
+    if (!Custody.locations.contains(input.toLocation)) {
+      throw ArgumentError('Unknown location');
+    }
+    final reference = Custody.clean(input.reference, 120);
+    final note = Custody.clean(input.note, 300);
+    final terminal = Custody.terminal.contains(input.toLocation);
+    final result = await serializable(session, (tx) async {
+      final item = (await FoundItem.db.findById(
+        session,
+        itemId,
+        transaction: tx,
+        lockMode: LockMode.forUpdate,
+      ))!;
+      if (!{
+        ItemStatus.unclaimed,
+        ItemStatus.matched,
+        ItemStatus.expired,
+      }.contains(item.status)) {
+        throw ReleaseRefusedException(
+          message: 'Item is no longer at the desk',
+          itemId: itemId,
+        );
+      }
+      if (terminal) {
+        final reserved = await ItemMatch.db.findFirstRow(
+          session,
+          where: (t) =>
+              t.venueId.equals(item.venueId) &
+              t.itemId.equals(itemId) &
+              t.state.equals(MatchState.confirmed),
+          transaction: tx,
+        );
+        if (reserved != null) {
+          final report = await LostReport.db.findById(
+            session,
+            reserved.reportId,
+            transaction: tx,
+          );
+          throw ReleaseRefusedException(
+            message:
+                'Reserved for report ${report?.refCode ?? "at this venue"}; undo that confirmation first',
+            itemId: itemId,
+          );
+        }
+      }
+      final events = await CustodyEvent.db.find(
+        session,
+        where: (t) => t.venueId.equals(item.venueId) & t.itemId.equals(itemId),
+        orderByList: (t) => [t.at.desc(), t.id.desc()],
+        limit: 1,
+        transaction: tx,
+      );
+      await ChildRecords.custody(
+        session,
+        itemId: itemId,
+        fromLocation: Custody.current(events),
+        toLocation: input.toLocation,
+        byAuthUserId: session.authenticated!.authUserId,
+        reference: reference,
+        transaction: tx,
+      );
+      final now = DateTime.now().toUtc();
+      if (terminal) await _rejectPending(session, tx, item, now);
+      final updated = await FoundItem.db.updateRow(
+        session,
+        item.copyWith(
+          status: terminal ? ItemStatus.transferred : item.status,
+          updatedAt: now,
+        ),
+        transaction: tx,
+      );
+      await AuditEvent.db.insertRow(
+        session,
+        AuditEvent(
+          venueId: item.venueId,
+          entityType: 'item',
+          entityId: itemId,
+          action: terminal ? 'transferred' : 'moved',
+          actorAuthUserId: session.authenticated!.authUserId,
+          payload: AuditPayload(
+            summary: terminal ? 'Transferred' : 'Item moved',
+            fromState: item.status.name,
+            toState: updated.status.name,
+            data: {
+              'toLocation': input.toLocation,
+              'reference': ?reference,
+              'note': ?note,
+            },
+          ),
+        ),
+        transaction: tx,
+      );
+      return updated;
+    });
+    await _custodyEvent(session, result);
+    return StaffViews.item(result);
+  }
+
+  Future<FoundItem> dispose(
+    Session session,
+    UuidValue itemId,
+    DisposeInput input,
+  ) async {
+    await _authorizedItem(session, itemId);
+    if (!Custody.disposalActions.contains(input.action)) {
+      throw ArgumentError('Unknown disposal action');
+    }
+    final note = Custody.clean(input.note, 300);
+    final result = await serializable(session, (tx) async {
+      final item = (await FoundItem.db.findById(
+        session,
+        itemId,
+        transaction: tx,
+        lockMode: LockMode.forUpdate,
+      ))!;
+      if (item.status != ItemStatus.expired) {
+        throw ReleaseRefusedException(
+          message: 'Only expired items can be disposed',
+          itemId: itemId,
+        );
+      }
+      final now = DateTime.now().toUtc();
+      await _rejectPending(session, tx, item, now);
+      final updated = await FoundItem.db.updateRow(
+        session,
+        item.copyWith(status: ItemStatus.disposed, updatedAt: now),
+        transaction: tx,
+      );
+      await AuditEvent.db.insertRow(
+        session,
+        AuditEvent(
+          venueId: item.venueId,
+          entityType: 'item',
+          entityId: itemId,
+          action: 'disposed',
+          actorAuthUserId: session.authenticated!.authUserId,
+          payload: AuditPayload(
+            summary: 'Item disposed',
+            fromState: 'expired',
+            toState: 'disposed',
+            data: {'action': input.action, 'note': ?note},
+          ),
+        ),
+        transaction: tx,
+      );
+      return updated;
+    });
+    await _custodyEvent(session, result);
+    return StaffViews.item(result);
+  }
+
+  Future<void> _rejectPending(
+    Session s,
+    Transaction tx,
+    FoundItem item,
+    DateTime now,
+  ) async {
+    await ItemMatch.db.updateWhere(
+      s,
+      columnValues: (t) => [
+        t.state(MatchState.rejected),
+        t.decidedByAuthUserId(s.authenticated!.authUserId),
+        t.decidedAt(now),
+        t.updatedAt(now),
+      ],
+      where: (t) =>
+          t.venueId.equals(item.venueId) &
+          t.itemId.equals(item.id) &
+          t.state.equals(MatchState.pending),
+      transaction: tx,
+    );
+  }
+
+  Future<void> _custodyEvent(Session s, FoundItem item) async {
+    await s.messages.postMessage(
+      'venue_${item.venueId}',
+      DeskEvent(
+        kind: 'itemStatus',
+        venueId: item.venueId,
+        itemId: item.id,
+        at: DateTime.now().toUtc(),
+      ),
+    );
+  }
 
   Future<FoundItem> _authorizedItem(Session s, UuidValue id) async {
     final item = await FoundItem.db.findById(s, id);

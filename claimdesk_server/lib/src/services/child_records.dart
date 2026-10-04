@@ -177,8 +177,9 @@ class ChildRecords {
     required String toLocation,
     required UuidValue byAuthUserId,
     String? reference,
+    Transaction? transaction,
   }) async {
-    final item = await _item(session, itemId);
+    final item = await _item(session, itemId, transaction: transaction);
     return CustodyEvent.db.insertRow(
       session,
       CustodyEvent(
@@ -189,6 +190,7 @@ class ChildRecords {
         reference: reference,
         byAuthUserId: byAuthUserId,
       ),
+      transaction: transaction,
     );
   }
 }

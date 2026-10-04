@@ -13,11 +13,14 @@
 import 'dart:typed_data' as _idt;
 import 'package:claimdesk_server/src/generated/create_item_input.dart'
     as _io3ib2zd;
+import 'package:claimdesk_server/src/generated/dispose_input.dart' as _iki68uh5;
 import 'package:claimdesk_server/src/generated/item_filter.dart' as _id50o94s;
 import 'package:claimdesk_server/src/generated/item_patch.dart' as _isrhr89g;
 import 'package:claimdesk_server/src/generated/protocol.dart' as _ii1g677k;
 import 'package:claimdesk_server/src/generated/release_input.dart' as _i1zdvvde;
 import 'package:claimdesk_server/src/generated/report_filter.dart' as _icei7w9h;
+import 'package:claimdesk_server/src/generated/transfer_input.dart'
+    as _il05od49;
 import 'package:serverpod/serverpod.dart' as _is;
 import 'package:serverpod_auth_core_server/serverpod_auth_core_server.dart'
     as _iacs;
@@ -692,6 +695,72 @@ class Endpoints extends _is.EndpointDispatch {
               ) async => (endpoints['item'] as _irwxp2xj.ItemEndpoint).history(
                 session,
                 params['itemId'],
+              ),
+        ),
+        'custody': _is.MethodConnector(
+          name: 'custody',
+          params: {
+            'itemId': _is.ParameterDescription(
+              name: 'itemId',
+              type: _is.getType<_is.UuidValue>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['item'] as _irwxp2xj.ItemEndpoint).custody(
+                session,
+                params['itemId'],
+              ),
+        ),
+        'transfer': _is.MethodConnector(
+          name: 'transfer',
+          params: {
+            'itemId': _is.ParameterDescription(
+              name: 'itemId',
+              type: _is.getType<_is.UuidValue>(),
+              nullable: false,
+            ),
+            'input': _is.ParameterDescription(
+              name: 'input',
+              type: _is.getType<_il05od49.TransferInput>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['item'] as _irwxp2xj.ItemEndpoint).transfer(
+                session,
+                params['itemId'],
+                params['input'],
+              ),
+        ),
+        'dispose': _is.MethodConnector(
+          name: 'dispose',
+          params: {
+            'itemId': _is.ParameterDescription(
+              name: 'itemId',
+              type: _is.getType<_is.UuidValue>(),
+              nullable: false,
+            ),
+            'input': _is.ParameterDescription(
+              name: 'input',
+              type: _is.getType<_iki68uh5.DisposeInput>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['item'] as _irwxp2xj.ItemEndpoint).dispose(
+                session,
+                params['itemId'],
+                params['input'],
               ),
         ),
       },
