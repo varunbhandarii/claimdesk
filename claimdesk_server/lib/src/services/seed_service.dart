@@ -110,8 +110,39 @@ class SeedService {
         displayName: 'Riley Staff',
         role: StaffRole.staff,
       );
+      await ensureGoogleStaff(
+        session,
+        venueId: venueId,
+        email: session.passwords['googleStaffEmail'],
+        transaction: tx,
+      );
       return (venueId: venueId, supervisorId: supervisorId, staffId: staffId);
     });
+  }
+
+  /// Adds a supervisor named "Desk lead" for [email], an address that signs in
+  /// with Google. The address is set only as the private `googleStaffEmail`
+  /// password, and its email account has no password, so Google is the only
+  /// way in. Does nothing when [email] is empty.
+  static Future<void> ensureGoogleStaff(
+    Session session, {
+    required UuidValue venueId,
+    required String? email,
+    Transaction? transaction,
+  }) async {
+    final address = email?.trim().toLowerCase() ?? '';
+    if (address.isEmpty) return;
+    Future<void> add(Transaction tx) => _ensureStaff(
+      session,
+      tx,
+      venueId: venueId,
+      email: address,
+      password: null,
+      displayName: 'Desk lead',
+      role: StaffRole.supervisor,
+    );
+    if (transaction != null) return add(transaction);
+    await session.db.transaction(add);
   }
 
   static Future<UuidValue> _ensureStaff(
@@ -119,7 +150,7 @@ class SeedService {
     Transaction tx, {
     required UuidValue venueId,
     required String email,
-    required String password,
+    required String? password,
     required String displayName,
     required StaffRole role,
   }) async {

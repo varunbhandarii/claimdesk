@@ -1,0 +1,5 @@
+### Thrown when someone signs in with an outside account that does not belong
+### to a member of any desk team.
+exception: NotStaffException
+fields:
+  message: String

@@ -1,6 +1,9 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:claimdesk_client/claimdesk_client.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:serverpod_auth_idp_flutter/serverpod_auth_idp_flutter.dart';
 import 'package:serverpod_flutter/serverpod_flutter.dart';
 
@@ -25,10 +28,39 @@ final serverUrl = getServerUrl();
 late final Client client;
 late final Future<bool> authInitialization;
 
+/// Whether Google sign-in is available: on the web when the server shares a
+/// Google client ID in the app config, on Android when the build passes
+/// `GOOGLE_SERVER_CLIENT_ID`. Staff can always sign in with email.
+late final Future<bool> googleSignInReady;
+
 Future<void> initializeClient() async {
   client = Client(await serverUrl)
     ..connectivityMonitor = FlutterConnectivityMonitor()
     ..authSessionManager = FlutterAuthSessionManager();
   authInitialization = client.auth.initialize();
   unawaited(authInitialization);
+  googleSignInReady = _initializeGoogleSignIn();
+}
+
+Future<bool> _initializeGoogleSignIn() async {
+  try {
+    if (kIsWeb) {
+      final config =
+          jsonDecode(await rootBundle.loadString('assets/config.json'))
+              as Map<String, dynamic>;
+      final clientId = config['googleClientId'] as String?;
+      if (clientId == null || clientId.isEmpty) return false;
+      await client.auth.initializeGoogleSignIn(
+        clientId: clientId,
+        redirectUri: '${Uri.base.origin}/auth/callback',
+      );
+      return true;
+    }
+    if (!const bool.hasEnvironment('GOOGLE_SERVER_CLIENT_ID')) return false;
+    await client.auth.initializeGoogleSignIn();
+    return true;
+  } catch (e) {
+    debugPrint('Google sign-in is unavailable: $e');
+    return false;
+  }
 }

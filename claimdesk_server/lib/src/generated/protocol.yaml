@@ -7,6 +7,10 @@ emailIdp:
   - verifyPasswordResetCode:
   - finishPasswordReset:
   - hasAccount:
+googleIdp:
+  - login:
+  - loginWithCode:
+  - hasAccount:
 jwtRefresh:
   - refreshAccessToken:
 admin:

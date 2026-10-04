@@ -50,6 +50,7 @@ import 'match_explanation.dart' as _i7ltg7v2;
 import 'match_state.dart' as _idznkk1k;
 import 'match_state_exception.dart' as _inl9arvk;
 import 'not_a_member_exception.dart' as _ilheyvx1;
+import 'not_staff_exception.dart' as _izncbh43;
 import 'photo_upload_ticket.dart' as _ivh14x5g;
 import 'release_input.dart' as _ixt06mmk;
 import 'release_record.dart' as _ieeq0b1h;
@@ -92,6 +93,7 @@ export 'match_explanation.dart';
 export 'match_state.dart';
 export 'match_state_exception.dart';
 export 'not_a_member_exception.dart';
+export 'not_staff_exception.dart';
 export 'photo_upload_ticket.dart';
 export 'release_input.dart';
 export 'release_record.dart';
@@ -217,6 +219,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _ilheyvx1.NotAMemberException) {
       return _ilheyvx1.NotAMemberException.fromJson(data) as T;
+    }
+    if (t == _izncbh43.NotStaffException) {
+      return _izncbh43.NotStaffException.fromJson(data) as T;
     }
     if (t == _ivh14x5g.PhotoUploadTicket) {
       return _ivh14x5g.PhotoUploadTicket.fromJson(data) as T;
@@ -354,6 +359,10 @@ class Protocol extends _isc.SerializationManager {
       return (data != null
               ? _ilheyvx1.NotAMemberException.fromJson(data)
               : null)
+          as T;
+    }
+    if (t == _isc.getType<_izncbh43.NotStaffException?>()) {
+      return (data != null ? _izncbh43.NotStaffException.fromJson(data) : null)
           as T;
     }
     if (t == _isc.getType<_ivh14x5g.PhotoUploadTicket?>()) {
@@ -557,6 +566,7 @@ class Protocol extends _isc.SerializationManager {
       _idznkk1k.MatchState => 'MatchState',
       _inl9arvk.MatchStateException => 'MatchStateException',
       _ilheyvx1.NotAMemberException => 'NotAMemberException',
+      _izncbh43.NotStaffException => 'NotStaffException',
       _ivh14x5g.PhotoUploadTicket => 'PhotoUploadTicket',
       _ixt06mmk.ReleaseInput => 'ReleaseInput',
       _ieeq0b1h.ReleaseRecord => 'ReleaseRecord',
@@ -637,6 +647,8 @@ class Protocol extends _isc.SerializationManager {
         return 'MatchStateException';
       case _ilheyvx1.NotAMemberException():
         return 'NotAMemberException';
+      case _izncbh43.NotStaffException():
+        return 'NotStaffException';
       case _ivh14x5g.PhotoUploadTicket():
         return 'PhotoUploadTicket';
       case _ixt06mmk.ReleaseInput():
@@ -766,6 +778,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (dataClassName == 'NotAMemberException') {
       return deserialize<_ilheyvx1.NotAMemberException>(data['data']);
+    }
+    if (dataClassName == 'NotStaffException') {
+      return deserialize<_izncbh43.NotStaffException>(data['data']);
     }
     if (dataClassName == 'PhotoUploadTicket') {
       return deserialize<_ivh14x5g.PhotoUploadTicket>(data['data']);

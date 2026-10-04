@@ -16,6 +16,7 @@ class SignInScreen extends StatefulWidget {
 
 class _SignInScreenState extends State<SignInScreen> {
   late final EmailAuthController _controller;
+  GoogleAuthController? _google;
   bool _restoring = true;
   bool _showPassword = false;
   String? _error;
@@ -31,6 +32,13 @@ class _SignInScreenState extends State<SignInScreen> {
       },
     );
     client.auth.authInfoListenable.addListener(_authChanged);
+    googleSignInReady.then((ready) {
+      if (!ready || !mounted) return;
+      setState(() {
+        _google = GoogleAuthController(client: client)
+          ..addListener(_googleChanged);
+      });
+    });
     authInitialization.then(
       (_) {
         if (mounted) setState(() => _restoring = false);
@@ -50,10 +58,23 @@ class _SignInScreenState extends State<SignInScreen> {
     if (mounted) setState(() {});
   }
 
+  void _googleChanged() {
+    final google = _google;
+    if (!mounted || google == null) return;
+    setState(() {
+      if (google.state == GoogleAuthState.loading) _error = null;
+      final error = google.error;
+      if (error != null) _error = errorMessage(error);
+    });
+  }
+
   @override
   void dispose() {
     client.auth.authInfoListenable.removeListener(_authChanged);
     _controller.dispose();
+    _google
+      ?..removeListener(_googleChanged)
+      ..dispose();
     super.dispose();
   }
 
@@ -175,6 +196,21 @@ class _SignInScreenState extends State<SignInScreen> {
                               _controller.isLoading ? 'Signing in…' : 'Sign in',
                             ),
                           ),
+                          if (_google case final google?) ...[
+                            const SizedBox(height: 20),
+                            const _OrDivider(),
+                            const SizedBox(height: 20),
+                            LayoutBuilder(
+                              builder: (context, box) => Center(
+                                child: GoogleSignInWidget(
+                                  controller: google,
+                                  minimumWidth: box.maxWidth
+                                      .clamp(1, 400)
+                                      .toDouble(),
+                                ),
+                              ),
+                            ),
+                          ],
                           const SizedBox(height: 22),
                           Text(
                             'Ask your supervisor for an account.',
@@ -201,6 +237,28 @@ class _SignInScreenState extends State<SignInScreen> {
     if (_controller.isLoading) return;
     setState(() => _error = null);
     _controller.login();
+  }
+}
+
+/// "or" between the email form and Google sign-in.
+class _OrDivider extends StatelessWidget {
+  const _OrDivider();
+  @override
+  Widget build(BuildContext context) {
+    final c = context.desk;
+    return Row(
+      children: [
+        Expanded(child: Divider(color: c.line, height: 1)),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: Text(
+            'or',
+            style: context.type.body.copyWith(fontSize: 13.5, color: c.ink3),
+          ),
+        ),
+        Expanded(child: Divider(color: c.line, height: 1)),
+      ],
+    );
   }
 }
 

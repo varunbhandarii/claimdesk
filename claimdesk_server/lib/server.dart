@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:serverpod_auth_idp_server/core.dart'
+    show FlutterWebAuth2CallbackRoute;
 import 'package:serverpod_cloud_storage/serverpod_cloud_storage.dart';
 
 import 'src/authentication.dart';
@@ -92,6 +94,9 @@ void run(List<String> args) async {
     StaticRoute.file(File('web/static/robots.txt')),
     '/robots.txt',
   );
+  // Google sign-in on the web returns here; the page hands the result back
+  // to the app, which is served from the same origin under /app.
+  pod.webServer.addRoute(FlutterWebAuth2CallbackRoute(), '/auth/callback');
 
   // Setup a default page at the web root.
   // These are used by the default page.
@@ -109,7 +114,10 @@ void run(List<String> args) async {
   // We build this configuration based on the servers api url and serve it to
   // the flutter app.
   pod.webServer.addRoute(
-    AppConfigRoute(apiConfig: pod.config.apiServer),
+    AppConfigRoute(
+      apiConfig: pod.config.apiServer,
+      googleClientId: googleClientId(pod),
+    ),
     '/app/assets/assets/config.json',
   );
 
