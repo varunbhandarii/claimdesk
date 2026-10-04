@@ -18,6 +18,7 @@ import '../services/record_history.dart';
 import '../policy/custody.dart';
 import '../db/transactions.dart';
 import '../services/item_search.dart';
+import '../services/signed_links.dart';
 import '../services/staff_views.dart';
 
 class ItemEndpoint extends Endpoint with VenueGuard {
@@ -169,6 +170,21 @@ class ItemEndpoint extends Endpoint with VenueGuard {
 
   Future<FoundItem> getItem(Session session, UuidValue itemId) async =>
       StaffViews.item(await _authorizedItem(session, itemId));
+
+  Future<FoundItem?> findByRefCode(
+    Session session,
+    UuidValue venueId,
+    String refCode,
+  ) async {
+    await requireMembership(session, venueId);
+    final code = refCode.trim().toUpperCase();
+    if (!RegExp(r'^[A-Z0-9]{6}$').hasMatch(code)) return null;
+    final row = await FoundItem.db.findFirstRow(
+      session,
+      where: (t) => t.venueId.equals(venueId) & t.refCode.equals(code),
+    );
+    return row == null ? null : StaffViews.item(row);
+  }
 
   Future<List<FoundItem>> listItems(
     Session session,
@@ -388,6 +404,11 @@ class ItemEndpoint extends Endpoint with VenueGuard {
 
   Future<List<HistoryEntry>> history(Session session, UuidValue itemId) async =>
       RecordHistory.item(session, await _authorizedItem(session, itemId));
+
+  Future<String> tagLink(Session session, UuidValue itemId) async {
+    await _authorizedItem(session, itemId);
+    return SignedLinks.tagUrl(session, itemId);
+  }
 
   Future<List<CustodyEvent>> custody(Session session, UuidValue itemId) async {
     final item = await _authorizedItem(session, itemId);

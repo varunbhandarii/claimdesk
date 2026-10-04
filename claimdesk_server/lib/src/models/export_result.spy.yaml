@@ -1,0 +1,6 @@
+class: ExportResult
+fields:
+  url: String
+  rows: int
+  expiresAt: DateTime
+  kind: String

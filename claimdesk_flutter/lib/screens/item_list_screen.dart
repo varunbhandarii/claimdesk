@@ -11,6 +11,8 @@ import '../ui/offline_banner.dart';
 import '../ui/empty_state.dart';
 import '../ui/item_search_field.dart';
 import '../ui/categories.dart';
+import '../ui/export_sheet.dart';
+import '../data/app_entry.dart';
 import 'log_item_screen.dart';
 import 'item_detail_screen.dart';
 import 'report_list_screen.dart';
@@ -35,6 +37,8 @@ class _ItemListScreenState extends State<ItemListScreen> {
   VenueSession? _session;
   DeskEvent? _lastEvent;
   Object? _lastError;
+  String? _entry = itemEntry(Uri.base);
+  bool _openingEntry = false;
   @override
   void initState() {
     super.initState();
@@ -51,8 +55,54 @@ class _ItemListScreenState extends State<ItemListScreen> {
       _session?.removeListener(_changed);
       _session = session;
       session.addListener(_changed);
+      _openEntry();
     }
   }
+
+  Future<void> _openEntry() async {
+    final reference = _entry;
+    if (reference == null || _openingEntry) return;
+    _openingEntry = true;
+    try {
+      final exact = await _session!.client.item.findByRefCode(
+        _session!.venue.id!,
+        reference,
+      );
+      _entry = null;
+      if (mounted) {
+        if (exact != null) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) _openItem(exact.id!);
+          });
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'This reference is not available in your selected venue.',
+              ),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(errorMessage(e))));
+      }
+    } finally {
+      _openingEntry = false;
+    }
+  }
+
+  Future<void> _export() => showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    builder: (_) => ExportSheet(
+      export: (kind) =>
+          _session!.client.export.export(_session!.venue.id!, kind),
+    ),
+  );
 
   void _changed() {
     final session = _session!;
@@ -118,11 +168,15 @@ class _ItemListScreenState extends State<ItemListScreen> {
             onSelected: (value) {
               if (value == 'out') {
                 widget.onSignOut();
+              } else if (value == 'export') {
+                _export();
               } else {
                 widget.onChangeVenue();
               }
             },
             itemBuilder: (_) => [
+              if (canExport(session.membership))
+                const PopupMenuItem(value: 'export', child: Text('Export CSV')),
               const PopupMenuItem(value: 'venue', child: Text('Change venue')),
               const PopupMenuItem(value: 'out', child: Text('Sign out')),
             ],

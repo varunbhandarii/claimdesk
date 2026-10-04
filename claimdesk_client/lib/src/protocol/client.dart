@@ -19,6 +19,7 @@ import 'package:claimdesk_client/src/protocol/custody_event.dart' as _izpl5u8o;
 import 'package:claimdesk_client/src/protocol/desk_event.dart' as _idjit943;
 import 'package:claimdesk_client/src/protocol/desk_summary.dart' as _i9gv5qze;
 import 'package:claimdesk_client/src/protocol/dispose_input.dart' as _ib6ouw9u;
+import 'package:claimdesk_client/src/protocol/export_result.dart' as _i8sh5jny;
 import 'package:claimdesk_client/src/protocol/found_item.dart' as _i8bj3kzd;
 import 'package:claimdesk_client/src/protocol/greetings/greeting.dart'
     as _i8l8ycv0;
@@ -376,6 +377,26 @@ class EndpointDeskStream extends _isc.EndpointRef {
 }
 
 /// {@category Endpoint}
+class EndpointExport extends _isc.EndpointRef {
+  EndpointExport(_isc.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'export';
+
+  _ida.Future<_i8sh5jny.ExportResult> export(
+    _isc.UuidValue venueId,
+    String kind,
+  ) => caller.callServerEndpoint<_i8sh5jny.ExportResult>(
+    'export',
+    'export',
+    {
+      'venueId': venueId,
+      'kind': kind,
+    },
+  );
+}
+
+/// {@category Endpoint}
 class EndpointItem extends _isc.EndpointRef {
   EndpointItem(_isc.EndpointCaller caller) : super(caller);
 
@@ -412,6 +433,18 @@ class EndpointItem extends _isc.EndpointRef {
         'getItem',
         {'itemId': itemId},
       );
+
+  _ida.Future<_i8bj3kzd.FoundItem?> findByRefCode(
+    _isc.UuidValue venueId,
+    String refCode,
+  ) => caller.callServerEndpoint<_i8bj3kzd.FoundItem?>(
+    'item',
+    'findByRefCode',
+    {
+      'venueId': venueId,
+      'refCode': refCode,
+    },
+  );
 
   _ida.Future<List<_i8bj3kzd.FoundItem>> listItems(
     _isc.UuidValue venueId,
@@ -481,6 +514,13 @@ class EndpointItem extends _isc.EndpointRef {
       caller.callServerEndpoint<List<_ijfu8sb7.HistoryEntry>>(
         'item',
         'history',
+        {'itemId': itemId},
+      );
+
+  _ida.Future<String> tagLink(_isc.UuidValue itemId) =>
+      caller.callServerEndpoint<String>(
+        'item',
+        'tagLink',
         {'itemId': itemId},
       );
 
@@ -769,6 +809,7 @@ class Client extends _isc.ServerpodClientShared {
     admin = EndpointAdmin(this);
     desk = EndpointDesk(this);
     deskStream = EndpointDeskStream(this);
+    export = EndpointExport(this);
     item = EndpointItem(this);
     match = EndpointMatch(this);
     release = EndpointRelease(this);
@@ -787,6 +828,8 @@ class Client extends _isc.ServerpodClientShared {
   late final EndpointDesk desk;
 
   late final EndpointDeskStream deskStream;
+
+  late final EndpointExport export;
 
   late final EndpointItem item;
 
@@ -809,6 +852,7 @@ class Client extends _isc.ServerpodClientShared {
     'admin': admin,
     'desk': desk,
     'deskStream': deskStream,
+    'export': export,
     'item': item,
     'match': match,
     'release': release,

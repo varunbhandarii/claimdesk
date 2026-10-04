@@ -38,6 +38,7 @@ dependencies:
   image_picker: ^1.2.3
   shared_preferences: ^2.5.5
   signature: 6.4.0
+  url_launcher: ^6.3.3
 
 dev_dependencies:
   # Used for agents to drive the app through the Dart MCP

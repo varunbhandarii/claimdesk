@@ -17,11 +17,11 @@ dependencies:
   serverpod_auth_idp_server: 4.0.2
   serverpod_cloud_storage: 4.0.2
   porter_2_stemmer: ^3.0.2
+  barcode: ^2.2.9
 
 dev_dependencies:
   claimdesk_client:
     path: ../claimdesk_client
-  barcode: ^2.2.9
   lints: '>=3.0.0 <7.0.0'
   serverpod_test: 4.0.2
   test: ^1.25.5

@@ -31,6 +31,7 @@ import '../auth/jwt_refresh_endpoint.dart' as _inwq3ztq;
 import '../endpoints/admin_endpoint.dart' as _i5t1w2d2;
 import '../endpoints/desk_endpoint.dart' as _isnuj8i8;
 import '../endpoints/desk_stream_endpoint.dart' as _io3746h0;
+import '../endpoints/export_endpoint.dart' as _i0kmk8zv;
 import '../endpoints/item_endpoint.dart' as _irwxp2xj;
 import '../endpoints/match_endpoint.dart' as _iznotijq;
 import '../endpoints/release_endpoint.dart' as _i3y57dtc;
@@ -70,6 +71,12 @@ class Endpoints extends _is.EndpointDispatch {
         ..initialize(
           server,
           'deskStream',
+          null,
+        ),
+      'export': _i0kmk8zv.ExportEndpoint()
+        ..initialize(
+          server,
+          'export',
           null,
         ),
       'item': _irwxp2xj.ItemEndpoint()
@@ -495,6 +502,37 @@ class Endpoints extends _is.EndpointDispatch {
         ),
       },
     );
+    connectors['export'] = _is.EndpointConnector(
+      name: 'export',
+      endpoint: endpoints['export']!,
+      methodConnectors: {
+        'export': _is.MethodConnector(
+          name: 'export',
+          params: {
+            'venueId': _is.ParameterDescription(
+              name: 'venueId',
+              type: _is.getType<_is.UuidValue>(),
+              nullable: false,
+            ),
+            'kind': _is.ParameterDescription(
+              name: 'kind',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['export'] as _i0kmk8zv.ExportEndpoint).export(
+                    session,
+                    params['venueId'],
+                    params['kind'],
+                  ),
+        ),
+      },
+    );
     connectors['item'] = _is.EndpointConnector(
       name: 'item',
       endpoint: endpoints['item']!,
@@ -566,6 +604,31 @@ class Endpoints extends _is.EndpointDispatch {
                 session,
                 params['itemId'],
               ),
+        ),
+        'findByRefCode': _is.MethodConnector(
+          name: 'findByRefCode',
+          params: {
+            'venueId': _is.ParameterDescription(
+              name: 'venueId',
+              type: _is.getType<_is.UuidValue>(),
+              nullable: false,
+            ),
+            'refCode': _is.ParameterDescription(
+              name: 'refCode',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['item'] as _irwxp2xj.ItemEndpoint).findByRefCode(
+                    session,
+                    params['venueId'],
+                    params['refCode'],
+                  ),
         ),
         'listItems': _is.MethodConnector(
           name: 'listItems',
@@ -724,6 +787,24 @@ class Endpoints extends _is.EndpointDispatch {
                 _is.Session session,
                 Map<String, dynamic> params,
               ) async => (endpoints['item'] as _irwxp2xj.ItemEndpoint).history(
+                session,
+                params['itemId'],
+              ),
+        ),
+        'tagLink': _is.MethodConnector(
+          name: 'tagLink',
+          params: {
+            'itemId': _is.ParameterDescription(
+              name: 'itemId',
+              type: _is.getType<_is.UuidValue>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['item'] as _irwxp2xj.ItemEndpoint).tagLink(
                 session,
                 params['itemId'],
               ),

@@ -19,10 +19,13 @@ desk:
   - summary:
 deskStream:
   - watchVenue:
+export:
+  - export:
 item:
   - requestPhotoUpload:
   - createItem:
   - getItem:
+  - findByRefCode:
   - listItems:
   - searchItems:
   - photoUrl:
@@ -30,6 +33,7 @@ item:
   - recaption:
   - captionRuns:
   - history:
+  - tagLink:
   - custody:
   - transfer:
   - dispose:

@@ -36,6 +36,7 @@ import 'custody_event.dart' as _iq6v1376;
 import 'desk_event.dart' as _iz4ruabw;
 import 'desk_summary.dart' as _ip6mi6ty;
 import 'dispose_input.dart' as _iyfw2vy3;
+import 'export_result.dart' as _iz9aje5j;
 import 'found_item.dart' as _i52cv103;
 import 'greetings/greeting.dart' as _izw8z7ou;
 import 'history_entry.dart' as _i85vle09;
@@ -77,6 +78,7 @@ export 'custody_event.dart';
 export 'desk_event.dart';
 export 'desk_summary.dart';
 export 'dispose_input.dart';
+export 'export_result.dart';
 export 'found_item.dart';
 export 'greetings/greeting.dart';
 export 'history_entry.dart';
@@ -1724,6 +1726,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _iyfw2vy3.DisposeInput) {
       return _iyfw2vy3.DisposeInput.fromJson(data) as T;
     }
+    if (t == _iz9aje5j.ExportResult) {
+      return _iz9aje5j.ExportResult.fromJson(data) as T;
+    }
     if (t == _i52cv103.FoundItem) {
       return _i52cv103.FoundItem.fromJson(data) as T;
     }
@@ -1850,6 +1855,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     }
     if (t == _is.getType<_iyfw2vy3.DisposeInput?>()) {
       return (data != null ? _iyfw2vy3.DisposeInput.fromJson(data) : null) as T;
+    }
+    if (t == _is.getType<_iz9aje5j.ExportResult?>()) {
+      return (data != null ? _iz9aje5j.ExportResult.fromJson(data) : null) as T;
     }
     if (t == _is.getType<_i52cv103.FoundItem?>()) {
       return (data != null ? _i52cv103.FoundItem.fromJson(data) : null) as T;
@@ -2088,6 +2096,7 @@ class Protocol extends _is.DatabaseSerializationManager {
       _iz4ruabw.DeskEvent => 'DeskEvent',
       _ip6mi6ty.DeskSummary => 'DeskSummary',
       _iyfw2vy3.DisposeInput => 'DisposeInput',
+      _iz9aje5j.ExportResult => 'ExportResult',
       _i52cv103.FoundItem => 'FoundItem',
       _izw8z7ou.Greeting => 'Greeting',
       _i85vle09.HistoryEntry => 'HistoryEntry',
@@ -2152,6 +2161,8 @@ class Protocol extends _is.DatabaseSerializationManager {
         return 'DeskSummary';
       case _iyfw2vy3.DisposeInput():
         return 'DisposeInput';
+      case _iz9aje5j.ExportResult():
+        return 'ExportResult';
       case _i52cv103.FoundItem():
         return 'FoundItem';
       case _izw8z7ou.Greeting():
@@ -2268,6 +2279,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     }
     if (dataClassName == 'DisposeInput') {
       return deserialize<_iyfw2vy3.DisposeInput>(data['data']);
+    }
+    if (dataClassName == 'ExportResult') {
+      return deserialize<_iz9aje5j.ExportResult>(data['data']);
     }
     if (dataClassName == 'FoundItem') {
       return deserialize<_i52cv103.FoundItem>(data['data']);

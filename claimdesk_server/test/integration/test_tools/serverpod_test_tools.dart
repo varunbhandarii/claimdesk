@@ -21,6 +21,7 @@ import 'package:claimdesk_server/src/generated/custody_event.dart' as _ie8uz96n;
 import 'package:claimdesk_server/src/generated/desk_event.dart' as _iofnkj91;
 import 'package:claimdesk_server/src/generated/desk_summary.dart' as _i1ngti0g;
 import 'package:claimdesk_server/src/generated/dispose_input.dart' as _iki68uh5;
+import 'package:claimdesk_server/src/generated/export_result.dart' as _i4wg0ses;
 import 'package:claimdesk_server/src/generated/found_item.dart' as _iskydu8k;
 import 'package:claimdesk_server/src/generated/greetings/greeting.dart'
     as _izso5nwb;
@@ -186,6 +187,8 @@ class TestEndpoints {
 
   late final _DeskStreamEndpoint deskStream;
 
+  late final _ExportEndpoint export;
+
   late final _ItemEndpoint item;
 
   late final _MatchEndpoint match;
@@ -223,6 +226,10 @@ class _InternalTestEndpoints extends TestEndpoints
       serializationManager,
     );
     deskStream = _DeskStreamEndpoint(
+      endpoints,
+      serializationManager,
+    );
+    export = _ExportEndpoint(
       endpoints,
       serializationManager,
     );
@@ -844,6 +851,52 @@ class _DeskStreamEndpoint {
   }
 }
 
+class _ExportEndpoint {
+  _ExportEndpoint(
+    this._endpointDispatch,
+    this._serializationManager,
+  );
+
+  final _is.EndpointDispatch _endpointDispatch;
+
+  final _is.SerializationManager _serializationManager;
+
+  _ida.Future<_i4wg0ses.ExportResult> export(
+    _ist.TestSessionBuilder sessionBuilder,
+    _is.UuidValue venueId,
+    String kind,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'export',
+            method: 'export',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'export',
+          methodName: 'export',
+          parameters: _ist.testObjectToJson({
+            'venueId': venueId,
+            'kind': kind,
+          }),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<_i4wg0ses.ExportResult>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+}
+
 class _ItemEndpoint {
   _ItemEndpoint(
     this._endpointDispatch,
@@ -948,6 +1001,41 @@ class _ItemEndpoint {
                   _localCallContext.arguments,
                 )
                 as _ida.Future<_iskydu8k.FoundItem>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _ida.Future<_iskydu8k.FoundItem?> findByRefCode(
+    _ist.TestSessionBuilder sessionBuilder,
+    _is.UuidValue venueId,
+    String refCode,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'item',
+            method: 'findByRefCode',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'item',
+          methodName: 'findByRefCode',
+          parameters: _ist.testObjectToJson({
+            'venueId': venueId,
+            'refCode': refCode,
+          }),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<_iskydu8k.FoundItem?>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();
@@ -1183,6 +1271,37 @@ class _ItemEndpoint {
                   _localCallContext.arguments,
                 )
                 as _ida.Future<List<_iv8y2aad.HistoryEntry>>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _ida.Future<String> tagLink(
+    _ist.TestSessionBuilder sessionBuilder,
+    _is.UuidValue itemId,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'item',
+            method: 'tagLink',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'item',
+          methodName: 'tagLink',
+          parameters: _ist.testObjectToJson({'itemId': itemId}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<String>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();

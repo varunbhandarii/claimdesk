@@ -10,6 +10,7 @@ import '../ui/status.dart';
 import '../ui/history_list.dart';
 import '../ui/item_badges.dart';
 import '../ui/transfer_sheet.dart';
+import '../ui/tag_button.dart';
 import '../ui/attribute_chips.dart';
 import 'edit_item_screen.dart';
 import '../ui/item_form.dart';
@@ -237,6 +238,9 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
                         spacing: 16,
                         crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
+                          TagButton(
+                            link: () => session.client.item.tagLink(item.id!),
+                          ),
                           SelectableText(
                             item.refCode,
                             style: Theme.of(context).textTheme.headlineMedium

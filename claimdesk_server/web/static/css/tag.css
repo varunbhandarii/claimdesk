@@ -1,0 +1,21 @@
+* { box-sizing: border-box; }
+html { color: #14241d; background: #fff; font-family: Arial, sans-serif; }
+body { margin: 12mm; }
+.tag { width: 100mm; height: 62mm; padding: 4mm; border: 0.25mm solid #14241d; display: flex; flex-direction: column; overflow: hidden; }
+.venue { display: block; font-size: 9pt; font-weight: bold; line-height: 1.2; }
+.reference { display: block; font-size: 28pt; letter-spacing: 1.5pt; line-height: 1.15; margin-top: 1mm; }
+.details { display: grid; grid-template-columns: 1fr 24mm; gap: 3mm; flex: 1; margin-top: 2mm; min-height: 0; }
+p { font-size: 8pt; line-height: 1.2; margin: 0 0 1mm; overflow-wrap: anywhere; }
+.category { font-weight: bold; font-size: 10pt; text-transform: capitalize; }
+.colours { text-transform: capitalize; }
+.bin { max-height: 9mm; overflow: hidden; }
+.qr svg { width: 24mm; height: 24mm; display: block; }
+.qr span { display: block; text-align: center; font-size: 6.5pt; margin-top: 1mm; }
+footer { font-size: 7pt; border-top: 0.2mm solid #b7c4bc; padding-top: 1mm; margin-top: 1mm; }
+.print-copy { display: none; }
+@page { margin: 12mm; }
+@media print {
+  body { margin: 0; display: grid; grid-template-columns: 100mm; gap: 8mm; }
+  .tag { break-inside: avoid; page-break-inside: avoid; }
+  .print-copy { display: flex; }
+}

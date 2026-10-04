@@ -37,6 +37,24 @@ void main() {
   }
 
   tearDownAll(() => transport.close(force: true));
+  test('signed tag works over HTTP and rejects an expired link', () async {
+    final supplied = Platform.environment['TAG_HTTP_URL'];
+    if (supplied == null) {
+      throw StateError(
+        'Set TAG_HTTP_URL to a freshly issued local staff tag link',
+      );
+    }
+    final url = Uri.parse(supplied);
+    final valid = await request('${url.path}?${url.query}');
+    expect(valid.status, 200);
+    expect(valid.body, contains('<svg'));
+    expect(valid.headers['cache-control'], contains('no-store'));
+    expect(valid.headers['x-robots-tag'], contains('noindex'));
+    final expired = url.replace(
+      queryParameters: {...url.queryParameters, 'exp': '1'},
+    );
+    expect((await request('${expired.path}?${expired.query}')).status, 404);
+  }, skip: !enabled);
   test(
     'public owner flow, duplicate, safe ticket JSON and invalid form',
     () async {

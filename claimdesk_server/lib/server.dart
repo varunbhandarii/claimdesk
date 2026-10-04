@@ -21,6 +21,7 @@ import 'src/web/public/lost_form_route.dart';
 import 'src/web/public/ticket_route.dart';
 import 'src/web/public/ticket_answer_route.dart';
 import 'src/web/public/ticket_photo_route.dart';
+import 'src/web/public/tag_route.dart';
 import 'src/web/middleware/rate_limit.dart';
 
 /// The starting point of the Serverpod server.
@@ -66,6 +67,16 @@ void run(List<String> args) async {
     ),
     '/t',
   );
+  pod.webServer.addMiddleware(
+    rateLimit(
+      limit: 60,
+      window: const Duration(minutes: 10),
+      trustProxy: trustProxy,
+      salt: ipHashSalt,
+    ),
+    '/tag',
+  );
+  pod.webServer.addRoute(TagRoute(), '/tag/:itemId');
   pod.webServer.addRoute(VenuePageRoute(), '/v/:slug');
   pod.webServer.addRoute(
     LostFormRoute(salt: ipHashSalt, trustProxy: trustProxy),

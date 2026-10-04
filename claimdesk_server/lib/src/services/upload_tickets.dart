@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'package:serverpod/serverpod.dart';
 import 'package:serverpod_auth_idp_server/core.dart';
+import 'signed_links.dart';
 
 class UploadTickets {
   static String path(UuidValue venue, UuidValue item) =>
@@ -12,10 +13,7 @@ class UploadTickets {
     UuidValue item,
     DateTime expires,
   ) {
-    final key = s.passwords['serviceSecret'] ?? s.passwords['seedSecret'];
-    if (key == null || key.isEmpty) {
-      throw StateError('Upload signing is not configured');
-    }
+    final key = SignedLinks.key(s);
     final user = s.authenticated!.authUserId;
     return Hmac(sha256, utf8.encode(key))
         .convert(
@@ -41,11 +39,6 @@ class UploadTickets {
       return false;
     }
     final expected = sign(s, venue, item, expires);
-    if (proof.length != expected.length) return false;
-    var difference = 0;
-    for (var i = 0; i < expected.length; i++) {
-      difference |= expected.codeUnitAt(i) ^ proof.codeUnitAt(i);
-    }
-    return difference == 0;
+    return SignedLinks.constantTimeEquals(expected, proof);
   }
 }
