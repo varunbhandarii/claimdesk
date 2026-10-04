@@ -7,6 +7,7 @@ import '../data/photo_urls.dart';
 import '../data/errors.dart';
 import 'claim_shapes.dart';
 import 'desk_theme.dart';
+import 'format.dart';
 
 /// Opens an item's full photo, zoomable, on its own page.
 Future<void> openFullPhoto(
@@ -34,6 +35,7 @@ Future<void> openFullPhoto(
           itemId: item.id!,
           revision: item.updatedAt,
           onDenied: session.onDenied,
+          semanticLabel: 'Photo of ${itemTitle(item)}',
         ),
       ),
     ),
@@ -49,6 +51,7 @@ class PhotoView extends StatefulWidget {
     this.revision,
     this.onDenied,
     this.cover = false,
+    this.semanticLabel,
   });
   final PhotoUrls urls;
   final UuidValue itemId;
@@ -58,6 +61,10 @@ class PhotoView extends StatefulWidget {
   final bool cover;
   final Object? revision;
   final VoidCallback? onDenied;
+
+  /// What a screen reader announces for the photo, such as "Photo of Black
+  /// umbrella". Thumbnails beside a title leave it out.
+  final String? semanticLabel;
   @override
   State<PhotoView> createState() => _PhotoViewState();
 }
@@ -161,6 +168,8 @@ class _PhotoViewState extends State<PhotoView> {
     if (_url == null) return _placeholder('No photo');
     return Image.network(
       _url!,
+      semanticLabel: widget.semanticLabel,
+      excludeFromSemantics: widget.semanticLabel == null,
       fit: widget.thumb || widget.cover ? BoxFit.cover : BoxFit.contain,
       frameBuilder: (context, child, frame, synchronous) =>
           frame == null ? _placeholder('Loading photo…') : child,

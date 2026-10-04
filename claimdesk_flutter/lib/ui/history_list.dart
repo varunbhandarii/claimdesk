@@ -146,7 +146,7 @@ class _HistoryRow extends StatelessWidget {
                                       (m) => '${m[1]} ${m[2]}',
                                     ),
                                   ),
-                                  SelectableText(data.value),
+                                  CopyableText(data.value),
                                 ],
                               ),
                             ),

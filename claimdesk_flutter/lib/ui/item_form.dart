@@ -561,7 +561,7 @@ class _ValueBands extends StatelessWidget {
                             ? null
                             : () => onChanged!(band),
                         child: Container(
-                          constraints: const BoxConstraints(minHeight: 44),
+                          constraints: const BoxConstraints(minHeight: 48),
                           alignment: Alignment.center,
                           padding: const EdgeInsets.symmetric(horizontal: 2),
                           child: Text(

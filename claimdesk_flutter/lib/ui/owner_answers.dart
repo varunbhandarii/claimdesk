@@ -31,7 +31,7 @@ class OwnerAnswers extends StatelessWidget {
       decoration: BoxDecoration(
         border: Border(left: BorderSide(color: c.ticket, width: 3)),
       ),
-      child: SelectableText(
+      child: CopyableText(
         text,
         style: context.type.body.copyWith(
           fontSize: 15,

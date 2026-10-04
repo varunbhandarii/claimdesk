@@ -93,7 +93,7 @@ class _ReleaseReceiptState extends State<ReleaseReceipt> {
                 child: RefTicket(widget.summary.reportRefCode!),
               ),
             ),
-          row('Claimant', SelectableText(r.claimantName)),
+          row('Claimant', CopyableText(r.claimantName)),
           row(
             'ID type seen',
             Text(ReleaseRules.labels[r.idTypeSeen] ?? r.idTypeSeen),
@@ -102,7 +102,7 @@ class _ReleaseReceiptState extends State<ReleaseReceipt> {
           if (r.thirdPartyAuthorisationNote != null)
             row(
               'Authorisation',
-              SelectableText(r.thirdPartyAuthorisationNote!),
+              CopyableText(r.thirdPartyAuthorisationNote!),
             ),
           row('Released by', Text(widget.summary.releasedByName)),
           if (widget.showSignature && r.signaturePath != null) ...[

@@ -2,6 +2,11 @@ import 'package:flutter/material.dart';
 import 'desk_theme.dart';
 
 /// Pill-shaped filter chip. Selected chips fill with ink.
+///
+/// The pill is 36 px tall but the touch target is 48 px, the way Material
+/// chips pad theirs. An active filter with [onDeleted] is removed by a tap
+/// anywhere on the chip, which keeps one full-size target instead of a small
+/// close button inside the pill.
 class DeskChip extends StatelessWidget {
   const DeskChip({
     super.key,
@@ -16,58 +21,65 @@ class DeskChip extends StatelessWidget {
   final VoidCallback? onTap;
   final IconData? icon;
 
-  /// Shows a remove button for an active filter.
+  /// Makes the chip an active filter that a tap removes.
   final VoidCallback? onDeleted;
 
   @override
   Widget build(BuildContext context) {
     final c = context.desk;
     final foreground = selected ? c.inkOn : c.ink2;
+    final action = onDeleted ?? onTap;
     return Semantics(
+      container: true,
       button: true,
-      selected: selected,
+      selected: onDeleted == null && selected,
+      enabled: action != null,
+      label: onDeleted == null ? label : 'Remove filter $label',
+      onTap: action,
+      excludeSemantics: true,
       child: Material(
-        color: selected ? c.ink : c.surface,
-        shape: StadiumBorder(
-          side: BorderSide(color: selected ? c.ink : c.line, width: 1.5),
-        ),
-        clipBehavior: Clip.antiAlias,
+        type: MaterialType.transparency,
         child: InkWell(
-          onTap: onTap,
-          child: Container(
-            height: 36,
-            padding: EdgeInsets.only(
-              left: 14,
-              right: onDeleted == null ? 14 : 4,
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (icon != null) ...[
-                  Icon(icon, size: 16, color: foreground),
-                  const SizedBox(width: 6),
-                ],
-                Text(
-                  label,
-                  style: context.type.strong.copyWith(
-                    fontSize: 13.5,
-                    height: 1,
-                    color: foreground,
+          onTap: action,
+          customBorder: const StadiumBorder(),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 6),
+            child: Ink(
+              height: 36,
+              padding: EdgeInsets.only(
+                left: 14,
+                right: onDeleted == null ? 14 : 10,
+              ),
+              decoration: ShapeDecoration(
+                color: selected ? c.ink : c.surface,
+                shape: StadiumBorder(
+                  side: BorderSide(
+                    color: selected ? c.ink : c.line,
+                    width: 1.5,
                   ),
                 ),
-                if (onDeleted != null)
-                  IconButton(
-                    tooltip: 'Remove filter $label',
-                    onPressed: onDeleted,
-                    visualDensity: VisualDensity.compact,
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(
-                      minWidth: 32,
-                      minHeight: 32,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (icon != null) ...[
+                    Icon(icon, size: 16, color: foreground),
+                    const SizedBox(width: 6),
+                  ],
+                  Text(
+                    label,
+                    style: context.type.strong.copyWith(
+                      fontSize: 13.5,
+                      height: 1,
+                      color: foreground,
                     ),
-                    icon: Icon(Icons.close, size: 16, color: foreground),
                   ),
-              ],
+                  if (onDeleted != null) ...[
+                    const SizedBox(width: 6),
+                    Icon(Icons.close, size: 16, color: foreground),
+                  ],
+                ],
+              ),
             ),
           ),
         ),
@@ -83,10 +95,10 @@ class ChipRow extends StatelessWidget {
   final double padding;
   @override
   Widget build(BuildContext context) => SizedBox(
-    height: 44,
+    height: 48,
     child: ListView.separated(
       scrollDirection: Axis.horizontal,
-      padding: EdgeInsets.symmetric(horizontal: padding, vertical: 4),
+      padding: EdgeInsets.symmetric(horizontal: padding),
       itemCount: children.length,
       separatorBuilder: (_, _) => const SizedBox(width: 8),
       itemBuilder: (_, index) => children[index],

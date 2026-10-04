@@ -208,15 +208,19 @@ extension DeskContext on BuildContext {
   DeskType get type => DeskType.of(this);
 }
 
-ThemeData buildDeskTheme(Brightness brightness) {
+/// The app theme. Tests pass [DeskType.fallback] as [fonts], because the
+/// brand fonts are fetched over the network.
+ThemeData buildDeskTheme(Brightness brightness, {DeskType? fonts}) {
   final c = brightness == Brightness.dark ? DeskColors.dark : DeskColors.light;
-  final type = DeskType(
-    display: GoogleFonts.bricolageGrotesque(fontWeight: FontWeight.w800),
-    heading: GoogleFonts.bricolageGrotesque(fontWeight: FontWeight.w700),
-    body: GoogleFonts.instrumentSans(fontWeight: FontWeight.w400),
-    strong: GoogleFonts.instrumentSans(fontWeight: FontWeight.w600),
-    mono: GoogleFonts.jetBrainsMono(fontWeight: FontWeight.w700),
-  );
+  final type =
+      fonts ??
+      DeskType(
+        display: GoogleFonts.bricolageGrotesque(fontWeight: FontWeight.w800),
+        heading: GoogleFonts.bricolageGrotesque(fontWeight: FontWeight.w700),
+        body: GoogleFonts.instrumentSans(fontWeight: FontWeight.w400),
+        strong: GoogleFonts.instrumentSans(fontWeight: FontWeight.w600),
+        mono: GoogleFonts.jetBrainsMono(fontWeight: FontWeight.w700),
+      );
   final scheme = ColorScheme(
     brightness: brightness,
     primary: c.ink,

@@ -115,10 +115,9 @@ class ItemsTab extends StatelessWidget {
             session.zoneFilter != null ||
             session.categoryFilter != null)
           Padding(
-            padding: EdgeInsets.fromLTRB(side, 6, side, 0),
+            padding: EdgeInsets.fromLTRB(side, 0, side, 0),
             child: Wrap(
               spacing: 8,
-              runSpacing: 8,
               children: [
                 if (session.attentionFilter != null)
                   DeskChip(
@@ -250,7 +249,6 @@ class _FiltersSheet extends StatelessWidget {
             const SizedBox(height: 10),
             Wrap(
               spacing: 8,
-              runSpacing: 8,
               children: [
                 DeskChip(
                   label: 'All zones',
@@ -270,7 +268,6 @@ class _FiltersSheet extends StatelessWidget {
             const SizedBox(height: 10),
             Wrap(
               spacing: 8,
-              runSpacing: 8,
               children: [
                 DeskChip(
                   label: 'All categories',

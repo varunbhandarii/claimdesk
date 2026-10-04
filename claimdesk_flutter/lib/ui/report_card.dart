@@ -30,10 +30,13 @@ class ReportCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 8,
+            runSpacing: 8,
             children: [
               RefTicket(report.refCode),
-              const Spacer(),
               ReportStatusChip(report.status),
             ],
           ),

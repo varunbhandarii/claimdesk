@@ -156,6 +156,9 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
           revision: thumb ? item.thumbPath : item.updatedAt,
           onDenied: s.onDenied,
           cover: true,
+          semanticLabel: thumb || item.restricted
+              ? null
+              : 'Photo of ${itemTitle(item)}',
         );
 
   Widget _actions(MatchCard c) => MatchActions(
@@ -428,15 +431,18 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 8,
+            runSpacing: 8,
             children: [
               RefTicket(report.refCode, large: true),
-              const Spacer(),
               DeskLabel('Lost report', colour: d.ticket),
             ],
           ),
           const SizedBox(height: 12),
-          SelectableText(
+          CopyableText(
             '“${report.rawText.trim()}”',
             style: wide
                 ? context.type.heading.copyWith(

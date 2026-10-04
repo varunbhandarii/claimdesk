@@ -616,8 +616,10 @@ class ScoreMeter extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 6),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            spacing: 12,
+            runSpacing: 2,
             children: [
               Text('Possible from 0.45', style: _note(context)),
               Text('Strong from 0.70', style: _note(context)),
@@ -775,4 +777,15 @@ class NoteStrip extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Text people can select and copy. Unlike [SelectableText], it does not
+/// become a separate long-press target for screen readers.
+class CopyableText extends StatelessWidget {
+  const CopyableText(this.data, {super.key, this.style});
+  final String data;
+  final TextStyle? style;
+  @override
+  Widget build(BuildContext context) =>
+      SelectionArea(child: Text(data, style: style));
 }

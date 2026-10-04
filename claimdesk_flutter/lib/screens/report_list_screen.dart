@@ -165,10 +165,9 @@ class _ReportListScreenState extends State<ReportListScreen> {
         ),
         if (filters > 0)
           Padding(
-            padding: EdgeInsets.fromLTRB(side, 6, side, 0),
+            padding: EdgeInsets.fromLTRB(side, 0, side, 0),
             child: Wrap(
               spacing: 8,
-              runSpacing: 8,
               children: [
                 if (s.reportZoneFilter != null)
                   DeskChip(
@@ -270,7 +269,6 @@ class _ReportFiltersSheet extends StatelessWidget {
             const SizedBox(height: 10),
             Wrap(
               spacing: 8,
-              runSpacing: 8,
               children: [
                 DeskChip(
                   label: 'All zones',
@@ -290,7 +288,6 @@ class _ReportFiltersSheet extends StatelessWidget {
             const SizedBox(height: 10),
             Wrap(
               spacing: 8,
-              runSpacing: 8,
               children: [
                 DeskChip(
                   label: 'All categories',

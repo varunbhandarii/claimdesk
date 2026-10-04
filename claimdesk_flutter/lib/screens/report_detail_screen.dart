@@ -282,7 +282,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
                     ],
                   ),
                   const SizedBox(height: 6),
-                  SelectableText(
+                  CopyableText(
                     r.refCode,
                     style: context.type
                         .codeAt(32)
@@ -300,7 +300,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SelectableText(
+                  CopyableText(
                     '“${r.rawText.trim()}”',
                     style: context.type.heading.copyWith(
                       fontSize: 19,
@@ -424,7 +424,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
               const SizedBox(height: 14),
               const DeskLabel('Only the owner would know'),
               const SizedBox(height: 4),
-              SelectableText(r.ownerOnlyDetails ?? 'Not provided'),
+              CopyableText(r.ownerOnlyDetails ?? 'Not provided'),
             ],
             const SizedBox(height: 14),
             const DeskLabel('Contact'),
@@ -458,7 +458,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
     children: [
       Icon(icon, size: 18, color: context.desk.ink2),
       const SizedBox(width: 8),
-      Expanded(child: SelectableText(text)),
+      Expanded(child: CopyableText(text)),
       IconButton(
         tooltip: 'Copy',
         onPressed: () => _copy(text),

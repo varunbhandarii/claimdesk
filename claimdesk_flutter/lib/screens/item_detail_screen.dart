@@ -300,6 +300,7 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
             revision: item.updatedAt,
             onDenied: session.onDenied,
             cover: true,
+            semanticLabel: 'Photo of ${itemTitle(item)}',
           );
     return Stack(
       clipBehavior: Clip.none,
@@ -563,7 +564,7 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
         const SectionTitle('What the desk sees'),
         const SizedBox(height: 10),
         if (item.captionText != null)
-          SelectableText(item.captionText!)
+          CopyableText(item.captionText!)
         else
           Text(
             item.status == ItemStatus.captioning
