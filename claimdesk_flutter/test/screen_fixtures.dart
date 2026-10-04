@@ -180,35 +180,12 @@ const roboto = DeskType(
   mono: TextStyle(fontFamily: 'Roboto', fontWeight: FontWeight.w700),
 );
 
-/// The Flutter SDK's Material fonts folder. The test runner lives inside the
-/// SDK cache, so it is found from there; FLUTTER_ROOT is not set everywhere.
-Directory materialFonts() {
-  final candidates = [
-    if (Platform.environment['FLUTTER_ROOT'] case final root?)
-      Directory('$root/bin/cache/artifacts/material_fonts'),
-  ];
-  var dir = File(Platform.resolvedExecutable).parent;
-  for (var i = 0; i < 6; i++) {
-    candidates.add(Directory('${dir.path}/material_fonts'));
-    candidates.add(Directory('${dir.path}/artifacts/material_fonts'));
-    dir = dir.parent;
-  }
-  for (final candidate in candidates) {
-    if (File('${candidate.path}/roboto-regular.ttf').existsSync()) {
-      return candidate;
-    }
-  }
-  throw StateError(
-    'Roboto was not found in the Flutter SDK cache; layout checks need real '
-    'font metrics. Looked in: ${candidates.map((d) => d.path).join(', ')}',
-  );
-}
-
+/// Roboto (Apache License 2.0, see test/fonts) gives the layout checks real
+/// font metrics on every machine; the brand fonts load over the network.
 Future<void> loadRoboto() async {
-  final dir = materialFonts();
   final loader = FontLoader('Roboto');
-  for (final name in ['regular', 'medium', 'bold', 'black']) {
-    final bytes = File('${dir.path}/roboto-$name.ttf').readAsBytesSync();
+  for (final name in ['Regular', 'Bold']) {
+    final bytes = File('test/fonts/Roboto-$name.ttf').readAsBytesSync();
     loader.addFont(Future.value(ByteData.sublistView(bytes)));
   }
   await loader.load();
