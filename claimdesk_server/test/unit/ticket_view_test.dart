@@ -37,11 +37,48 @@ void main() {
         expect(jsonEncode(view.toJson()), isNot(contains(secret)));
       }
       expect(view.sentence, isNotEmpty);
-      expect(view.toMap()['filedAt'], contains('12:00 EDT'));
+      expect(view.toMap()['filedAt'], 'Sep 30, 2026, 12:00 PM EDT');
       expect(
         (view.toMap()['steps'] as List).where((e) => e['current'] == true),
         hasLength(1),
       );
     }
+  });
+  test('progress steps follow the claim and a closed report stays short', () {
+    final venue = Venue(name: 'Desk', slug: 'desk', timezone: 'Etc/UTC');
+    LostReport report(ReportStatus status) => LostReport(
+      venueId: UuidValue.fromString(const Uuid().v4()),
+      refCode: 'ABC234',
+      publicToken: 'token',
+      rawText: 'text',
+      colourHints: [],
+      status: status,
+      createdAt: DateTime.utc(2026, 10, 4, 14),
+      updatedAt: DateTime.utc(2026, 10, 4, 14),
+    );
+    final ready = TicketView(report(ReportStatus.readyForPickup), venue);
+    final steps = ready.steps;
+    expect(steps.map((s) => s['label']), [
+      'Received',
+      'Searching',
+      'Possible match',
+      'Ready for pickup',
+      'Returned',
+    ]);
+    expect(steps.map((s) => s['done']), [true, true, true, false, false]);
+    expect(steps[3]['current'], true);
+    expect(steps[4]['next'], true);
+    expect(steps.first['when'], 'Oct 4, 2026, 2:00 PM UTC');
+    expect(ready.toMap()['stepNumber'], 4);
+    expect(ready.toMap()['compact'], true);
+    expect(
+      (ready.toMap()['segments'] as List).where((s) => s['on'] == true),
+      hasLength(4),
+    );
+    expect(ready.stampDate(DateTime.utc(2026, 10, 4)), 'OCT 04 2026');
+    final closed = TicketView(report(ReportStatus.closed), venue);
+    expect(closed.steps.map((s) => s['label']), ['Received', 'Closed']);
+    expect(closed.steps.last['current'], true);
+    expect(closed.toMap()['compact'], false);
   });
 }

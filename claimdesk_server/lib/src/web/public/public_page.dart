@@ -18,10 +18,14 @@ class PublicPage {
     bool noStore = false,
   }) async {
     final css = await cacheBustingConfig.assetPath('/web/css/public.css');
+    final favicon = await cacheBustingConfig.assetPath(
+      '/web/images/favicon.svg',
+    );
     final view = {
       'title': values['name'] ?? 'ClaimDesk',
       ...values,
       'css': css,
+      'favicon': favicon,
     };
     final html = ListWidget(
       widgets: [

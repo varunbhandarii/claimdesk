@@ -62,6 +62,7 @@ class TicketAnswerRoute extends PublicRoute {
           editing: true,
         ),
         'sentence': ?sentence,
+        'refusal': ?sentence,
       },
       status: status,
       noStore: true,

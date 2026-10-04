@@ -58,6 +58,8 @@ class FormView {
             (c) => {
               'key': c,
               'label': c,
+              'name': swatchName(c),
+              'tick': _lightSwatches.contains(c) ? 'tick-dark' : 'tick-light',
               'checked': fields['colour_$c'] == 'on',
             },
           )
@@ -73,6 +75,47 @@ class FormView {
 
 String _date(DateTime date) =>
     '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+
+const _months = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+];
+
+/// Swatches light enough to need a dark check mark.
+const _lightSwatches = {
+  'white',
+  'silver',
+  'gold',
+  'yellow',
+  'orange',
+  'pink',
+  'beige',
+  'transparent',
+};
+
+/// Short visible name under a colour swatch.
+String swatchName(String colour) => switch (colour) {
+  'multicolour' => 'Multi',
+  'transparent' => 'Clear',
+  _ => colour[0].toUpperCase() + colour.substring(1),
+};
+
+/// "Sep 30" in the given venue-local time, with the year when it differs
+/// from [now]'s.
+String shortDay(DateTime local, {DateTime? now}) {
+  final day = '${_months[local.month - 1]} ${local.day}';
+  return now == null || now.year == local.year ? day : '$day, ${local.year}';
+}
 
 class TicketView {
   static String idTypeLabel(String value) => switch (value) {
@@ -93,12 +136,62 @@ class TicketView {
     'Returned',
     'Closed',
   ];
+  static const flow = [
+    ReportStatus.received,
+    ReportStatus.searching,
+    ReportStatus.possibleMatch,
+    ReportStatus.readyForPickup,
+    ReportStatus.returned,
+  ];
+
+  tz.TZDateTime local(DateTime value) =>
+      tz.TZDateTime.from(value, ReportFormInput.location(venue.timezone));
+
+  /// "Sep 30, 2026, 12:00 PM EDT" in the venue's timezone.
   String date(DateTime value) {
-    final local = tz.TZDateTime.from(
-      value,
-      ReportFormInput.location(venue.timezone),
-    );
-    return '${_date(local)} ${local.hour.toString().padLeft(2, '0')}:${local.minute.toString().padLeft(2, '0')} ${local.timeZoneName}';
+    final at = local(value);
+    final hour = at.hour % 12 == 0 ? 12 : at.hour % 12;
+    return '${shortDay(at)}, ${at.year}, $hour:${at.minute.toString().padLeft(2, '0')} ${at.hour < 12 ? 'AM' : 'PM'} ${at.timeZoneName}';
+  }
+
+  /// "OCT 04 2026" for the returned stamp.
+  String stampDate(DateTime value) {
+    final at = local(value);
+    return '${_months[at.month - 1].toUpperCase()} ${at.day.toString().padLeft(2, '0')} ${at.year}';
+  }
+
+  /// Progress through the claim, one entry per step. A closed report shows
+  /// only that it was received and then closed.
+  List<Map<String, dynamic>> get steps {
+    if (report.status == ReportStatus.closed) {
+      return [
+        {
+          'label': labels[ReportStatus.received.index],
+          'done': true,
+          'current': false,
+          'next': false,
+          'when': date(report.createdAt),
+        },
+        {
+          'label': labels[ReportStatus.closed.index],
+          'done': false,
+          'current': true,
+          'next': false,
+          'when': null,
+        },
+      ];
+    }
+    final at = flow.indexOf(report.status);
+    return [
+      for (var i = 0; i < flow.length; i++)
+        {
+          'label': labels[flow[i].index],
+          'done': i < at,
+          'current': i == at,
+          'next': i > at,
+          'when': i == 0 && at > 0 ? date(report.createdAt) : null,
+        },
+    ];
   }
 
   String get sentence => switch (report.status) {
@@ -124,11 +217,20 @@ class TicketView {
     'filedAt': date(report.createdAt),
     'updatedAt': date(report.updatedAt),
     'possibleMatch': report.status == ReportStatus.possibleMatch,
+    'ready': report.status == ReportStatus.readyForPickup,
+    'returned': report.status == ReportStatus.returned,
     'closed': report.status == ReportStatus.closed,
-    'steps': [
-      for (final state in ReportStatus.values)
-        {'label': labels[state.index], 'current': report.status == state},
+    'compact': {
+      ReportStatus.possibleMatch,
+      ReportStatus.readyForPickup,
+    }.contains(report.status),
+    'stepNumber': flow.indexOf(report.status) + 1,
+    'stepCount': flow.length,
+    'segments': [
+      for (var i = 0; i < flow.length; i++)
+        {'on': i <= flow.indexOf(report.status)},
     ],
+    'steps': steps,
   };
   Map<String, dynamic> toJson() => {
     'refCode': report.refCode,

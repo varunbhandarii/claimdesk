@@ -40,4 +40,70 @@ void main() {
       expect(body, isNot(contains('{{')));
     }
   });
+  test('each ticket state renders its own panel', () async {
+    final venue = Venue(
+      name: 'Test venue',
+      slug: 'test-venue',
+      deskHours: 'Daily 9–5',
+      pickupInstructions: 'Front desk',
+    );
+    final expected = {
+      ReportStatus.received: 'We have your report.',
+      ReportStatus.searching: 'we keep checking as new items arrive',
+      ReportStatus.possibleMatch: 'The desk may have your item.',
+      ReportStatus.readyForPickup: 'Your item is ready.',
+      ReportStatus.returned: 'Back with you. Thank you.',
+      ReportStatus.closed: 'File a new report',
+    };
+    for (final state in ReportStatus.values) {
+      final report = LostReport(
+        venueId: UuidValue.fromString(const Uuid().v4()),
+        refCode: 'ABC234',
+        publicToken: 'private-owner-token',
+        rawText: 'Never-public-description',
+        colourHints: [],
+        status: state,
+      );
+      final html = await (await PublicPage.html('ticket', {
+        ...TicketView(report, venue).toMap(),
+        'answered': false,
+        'photo': state == ReportStatus.readyForPickup,
+        'photoPath': '/t/private-owner-token/photo',
+        'receipt': state == ReportStatus.returned
+            ? {
+                'returnedAt': 'Oct 4, 2026, 2:00 PM EDT',
+                'idTypeSeen': 'Passport',
+              }
+            : null,
+        'stampDate': 'OCT 04 2026',
+        'answerForm': state == ReportStatus.possibleMatch,
+        'questions': [
+          {'field': 'answer1', 'question': 'First?', 'value': ''},
+          {'field': 'answer2', 'question': 'Second?', 'value': ''},
+        ],
+      }, noStore: true)).readAsString();
+      expect(html, contains(expected[state]), reason: state.name);
+      expect(html, contains('ABC234'));
+      expect(html, isNot(contains('{{')));
+      expect(html, isNot(contains('Never-public-description')));
+      expect(
+        html.contains('Item ready for pickup'),
+        state == ReportStatus.readyForPickup,
+      );
+      expect(
+        html.contains('Return receipt'),
+        state == ReportStatus.returned,
+      );
+      expect(
+        html.contains('Send answers'),
+        state == ReportStatus.possibleMatch,
+      );
+      expect(
+        html.contains('aria-current="step"'),
+        state != ReportStatus.possibleMatch &&
+            state != ReportStatus.readyForPickup &&
+            state != ReportStatus.returned,
+      );
+    }
+  });
 }

@@ -2,9 +2,13 @@ import 'package:barcode/barcode.dart';
 import 'package:serverpod/serverpod.dart';
 import '../../cache_busting.dart';
 import '../../generated/protocol.dart';
+import 'package:timezone/timezone.dart' as tz;
+import '../../policy/item_titles.dart';
 import '../../policy/taxonomy.dart';
 import '../../services/signed_links.dart';
 import 'public_page.dart';
+import 'public_views.dart';
+import 'report_form_input.dart';
 
 class TagRoute extends PublicRoute {
   TagRoute() : super(methods: {Method.get});
@@ -33,12 +37,20 @@ class TagRoute extends PublicRoute {
     final zone = item.zoneId == null
         ? null
         : await Zone.db.findById(session, item.zoneId!);
-    String date(DateTime at) => at.toUtc().toIso8601String().substring(0, 10);
+    final location = ReportFormInput.location(venue.timezone);
+    String date(DateTime at) {
+      final local = tz.TZDateTime.from(at, location);
+      return '${shortDay(local)}, ${local.year}';
+    }
+
+    final colours = item.attributes?.colours ?? const <String>[];
     final values = <String, dynamic>{
       'name': venue.name,
       'reference': item.refCode,
+      'title': ItemTitles.title(item.attributes),
       'category': Taxonomy.label(item.attributes?.category ?? 'other'),
-      'colours': item.attributes?.colours.join(', ') ?? '',
+      'colours': colours.join(', '),
+      'hasColours': colours.isNotEmpty,
       'found': date(item.foundAt),
       'logged': date(item.createdAt),
       'zone': zone?.venueId == item.venueId ? zone?.name : 'No zone',

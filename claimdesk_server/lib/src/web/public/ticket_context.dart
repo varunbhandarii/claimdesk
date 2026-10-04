@@ -63,6 +63,10 @@ class TicketContext {
               'returnedAt': TicketView(report, venue).date(receipt.releasedAt),
               'idTypeSeen': TicketView.idTypeLabel(receipt.idTypeSeen),
             },
+      'stampDate': TicketView(
+        report,
+        venue,
+      ).stampDate(receipt?.releasedAt ?? report.updatedAt),
       'ownerEcho':
           report.status == ReportStatus.possibleMatch &&
               answers.length == 2 &&
