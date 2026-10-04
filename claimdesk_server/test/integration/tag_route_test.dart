@@ -131,7 +131,8 @@ void main() {
           )).statusCode,
           404,
         );
-        final tooFar = exp + 86401;
+        // A minute past the 24-hour limit, so a slow run cannot drift into it.
+        final tooFar = exp + 86400 + 60;
         expect(
           (await call(
             url(tooFar, SignedLinks.tagSignature(s, item.id!, tooFar)),
