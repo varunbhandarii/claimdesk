@@ -16,15 +16,21 @@ class VenueEvents extends ChangeNotifier {
   Stream<DeskEvent> get events => _events.stream;
   StreamSubscription<DeskEvent>? _subscription;
   Timer? _retry;
+  Timer? _stall;
   bool _disposed = false;
+  bool _paused = false;
+
+  /// True once a dropped stream has stayed down for [stallAfter]; short drops
+  /// that recover on their own never reach the screen.
   bool reconnecting = false;
+  static const stallAfter = Duration(seconds: 5);
   int _failures = 0;
   static const delays = [2, 4, 8, 15, 30];
   int get nextDelay => delays[_failures.clamp(0, 4)];
   int _generation = 0;
 
   void start() {
-    if (_disposed || _subscription != null) return;
+    if (_disposed || _paused || _subscription != null) return;
     _retry?.cancel();
     final generation = ++_generation;
     try {
@@ -32,8 +38,7 @@ class VenueEvents extends ChangeNotifier {
         (event) {
           if (_disposed || generation != _generation) return;
           _failures = 0;
-          reconnecting = false;
-          notifyListeners();
+          _recovered();
           _events.add(event);
         },
         onError: (Object error) {
@@ -58,15 +63,27 @@ class VenueEvents extends ChangeNotifier {
   }
 
   void _scheduleReconnect() {
-    if (_disposed || _retry?.isActive == true) return;
+    if (_disposed || _paused || _retry?.isActive == true) return;
     ++_generation;
     _subscription?.cancel();
     _subscription = null;
-    reconnecting = true;
-    notifyListeners();
+    _stall ??= Timer(stallAfter, () {
+      if (_disposed) return;
+      reconnecting = true;
+      notifyListeners();
+    });
     final seconds = nextDelay;
     _failures++;
     _retry = Timer(Duration(seconds: seconds), start);
+  }
+
+  void _recovered() {
+    _stall?.cancel();
+    _stall = null;
+    if (reconnecting) {
+      reconnecting = false;
+      notifyListeners();
+    }
   }
 
   void connectivityChanged(bool connected) {
@@ -83,10 +100,34 @@ class VenueEvents extends ChangeNotifier {
     }
   }
 
+  /// The app went to the background: close the stream on purpose instead of
+  /// letting the system break it and counting that as a failure.
+  void pause() {
+    if (_disposed) return;
+    _paused = true;
+    ++_generation;
+    _retry?.cancel();
+    _subscription?.cancel();
+    _subscription = null;
+  }
+
+  /// Back in the foreground: open a fresh stream at once (no backoff) and let
+  /// [onReconnect] catch up on anything that changed meanwhile.
+  void resume() {
+    if (_disposed) return;
+    _paused = false;
+    _retry?.cancel();
+    _failures = 0;
+    ++_generation;
+    _subscription?.cancel();
+    _subscription = null;
+    _recovered();
+    start();
+  }
+
   void serverAvailable() {
-    if (_disposed || !reconnecting) return;
-    reconnecting = false;
-    notifyListeners();
+    if (_disposed) return;
+    _recovered();
   }
 
   @override
@@ -94,6 +135,7 @@ class VenueEvents extends ChangeNotifier {
     _disposed = true;
     ++_generation;
     _retry?.cancel();
+    _stall?.cancel();
     _subscription?.cancel();
     _events.close();
     super.dispose();

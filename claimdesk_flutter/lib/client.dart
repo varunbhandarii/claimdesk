@@ -7,6 +7,8 @@ import 'package:flutter/services.dart';
 import 'package:serverpod_auth_idp_flutter/serverpod_auth_idp_flutter.dart';
 import 'package:serverpod_flutter/serverpod_flutter.dart';
 
+import 'data/read_retry.dart';
+
 // When you are running the app on a physical device, you need to set the
 // server URL to the IP address of your computer. You can find the IP
 // address by running `ipconfig` on Windows or `ifconfig` on Mac/Linux.
@@ -26,6 +28,29 @@ final serverUrl = getServerUrl();
 /// In a larger app, you may want to use the dependency injection of your choice
 /// instead of using a global client object. This is just a simple example.
 late final Client client;
+
+/// The generated client, with reads retried after network failures.
+class DeskClient extends Client {
+  DeskClient(super.host);
+
+  @override
+  Future<T> callServerEndpoint<T>(
+    String endpoint,
+    String method,
+    Map<String, dynamic> args, {
+    bool authenticated = true,
+  }) => retryReads(
+    endpoint,
+    method,
+    () => super.callServerEndpoint<T>(
+      endpoint,
+      method,
+      args,
+      authenticated: authenticated,
+    ),
+  );
+}
+
 late final Future<bool> authInitialization;
 
 /// Whether Google sign-in is available: on the web when the server shares a
@@ -34,7 +59,7 @@ late final Future<bool> authInitialization;
 late final Future<bool> googleSignInReady;
 
 Future<void> initializeClient() async {
-  client = Client(await serverUrl)
+  client = DeskClient(await serverUrl)
     ..connectivityMonitor = FlutterConnectivityMonitor()
     ..authSessionManager = FlutterAuthSessionManager();
   authInitialization = client.auth.initialize();

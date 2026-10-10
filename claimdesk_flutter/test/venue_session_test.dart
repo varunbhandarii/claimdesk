@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:claimdesk_client/claimdesk_client.dart';
 import 'package:claimdesk_flutter/app/venue_session.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'fixtures.dart';
 import 'match_fixtures.dart';
@@ -44,6 +45,7 @@ class DeskTestClient extends Client {
     return result as T;
   }
 
+  int streamsOpened = 0;
   @override
   dynamic callStreamingServerEndpoint<T, G>(
     String endpoint,
@@ -51,7 +53,10 @@ class DeskTestClient extends Client {
     Map<String, dynamic> args,
     Map<String, Stream> streams, {
     bool authenticated = true,
-  }) => events.stream;
+  }) {
+    streamsOpened++;
+    return events.stream;
+  }
 }
 
 void main() {
@@ -124,4 +129,49 @@ void main() {
     await client.events.close();
     client.close();
   });
+
+  testWidgets(
+    'returning from the background reopens the stream and refreshes',
+    (
+      tester,
+    ) async {
+      final client = DeskTestClient();
+      final session = VenueSession(
+        client: client,
+        venue: Venue(id: venueId, name: 'Desk', slug: 'desk'),
+        membership: StaffMembership(
+          venueId: venueId,
+          authUserId: venueId,
+          displayName: 'Staff',
+        ),
+        onDenied: () {},
+      );
+      final start = session.start();
+      await tester.pump();
+      await start;
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pump();
+      final opened = client.streamsOpened;
+      final before = Map<String, int>.of(client.calls);
+      // Only a real trip to the background (paused) restarts the stream.
+      session.didChangeAppLifecycleState(AppLifecycleState.inactive);
+      session.didChangeAppLifecycleState(AppLifecycleState.resumed);
+      expect(client.streamsOpened, opened);
+      session.didChangeAppLifecycleState(AppLifecycleState.inactive);
+      session.didChangeAppLifecycleState(AppLifecycleState.hidden);
+      session.didChangeAppLifecycleState(AppLifecycleState.paused);
+      session.didChangeAppLifecycleState(AppLifecycleState.resumed);
+      expect(client.streamsOpened, opened + 1);
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pump();
+      for (final endpoint in ['item', 'report', 'match', 'desk']) {
+        expect(client.calls[endpoint], before[endpoint]! + 1);
+      }
+      expect(session.live.reconnecting, false);
+      expect(session.offline, false);
+      session.dispose();
+      await client.events.close();
+      client.close();
+    },
+  );
 }

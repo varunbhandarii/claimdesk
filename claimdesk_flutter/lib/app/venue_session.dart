@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import '../data/photo_urls.dart';
 import '../live/venue_events.dart';
 
-class VenueSession extends ChangeNotifier {
+class VenueSession extends ChangeNotifier with WidgetsBindingObserver {
   VenueSession({
     required this.client,
     required this.venue,
@@ -39,6 +39,7 @@ class VenueSession extends ChangeNotifier {
     });
     live.addListener(_liveChanged);
     client.connectivityMonitor?.addListener(_connectivityChanged);
+    WidgetsBinding.instance.addObserver(this);
   }
   final Client client;
   final Venue venue;
@@ -76,6 +77,7 @@ class VenueSession extends ChangeNotifier {
   bool refreshing = false;
   bool offline = false;
   bool _disposed = false;
+  bool _backgrounded = false;
   int _queryVersion = 0;
   Timer? _refreshTimer;
   bool _refreshAgain = false;
@@ -91,6 +93,21 @@ class VenueSession extends ChangeNotifier {
 
   void _liveChanged() {
     if (!_disposed) notifyListeners();
+  }
+
+  /// Android closes the live stream while the app is in the background (for
+  /// example while the camera is open). Close it ourselves and reopen it on
+  /// return, so coming back is quiet and catches up at once.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (_disposed) return;
+    if (state == AppLifecycleState.paused) {
+      _backgrounded = true;
+      live.pause();
+    } else if (state == AppLifecycleState.resumed && _backgrounded) {
+      _backgrounded = false;
+      live.resume();
+    }
   }
 
   void _connectivityChanged(bool connected) {
@@ -246,6 +263,7 @@ class VenueSession extends ChangeNotifier {
   @override
   void dispose() {
     _disposed = true;
+    WidgetsBinding.instance.removeObserver(this);
     ++_queryVersion;
     _refreshTimer?.cancel();
     client.connectivityMonitor?.removeListener(_connectivityChanged);

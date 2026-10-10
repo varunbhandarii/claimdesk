@@ -134,6 +134,8 @@ class _ItemListScreenState extends State<ItemListScreen> {
     if (session.error != null && !identical(session.error, _lastError)) {
       final error = session.error!;
       _lastError = error;
+      // Background refreshes that only lost the connection show the banner.
+      if (isConnectionError(error)) return;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           ScaffoldMessenger.of(

@@ -23,6 +23,10 @@ String errorMessage(Object error) {
   return error.toString().replaceFirst('Exception: ', '');
 }
 
+/// A lost connection rather than a refusal; the offline banner already says so.
+bool isConnectionError(Object error) =>
+    error is ServerpodClientNetworkException;
+
 Future<T?> runGuarded<T>(
   BuildContext context,
   Future<T> Function() action, {

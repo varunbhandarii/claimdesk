@@ -47,6 +47,74 @@ void main() {
       await tester.pump();
     },
   );
+  testWidgets('a short drop never shows; a stalled one does after 5 s', (
+    tester,
+  ) async {
+    final streams = <StreamController<DeskEvent>>[];
+    final live = VenueEvents(
+      openStream: () {
+        final stream = StreamController<DeskEvent>();
+        streams.add(stream);
+        return stream.stream;
+      },
+      onReconnect: () {},
+    );
+    live.start();
+    streams.last.addError(Exception('Disconnected'));
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 2));
+    expect(streams.length, 2);
+    live.serverAvailable();
+    await tester.pump(const Duration(seconds: 2));
+    expect(live.reconnecting, false);
+
+    streams.last.addError(Exception('Disconnected'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 4900));
+    expect(live.reconnecting, false);
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(live.reconnecting, true);
+    live.dispose();
+    for (final stream in streams) {
+      unawaited(stream.close());
+    }
+    await tester.pump();
+  });
+
+  testWidgets(
+    'pausing closes the stream quietly; resuming reopens it at once and catches up',
+    (tester) async {
+      final streams = <StreamController<DeskEvent>>[];
+      var catches = 0;
+      final live = VenueEvents(
+        openStream: () {
+          final stream = StreamController<DeskEvent>();
+          streams.add(stream);
+          return stream.stream;
+        },
+        onReconnect: () => catches++,
+      );
+      live.start();
+      expect(catches, 1);
+      live.pause();
+      // The system breaking the old stream while paused is not a failure.
+      streams.last.addError(Exception('Software caused connection abort'));
+      await tester.pump(const Duration(seconds: 60));
+      expect(streams.length, 1);
+      expect(live.reconnecting, false);
+      live.resume();
+      expect(streams.length, 2);
+      expect(catches, 2);
+      expect(live.reconnecting, false);
+      expect(live.nextDelay, 2);
+      live.dispose();
+      for (final stream in streams) {
+        unawaited(stream.close());
+      }
+      await tester.pump();
+    },
+  );
+
   testWidgets(
     'membership denial stops reconnects and returns to venue selection',
     (tester) async {
