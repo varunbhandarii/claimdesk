@@ -1,198 +1,166 @@
 # ClaimDesk
 
-A lost-and-found desk app for venue staff. This workspace currently contains the
-Serverpod server, generated typed client, and Flutter staff app. Staff can sign
-in, select their venue, log a found item with a photo, watch its caption arrive,
-and review or edit its details. The backend
-includes venue membership checks, item/report storage, audit and custody records,
-and a durable background worker that prepares photos, captions items, and creates
-search embeddings. Private uploads and item endpoints are available through the
-generated client.
+**Lost and found, matched.** ClaimDesk gives a venue's front desk a phone app for what gets handed in, and gives the public a page they can open from a poster to say what they lost. The server matches the two, shows staff *why* a found item might be someone's, and checks ownership before anything is handed back.
 
-Owners can file lost reports without an account at `/v/hawrys-demo`, then keep
-their private ticket link for updates. Staff use the Reports tab to read reports,
-find a reference code, copy contact details, and close a received/searching report
-with a reason. Matching and automatic email notifications are not available yet.
+One Serverpod 4 backend runs the staff app's API, the public web pages, a durable job queue, and the matching, live on Serverpod Cloud.
 
-Public intake requires a random `ipHashSalt` of at least 32 characters in ignored
-development/test passwords or `SERVERPOD_PASSWORD_ipHashSalt`. Configure a distinct
-production salt with Cloud managed passwords; never commit salts. Tickets and JSON
-status pages use `no-store` and `noindex`, disclose no report/contact details, and
-use random 128-bit owner tokens. Public handlers deliberately disable URL/query
-logging. The sliding-window limits are per process: 10 POSTs and 60 GETs per
-address in ten minutes. Forwarded addresses are trusted only in production behind
-the Cloud proxy; direct deployments must adjust that trust boundary.
+| | |
+| --- | --- |
+| Public venue page | https://claimdesk-vb.serverpod.space/v/hawrys-demo ([en español](https://claimdesk-vb.serverpod.space/v/hawrys-demo?lang=es)) |
+| Printable poster | https://claimdesk-vb.serverpod.space/v/hawrys-demo/poster |
+| Staff app (web) | https://claimdesk-vb.serverpod.space/app/ |
+| Staff app (Android) | Built from `claimdesk_flutter`; see [Run it locally](#run-it-locally) |
 
-Public pages read in English and Spanish: add `?lang=es` to any link, or let the
-browser's language choose; the choice travels with links and forms, and no cookie
-is set. Every venue has a printable bilingual poster at `/v/<slug>/poster` (the
-demo's is `/v/hawrys-demo/poster`) that prints at 100% on A4 or Letter; its QR code
-points to the venue page, and supervisors open it from the app's menu. To run the
-optional local HTTP checks with the server up:
+![The public venue page in Spanish, and the staff app's Desk, Inbox and item screens](docs/screenshots/claimdesk.png)
 
-```powershell
-$env:RUN_PUBLIC_HTTP = 'true'
-dart test --tags http test/http
-Remove-Item Env:RUN_PUBLIC_HTTP
+## Try it in two minutes
+
+**As someone who lost something.** Open the [venue page](https://claimdesk-vb.serverpod.space/v/hawrys-demo) on a phone (or add `?lang=es`), tap *Report a lost item*, describe it in your own words and give an email address. You get a private claim ticket that shows what happens next: received, searching, possible match, ready for pickup, returned. No account, no app, no script on the page.
+
+**As desk staff.** Sign in to the [staff app](https://claimdesk-vb.serverpod.space/app/) with the demo accounts given in the submission form (staff and supervisor), or with Google if your address is on the staff list.
+
+1. **Desk** shows what needs attention today: new matches, items whose hold time is over, police hand-offs that are due.
+2. **Inbox** lists proposed matches as a found-item tag joined to a lost-report ticket, with the score and the evidence (category, colour, place, time, the words both sides used). Open one and *Confirm*.
+3. The owner's ticket now asks two questions only the owner could answer. At pickup, **Return to owner** walks through four checks (described it before seeing it, enough details matched, ID seen, who is collecting), takes an optional signature, and records the hand-back.
+4. **Items** has search (try `brolly` or a reference such as `SEED01`), filters, photos, a printable shelf tag and the item's full history. Supervisors also get **Export CSV** and **Print poster**.
+
+The demo venue is fictional and every photo in it is synthetic.
+
+## How it works
+
+```mermaid
+flowchart LR
+  Owner["Owner's phone<br/>(no account)"] -->|venue page · lost form · ticket| Web
+  Staff["Staff app<br/>Flutter, Android + web"] -->|generated client · live stream| API
+  subgraph Server["Serverpod server"]
+    Web["Relic web routes<br/>HTML templates, CSP, rate limits"]
+    API["Endpoints<br/>venue membership on every call"]
+    Queue["Durable job queue<br/>leases · retries · nightly sweep"]
+    Matcher["Matcher<br/>vector + full-text + attributes"]
+  end
+  Web --> DB[("PostgreSQL<br/>pgvector · jsonb")]
+  API --> DB
+  Queue --> DB
+  Queue -->|photo → attributes| Claude["Claude"]
+  Queue -->|text → embedding| Gemini["Gemini embeddings"]
+  Queue --> Matcher
+  API --> Storage["Private cloud storage<br/>photos · signatures · exports"]
 ```
 
-These checks create fictional reports in the development demo venue and fill
-the local address's POST limit. Wait ten minutes or restart development afterward.
+**One lost report, end to end.** The form posts to a Relic route that validates it, checks for a duplicate, stores it in one serializable transaction and enqueues a `match_report` job. The worker claims the job, runs a quick *preliminary* pass from the form's own hints while Claude normalises the description, then a refined pass. Each pass pulls the nearest items by embedding (pgvector) and by keyword coverage (full-text search), scores them in Dart, and writes the top proposals with their explanation. Open staff apps refresh through a streaming endpoint; the owner's ticket shows "searching", and "possible match" once staff confirm one.
 
-## Local setup
+## Built on Serverpod
 
-Use Flutter 3.47.5 (Dart 3.13.4), Serverpod CLI 4.0.2, Chrome, and an Android SDK.
-Run commands in a normal, non-administrator PowerShell window.
+| Serverpod feature | Where | What it does for ClaimDesk |
+| --- | --- | --- |
+| pgvector `Vector(1536)` columns and `distanceCosine` ordering | `claimdesk_server/lib/src/models/found_item.spy.yaml`, `lost_report.spy.yaml`, `lib/src/matching/candidate_query.dart` | Nearest found items for a report (and reports for an item), filtered by venue, status and time window |
+| Raw SQL through `unsafeQuery`, all values bound | `lib/src/matching/lexical_search.dart`, `lib/src/endpoints/desk_endpoint.dart`, `lib/src/services/venue_exports.dart` | Keyword coverage with PostgreSQL full-text search for matching and staff search; the Desk summary in one `count(*) FILTER` query |
+| jsonb columns | `found_item.spy.yaml` (`attributes`), `item_match.spy.yaml` (`explanation`), `work_item.spy.yaml` (`payload`) | Structured caption attributes, the reasons behind each score, and job payloads |
+| Transactions and row locks | `lib/src/db/transactions.dart` and callers in `release_endpoint.dart`, `match_endpoint.dart`, `item_endpoint.dart`, `services/public_intake_service.dart` | Serializable transactions with retry for release, confirm, transfer and intake: one hand-back marks the item claimed, the report returned and competing proposals superseded, or nothing at all |
+| Durable job queue on the ORM | `lib/src/models/work_item.spy.yaml`, `lib/src/jobs/` | Captioning, embedding, matching and the nightly sweep. Jobs are claimed with `FOR UPDATE SKIP LOCKED`, leased for two minutes with a heartbeat, fenced against stale workers, retried with backoff, and woken right after the enqueue commits. Future calls are not available on the Starter plan, so the queue lives in PostgreSQL |
+| Streaming endpoint and messages | `lib/src/endpoints/desk_stream_endpoint.dart`, `session.messages.postMessage` across endpoints and jobs | Every open staff app updates when an item is captioned, a match arrives or an item changes hands |
+| Relic web server | `lib/server.dart`, `lib/src/web/public/`, `web/templates/public/` | The venue page, lost form, claim ticket, poster and shelf tag are server-rendered `TemplateWidget`s composed with `ListWidget`; the ticket status is a `JsonWidget`; rate-limit middleware on `/v`, `/t`, `/tag`; cache-busted static assets; `FlutterRoute` serves the staff app at `/app` |
+| Logging-disabled sessions | `lib/src/web/public/public_page.dart` | Public routes open sessions with logging off, so ticket tokens and form values never reach the logs |
+| Authentication | `lib/src/authentication.dart`, `lib/src/auth/`, `lib/src/access/venue_guard.dart` | Email sign-in, JWT sessions, and Google sign-in that links a Google account to an existing staff member and never creates new users; a guard checks venue membership (and supervisor role where needed) on every venue endpoint |
+| Private cloud storage | `lib/server.dart`, `lib/src/endpoints/item_endpoint.dart`, `lib/src/services/photo_upload_relay.dart` | Photos, signatures and CSV exports stay private; staff see them through 10-minute links; browser uploads go through an authenticated relay |
+| Typed exceptions and the generated client | `lib/src/models/*_exception.spy.yaml`, `claimdesk_flutter/lib/data/errors.dart` | Refusals such as "already released" or "not a member" reach the app as readable messages |
+| `withServerpod` tests | `claimdesk_server/test/integration/` | About 300 server tests against a real embedded PostgreSQL, no Docker |
+| Serverpod Cloud | `claimdesk_server/scloud.yaml`, `.scloudignore` | One `scloud deploy` regenerates code, builds the Flutter web app and ships both; secrets are Cloud-managed passwords |
+
+## Matching
+
+Each candidate gets a weighted score over the signals that are actually present (`claimdesk_server/lib/src/matching/scorer.dart`):
+
+| Signal | Weight | How it's measured |
+| --- | --- | --- |
+| Meaning | 0.40 | Cosine similarity of the two embeddings, rescaled from the 0.76–0.97 range observed between unrelated and true pairs |
+| Words in common | 0.15 | Share of the report's key words found in the item's description (PostgreSQL full-text search) |
+| Category | 0.15 | Same kind of thing, or the same group |
+| Colour | 0.10 | Reported colours present on the item; near colours (navy and blue) count half |
+| Brand | 0.08 | Brand or model mentioned on both sides |
+| Place | 0.06 | Same zone, or a neighbouring one |
+| Time | 0.06 | Found within a couple of days of the loss, fading over six weeks |
+
+A missing signal is left out rather than counted as a miss, and a candidate with neither the category nor the brand in common is capped at 0.40. Scores of 0.70 and above are **strong**, 0.45 and above **possible**. Staff see every signal on the card, so a match is never a black box.
+
+**Evaluation.** A reviewed set of 70 found items (40 described in text, 30 captioned from photos) and 45 lost reports, with the real caption and embedding models, gave **recall@3 1.00**, **MRR 1.00**, **no false strong matches**, and strong-match precision 0.92. The same suite runs in CI with deterministic stand-ins for the models, and checks that the production SQL picks exactly the candidates an independent Dart implementation picks (`claimdesk_server/test/integration/matching_eval_test.dart`).
+
+**Speed on Serverpod Cloud** (Starter plan, measured early October 2026): a photographed item is captioned and searchable in about 13 seconds (median); a new report gets a preliminary match in about 4–7 seconds and the refined one in about 8–16 seconds, depending on database latency on the shared plan.
+
+## Privacy
+
+- **Owners need no account.** A ticket is a private 128-bit link. Public pages are `noindex`, set no cookie and run no script (`script-src 'none'`); ticket pages are also `no-store`, and none of them ever show the owner's name, email, description or proof.
+- **The public never sees what's on the shelf in detail.** The venue page lists only recent items by colour, kind, zone and day, and never wallets, cards, IDs, money, medication, jewellery, anything worth $100 or more, or anything that may carry personal data.
+- **Restricted items stay vague everywhere.** For those categories the caption keeps only the category, and the photo is purged 30 days after the item leaves the desk.
+- **Data has an end date.** Unmatched reports close after 60 days; contact details and answers are deleted 30 days after a report closes or the item is returned.
+- **Abuse controls without tracking.** Per-address rate limits use a salted hash of the address; the form has a bot trap and duplicate detection.
+- **Photos are cleaned.** Location and camera data is stripped and images are resized before storage; staff notes and finder names are never sent to the AI models.
+- **Staff see only their venue.** Every venue call checks membership; exports and posters are for supervisors.
+
+## Why it matters
+
+Small desks still run on a shelf and a spreadsheet, and descriptions rarely line up: the owner says "black brolly with a wooden handle", the log says "umbrella". The demo desk is modelled on a university recreation center's published policy: found items logged in a front-desk spreadsheet, held for 60 days, and anything worth $20 or more handed to police, as [New York Personal Property Law §252](https://www.nysenate.gov/legislation/laws/PEP/252) requires within ten days. ClaimDesk tracks that hand-off date for every valuable item. At a much larger scale, a 2025 review by the MTA Inspector General found that most items auditors handed to subway staff were [never logged at all](https://www.aol.com/mta-poor-track-record-returning-013258496.html).
+
+There has been no live trial at a real desk; the venue and its data are staged. The natural next step is a one-week trial next to a desk's existing spreadsheet, with CSV export back and data deleted on request.
+
+## Run it locally
+
+You need Flutter 3.47.5 (Dart 3.13.4), the Serverpod CLI 4.0.2, Chrome, and for the phone app an Android SDK. Run commands in a normal (non-administrator) terminal.
 
 ```powershell
 dart install serverpod_cli@4.0.2
 flutter pub get
-serverpod start
-```
-
-Add `%LOCALAPPDATA%\Dart\install\bin` to your user PATH if `serverpod` is not found.
-The server starts its own PostgreSQL instance. Docker and Redis are unnecessary.
-The API runs on port 8080; the web server runs on port 8082. The Flutter app opens
-in Chrome. Press R to restart, M to create/apply a migration, and Q to stop.
-
-Server tests run with their own embedded database:
-
-```powershell
 cd claimdesk_server
-dart test
+serverpod run seed     # demo venue, zones, a staff and a supervisor account
+serverpod start        # embedded PostgreSQL, API on 8080, web on 8082, staff app in Chrome
 ```
 
-For an Android phone, enable USB debugging and accept the computer authorization.
-Then run from a second terminal while the server is running:
+`serverpod start` manages its own PostgreSQL; Docker and Redis are not needed. Local secrets go in the ignored `claimdesk_server/config/passwords.yaml` (`ipHashSalt` of at least 32 characters, `demoStaffPassword`, `seedSecret`); development has safe fallbacks for the demo password.
+
+**AI providers.** Set `ANTHROPIC_API_KEY` and `GEMINI_API_KEY` in the environment before `serverpod start` to caption photos with `claude-opus-5-5` and embed with `gemini-embedding-2` (1536 dimensions). Without keys the server picks deterministic stand-ins, so everything still runs. On Cloud the keys are the managed passwords `anthropicApiKey` and `geminiApiKey`.
+
+**Google sign-in (optional).** Put the Google Web client's JSON in the `googleClientSecret` password and a staff address in `googleStaffEmail`, then re-run the seed. Without them, Google sign-in stays off.
+
+**Android phone.** With USB debugging on and the server running:
 
 ```powershell
 cd claimdesk_flutter
-flutter devices
 adb reverse tcp:8080 tcp:8080
 flutter run -d <device-id> --dart-define=SERVER_URL=http://127.0.0.1:8080/
 ```
 
-Keep the USB connection active while using the local server. Camera and gallery
-intake are available on Android; the web app uses a file picker.
+Add `--dart-define=GOOGLE_SERVER_CLIENT_ID=<web client id>` to show Google sign-in on Android.
 
-## Demo desk
+**Public pages** are at http://localhost:8082/v/hawrys-demo once the seed has run; add `?lang=es` for Spanish.
 
-Stop the development server before running the seed command, since it uses the
-same API port. From `claimdesk_server`:
+If Windows reports a PostgreSQL executable-path mismatch, set `SERVERPOD_PG_CACHE_DIR` to a folder outside AppData and restart the terminal.
 
-```powershell
-serverpod run seed
-serverpod start
-```
-
-Seeding creates Hawrys Rec Center (demo), six zones, and two accounts:
-`supervisor@demo.claimdesk.local` and `staff@demo.claimdesk.local`. Set
-`demoStaffPassword` in the ignored passwords file or as
-`SERVERPOD_PASSWORD_demoStaffPassword`. Development and test modes have a local
-fallback; production requires an explicitly configured password. Rerunning the
-seed restores demo settings while preserving ids and existing account passwords.
-
-Cloud seeding uses the `admin.seedDemo` endpoint and requires a separately
-configured `seedSecret`. Its request body is `{"secret":"<configured value>"}`
-at `POST /admin/seedDemo`. An unset or incorrect secret denies access. Keep both
-credentials out of source control and shell history.
-
-Signed-in clients can call `venue.myMemberships()`, `venue.getVenue(id)`, and
-`venue.zones(id)`. Every venue lookup checks the caller's membership. The Flutter
-app opens the only assigned desk automatically, or offers a venue picker. It
-remembers the signed-in session and selected venue on this device.
-
-## Photo intake
-
-Set `ANTHROPIC_API_KEY` and `GEMINI_API_KEY` in your local process environment
-before starting the server. Existing Windows user environment variables can be
-loaded into a terminal without displaying them:
+## Tests
 
 ```powershell
-$env:ANTHROPIC_API_KEY = [Environment]::GetEnvironmentVariable('ANTHROPIC_API_KEY', 'User')
-$env:GEMINI_API_KEY = [Environment]::GetEnvironmentVariable('GEMINI_API_KEY', 'User')
 cd claimdesk_server
-serverpod start --no-flutter
+dart test                  # about 300 tests, real embedded PostgreSQL, no keys needed
+cd ../claimdesk_flutter
+flutter test               # widget tests, including tap-target, contrast and 200% text checks
 ```
 
-The defaults are `claude-opus-5-5` and `gemini-embedding-2` with 1536 dimensions.
-Startup reports the selected providers. Missing keys select deterministic fakes;
-test mode always selects fakes. Cloud uses managed secrets named `anthropicApiKey`
-and `geminiApiKey`. Provider keys must never be saved to local files or Git.
+Four GitHub workflows run analysis, formatting, the server tests and the app tests on every push. Optional suites: `RUN_PUBLIC_HTTP=true dart test --tags http test/http` against a running local server, and `CLAIMDESK_LIVE_PROVIDERS=1 dart test -t providers` with real model keys.
 
-1. Sign in, select a venue membership, and call
-   `item.requestPhotoUpload(venueId, 'image/jpeg')`.
-2. Pass the ticket's `uploadDescription` to `FileUploader.uploadByteData`.
-3. Call `item.createItem` with a `CreateItemInput` containing the ticket's
-   `itemId`, `photoPath: ticket.path`, `uploadProof: ticket.proof`, and
-   `uploadExpiresAt: ticket.expiresAt`, plus the staff's intake fields.
-4. Subscribe to `deskStream.watchVenue(venueId)` and re-query `item.getItem`
-   when an item event arrives. Call `item.photoUrl` for an
-   original or thumbnail download URL, valid for ten minutes.
+## Deploy
 
-Tickets are tied to their staff member, venue, item, and ten-minute expiry.
-Browser-compatible uploads pass through the API's binary transport with the
-staff token and signed ticket. The server rechecks membership, bounds the body,
-and forwards it to private storage; bucket permissions remain private.
-JPEG, PNG, and WebP uploads up to 15 MiB are accepted; decoded images are limited
-to 40 million pixels. Photos become JPEGs up to 1024 pixels on the longest edge,
-with EXIF removed and a 320-pixel thumbnail. Restricted items keep category-only
-caption text. Private staff notes and finder names are never sent to providers.
+From `claimdesk_server`, `scloud deploy` regenerates the protocol, builds the Flutter web app into `web/app` and ships both. Set secrets with `scloud password set <name> <value>`; they apply on the next deploy. Seed a fresh Cloud project once through the `admin.seedDemo` endpoint, which needs the `seedSecret` password.
 
-The worker checks PostgreSQL every three seconds, renews its two-minute lease,
-and protects completed work from stale workers. Provider failures fall back to
-staff descriptions. Embedding failures preserve usable items with a null vector.
-The scheduled recovery sweep is not included yet; staff edits queue re-embedding,
-and `item.recaption(itemId)` retries an unclaimed item. `item.captionRuns(itemId)`
-returns provider outcomes, latency, and token usage. Invalid images remain
-`captioning` after one retry and can be corrected through `item.updateItem`.
+## Repository
 
-Ordinary tests never contact providers. To explicitly run the three local photo
-checks with keys already loaded, from `claimdesk_server`:
+- `claimdesk_server` — endpoints, models and migrations, matching, jobs, public web pages, tests
+- `claimdesk_client` — generated client (do not edit; change models and endpoints instead)
+- `claimdesk_flutter` — the staff app for Android and web
+- `docs/screenshots` — images used in this README
 
-```powershell
-$env:CLAIMDESK_LIVE_PROVIDERS = '1'
-try { dart test -t providers --concurrency=1 } finally {
-  Remove-Item Env:CLAIMDESK_LIVE_PROVIDERS
-}
-```
+## Known limitations
 
-Those checks also require local `umbrella.jpg`, `backpack.jpg`, and
-`mock_id_card.jpg` files under `test/fixtures/photos/`. The first two remain
-excluded from Git and deployment because their licenses are unknown.
-
-## Workspace
-
-- `claimdesk_server`: backend, configuration, migrations, and tests.
-- `claimdesk_client`: generated client; edit models and endpoints to regenerate it.
-- `claimdesk_flutter`: Android and web app.
-
-Local passwords belong in the ignored `claimdesk_server/config/passwords.yaml`.
-Provider keys belong in local environment variables or Cloud secrets. Never put
-keys in source code. Some local photo assets are intentionally excluded from Git;
-the included mock ID contains fictional specimen data.
-
-Open this folder as the trusted Codex project to load its generated MCP settings.
-The Serverpod bridge connects while `serverpod start` is running.
-
-If Windows redirects the PostgreSQL cache and reports an executable-path
-mismatch, set `SERVERPOD_PG_CACHE_DIR` to a stable local directory outside
-AppData, then restart your terminal. This installation uses
-`C:\dev\serverpod\pg-binaries`.
-
-## Deployment
-
-From `claimdesk_server`, run `serverpod cloud deploy`. The configured pre-deploy
-steps regenerate the protocol and build Flutter web under `/app/`. On Windows,
-`tool/build_web.ps1` verifies the build before replacing the served files.
-
-To rebuild the locally served app, run `serverpod run flutter_build` from
-`claimdesk_server`, then open `http://localhost:8082/app/`. The API URL comes from
-the server's app configuration route. Web authentication requires HTTPS or
-localhost; opening the app on a plain HTTP LAN address is unsupported.
-
-Run `flutter analyze` and `flutter test` from `claimdesk_flutter` to check the
-staff app. The app uses one event stream per venue, retries interrupted streams
-with backoff, and refreshes item details after reconnecting. Photo download URLs
-are held only in memory and refreshed before expiry. Sign-out clears that desk
-session and its photo cache.
+- Owners are not emailed; they keep their ticket link and check it.
+- The staff app is in English; the public pages are in English and Spanish. Venue text (hours, zones) is shown as the venue typed it.
+- Vector search is an exact scan, which is right for one venue's few thousand items; a larger deployment would add an approximate index.
+- Matching latency on the shared Starter plan varies with database load.
+- CSV exports stay in private storage after their ten-minute links expire.
