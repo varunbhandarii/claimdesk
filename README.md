@@ -17,14 +17,14 @@ One Serverpod 4 backend runs the staff app's API, the public web pages, a durabl
 
 **As someone who lost something.** Open the [venue page](https://claimdesk-vb.serverpod.space/v/hawrys-demo) on a phone (or add `?lang=es`), tap *Report a lost item*, describe it in your own words and give an email address. You get a private claim ticket that shows what happens next: received, searching, possible match, ready for pickup, returned. No account, no app, no script on the page.
 
-**As desk staff.** Sign in to the [staff app](https://claimdesk-vb.serverpod.space/app/) with the demo accounts given in the submission form (staff and supervisor), or with Google if your address is on the staff list.
+**As desk staff.** The hosted [staff app](https://claimdesk-vb.serverpod.space/app/) needs a staff account (email, or Google if your address is on the staff list). To try every staff screen yourself, [run it locally](#run-it-locally): the seed creates a staff and a supervisor account. The screenshots above show the hosted one.
 
 1. **Desk** shows what needs attention today: new matches, items whose hold time is over, police hand-offs that are due.
 2. **Inbox** lists proposed matches as a found-item tag joined to a lost-report ticket, with the score and the evidence (category, colour, place, time, the words both sides used). Open one and *Confirm*.
 3. The owner's ticket now asks two questions only the owner could answer. At pickup, **Return to owner** walks through four checks (described it before seeing it, enough details matched, ID seen, who is collecting), takes an optional signature, and records the hand-back.
 4. **Items** has search (try `brolly` or a reference such as `SEED01`), filters, photos, a printable shelf tag and the item's full history. Supervisors also get **Export CSV** and **Print poster**.
 
-The demo venue is fictional and every photo in it is synthetic.
+The demo venue and its people are fictional, and the seeded items use synthetic photos.
 
 ## How it works
 
