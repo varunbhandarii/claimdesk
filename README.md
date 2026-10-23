@@ -2,22 +2,17 @@
 
 **Lost and found, matched.** ClaimDesk gives a venue's front desk a phone app for what gets handed in, and gives the public a page they can open from a poster to say what they lost. The server matches the two, shows staff *why* a found item might be someone's, and checks ownership before anything is handed back.
 
-One Serverpod 4 backend runs the staff app's API, the public web pages, a durable job queue, and the matching, live on Serverpod Cloud.
-
-| | |
-| --- | --- |
-| Public venue page | https://claimdesk-vb.serverpod.space/v/hawrys-demo ([en español](https://claimdesk-vb.serverpod.space/v/hawrys-demo?lang=es)) |
-| Printable poster | https://claimdesk-vb.serverpod.space/v/hawrys-demo/poster |
-| Staff app (web) | https://claimdesk-vb.serverpod.space/app/ |
-| Staff app (Android) | Built from `claimdesk_flutter`; see [Run it locally](#run-it-locally) |
+One Serverpod 4 backend runs the staff app's API, the public web pages, a durable job queue, and the matching. It deploys to Serverpod Cloud with one command.
 
 ![The public venue page in Spanish, and the staff app's Desk, Inbox and item screens](docs/screenshots/claimdesk.png)
 
-## Try it in two minutes
+## Try it
 
-**As someone who lost something.** Open the [venue page](https://claimdesk-vb.serverpod.space/v/hawrys-demo) on a phone (or add `?lang=es`), tap *Report a lost item*, describe it in your own words and give an email address. You get a private claim ticket that shows what happens next: received, searching, possible match, ready for pickup, returned. No account, no app, no script on the page.
+Start it first with [Run it locally](#run-it-locally). The seed creates a demo venue, a staff account and a supervisor account.
 
-**As desk staff.** The hosted [staff app](https://claimdesk-vb.serverpod.space/app/) needs a staff account (email, or Google if your address is on the staff list). To try every staff screen yourself, [run it locally](#run-it-locally): the seed creates a staff and a supervisor account. The screenshots above show the hosted one.
+**As someone who lost something.** Open the venue page at http://localhost:8082/v/hawrys-demo (add `?lang=es` for Spanish), tap *Report a lost item*, describe it in your own words and give an email address. You get a private claim ticket that shows what happens next: received, searching, possible match, ready for pickup, returned. No account, no app, no script on the page. The printable poster is at `/v/hawrys-demo/poster`.
+
+**As desk staff.** Sign in to the staff app with the seeded staff or supervisor account.
 
 1. **Desk** shows what needs attention today: new matches, items whose hold time is over, police hand-offs that are due.
 2. **Inbox** lists proposed matches as a found-item tag joined to a lost-report ticket, with the score and the evidence (category, colour, place, time, the words both sides used). Open one and *Confirm*.
